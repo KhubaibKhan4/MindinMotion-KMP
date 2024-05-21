@@ -1,4 +1,4 @@
-# Compose Multiplatform Application
+# MindinMotion-KMP
 
 ## Before running!
  - check your system with [KDoctor](https://github.com/Kotlin/kdoctor)
