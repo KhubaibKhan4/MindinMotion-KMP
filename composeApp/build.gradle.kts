@@ -82,6 +82,9 @@ kotlin {
             implementation("io.github.jan-tennert.supabase:gotrue-kt:2.3.1")
             implementation("io.github.jan-tennert.supabase:compose-auth:2.3.1")
             implementation("io.github.jan-tennert.supabase:compose-auth-ui:2.3.1")
+            implementation("io.github.mirzemehdi:kmpauth-google:1.4.0")
+            implementation("io.github.mirzemehdi:kmpauth-firebase:1.4.0")
+            implementation("io.github.mirzemehdi:kmpauth-uihelper:1.4.0")
         }
 
         commonTest.dependencies {

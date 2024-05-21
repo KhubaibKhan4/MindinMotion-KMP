@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "315093871386",
+    "project_id": "mind-in-motion-70e7b",
+    "storage_bucket": "mind-in-motion-70e7b.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:315093871386:android:aeb50fce5145217cec1aa3",
+        "android_client_info": {
+          "package_name": "org.mind.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB65lrOPXWuZlKVNF0pH36fOigm81XNMWc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
