@@ -86,6 +86,7 @@ kotlin {
             implementation("io.github.mirzemehdi:kmpauth-google:1.4.0")
             implementation("io.github.mirzemehdi:kmpauth-firebase:1.4.0")
             implementation("io.github.mirzemehdi:kmpauth-uihelper:1.4.0")
+            implementation("org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose:2.8.0-beta02")
         }
 
         commonTest.dependencies {
