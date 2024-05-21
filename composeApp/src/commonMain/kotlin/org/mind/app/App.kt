@@ -30,6 +30,8 @@ import mind_in_motion.composeapp.generated.resources.Res
 import mind_in_motion.composeapp.generated.resources.cyclone
 import org.jetbrains.compose.resources.Font
 import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.KoinApplication
+import org.koin.compose.KoinContext
 import org.mind.app.domain.repository.Repository
 import org.mind.app.domain.usecases.ResultState
 import org.mind.app.presentation.viewmodel.MainViewModel
