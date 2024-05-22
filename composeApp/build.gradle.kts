@@ -80,12 +80,6 @@ kotlin {
             implementation("io.insert-koin:koin-core")
             implementation("io.insert-koin:koin-compose")
             implementation("io.insert-koin:koin-annotations:1.3.1")
-            implementation("io.github.jan-tennert.supabase:gotrue-kt:2.3.1")
-            implementation("io.github.jan-tennert.supabase:compose-auth:2.3.1")
-            implementation("io.github.jan-tennert.supabase:compose-auth-ui:2.3.1")
-            implementation("io.github.mirzemehdi:kmpauth-google:1.4.0")
-            implementation("io.github.mirzemehdi:kmpauth-firebase:1.4.0")
-            implementation("io.github.mirzemehdi:kmpauth-uihelper:1.4.0")
             implementation("org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose:2.8.0-beta02")
         }
 
