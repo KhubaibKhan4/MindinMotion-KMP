@@ -18,7 +18,7 @@ class HomeScreen : Screen {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            Text("Home")
+            Text("HomeTab")
         }
     }
 }
