@@ -1,10 +1,13 @@
 import UIKit
 import ComposeApp
-
+import Firebase
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
 
+    init(){
+        FirebaseApp.configure()
+    }
     func application(
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?

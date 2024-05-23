@@ -93,7 +93,6 @@ fun LoginContent() {
             if (userMessage.contains("Success")) {
                 email = ""
                 pass = ""
-                navigator?.pop()
             }
         }
     }
