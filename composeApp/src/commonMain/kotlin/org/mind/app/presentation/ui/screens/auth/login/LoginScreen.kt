@@ -51,6 +51,7 @@ import kotlinx.coroutines.launch
 import org.mind.app.domain.repository.Repository
 import org.mind.app.domain.usecases.ResultState
 import org.mind.app.presentation.ui.screens.auth.signup.SignupScreen
+import org.mind.app.presentation.ui.screens.home.HomeScreen
 import org.mind.app.presentation.viewmodel.MainViewModel
 import org.mind.app.theme.LocalThemeIsDark
 import org.mind.app.utils.isValidEmail
@@ -75,6 +76,12 @@ fun LoginContent() {
     val scope = rememberCoroutineScope()
     val navigator = LocalNavigator.current
 
+    val currentUser by viewModel.currentUser.collectAsState()
+    LaunchedEffect(currentUser) {
+        if (currentUser != null) {
+            navigator?.push(HomeScreen())
+        }
+    }
     val state by viewModel.loginUser.collectAsState()
     when (state) {
         is ResultState.Error -> {
@@ -93,9 +100,11 @@ fun LoginContent() {
             if (userMessage.contains("Success")) {
                 email = ""
                 pass = ""
+                navigator?.push(HomeScreen())
             }
         }
     }
+
 
     Column(
         modifier = Modifier
