@@ -34,12 +34,31 @@ import org.mind.app.theme.LocalThemeIsDark
 
 @Composable
 internal fun App() = AppTheme {
-    val viewModel = remember { MainViewModel(Repository()) }
+   // val viewModel = remember { MainViewModel(Repository(Firebase.auth)) }
     var isDark by LocalThemeIsDark.current
     var email by remember { mutableStateOf("") }
     var pass by remember { mutableStateOf("") }
     var userMessage by remember { mutableStateOf("") }
+    var isLoading by remember { mutableStateOf(false) }
 
+//    val state by viewModel.createUser.collectAsState()
+//    when (state) {
+//        is ResultState.Error -> {
+//            val error = (state as ResultState.Error).message
+//            userMessage = error
+//            isLoading = false
+//        }
+//
+//        is ResultState.Loading -> {
+//
+//        }
+//
+//        is ResultState.Success -> {
+//            val response = (state as ResultState.Success).data
+//            userMessage = response
+//            isLoading = false
+//        }
+//    }
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -72,13 +91,18 @@ internal fun App() = AppTheme {
         )
         Button(
             onClick = {
-
-
+               // viewModel.createAccount(email, pass)
+                isLoading = true
             },
         ) {
             Text("Create Account")
+            if (isLoading) {
+                CircularProgressIndicator()
+            }
         }
-        Text(text = userMessage)
+        if (userMessage.isNotEmpty()){
+            Text(text = userMessage)
+        }
     }
 }
 
