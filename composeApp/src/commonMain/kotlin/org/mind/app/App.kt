@@ -12,8 +12,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -23,15 +21,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
-import dev.gitlive.firebase.Firebase
-import dev.gitlive.firebase.initialize
 import mind_in_motion.composeapp.generated.resources.IndieFlower_Regular
 import mind_in_motion.composeapp.generated.resources.Res
 import mind_in_motion.composeapp.generated.resources.cyclone
 import org.jetbrains.compose.resources.Font
 import org.jetbrains.compose.resources.stringResource
-import org.koin.compose.KoinApplication
-import org.koin.compose.KoinContext
 import org.mind.app.domain.repository.Repository
 import org.mind.app.domain.usecases.ResultState
 import org.mind.app.presentation.viewmodel.MainViewModel
@@ -45,20 +39,25 @@ internal fun App() = AppTheme {
     var email by remember { mutableStateOf("") }
     var pass by remember { mutableStateOf("") }
     var userMessage by remember { mutableStateOf("") }
+    var isLoading by remember { mutableStateOf(false) }
     val state by viewModel.createUser.collectAsState()
     when (state) {
         is ResultState.Error -> {
             val error = (state as ResultState.Error).message
             userMessage = error
+            isLoading = false
         }
 
         is ResultState.Loading -> {
-            CircularProgressIndicator()
+            if (isLoading){
+                CircularProgressIndicator()
+            }
         }
 
         is ResultState.Success -> {
             val response = (state as ResultState.Success).data
             userMessage = response
+            isLoading = false
         }
     }
     Column(
@@ -94,6 +93,7 @@ internal fun App() = AppTheme {
         Button(
             onClick = {
                 viewModel.createUser(email, pass)
+                isLoading = true
             },
         ) {
             Text("Create Account")
