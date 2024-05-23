@@ -21,6 +21,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
+import cafe.adriel.voyager.navigator.Navigator
 import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.auth.auth
 import mind_in_motion.composeapp.generated.resources.IndieFlower_Regular
@@ -30,82 +31,14 @@ import org.jetbrains.compose.resources.Font
 import org.jetbrains.compose.resources.stringResource
 import org.mind.app.domain.repository.Repository
 import org.mind.app.domain.usecases.ResultState
+import org.mind.app.presentation.ui.screens.auth.login.LoginScreen
 import org.mind.app.presentation.viewmodel.MainViewModel
 import org.mind.app.theme.AppTheme
 import org.mind.app.theme.LocalThemeIsDark
 
 @Composable
 internal fun App() = AppTheme {
-    val viewModel = remember { MainViewModel(Repository(Firebase.auth)) }
-    var isDark by LocalThemeIsDark.current
-    var email by remember { mutableStateOf("") }
-    var pass by remember { mutableStateOf("") }
-    var userMessage by remember { mutableStateOf("") }
-    var isLoading by remember { mutableStateOf(false) }
-
-    val state by viewModel.createUser.collectAsState()
-    when (state) {
-        is ResultState.Error -> {
-            val error = (state as ResultState.Error).message
-            userMessage = error
-            isLoading = false
-        }
-
-        is ResultState.Loading -> {
-
-        }
-
-        is ResultState.Success -> {
-            val response = (state as ResultState.Success).data
-            userMessage = response
-            isLoading = false
-        }
-    }
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .windowInsetsPadding(WindowInsets.safeDrawing)
-            .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(
-            text = stringResource(Res.string.cyclone),
-            fontFamily = FontFamily(Font(Res.font.IndieFlower_Regular)),
-            style = MaterialTheme.typography.displayLarge
-        )
-        TextField(
-            value = email,
-            onValueChange = {
-                email = it
-            },
-            placeholder = {
-                Text("Email")
-            }
-        )
-        TextField(
-            value = pass,
-            onValueChange = {
-                pass = it
-            },
-            placeholder = {
-                Text("Password")
-            }
-        )
-        Button(
-            onClick = {
-                viewModel.createAccount(email, pass)
-                isLoading = true
-            },
-        ) {
-            Text("Create Account")
-            if (isLoading) {
-                CircularProgressIndicator()
-            }
-        }
-        if (userMessage.isNotEmpty()){
-            Text(text = userMessage)
-        }
-    }
+    Navigator(LoginScreen())
 }
 
 internal expect fun openUrl(url: String?)
