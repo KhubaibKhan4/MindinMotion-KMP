@@ -31,22 +31,31 @@ import cafe.adriel.voyager.navigator.tab.CurrentTab
 import cafe.adriel.voyager.navigator.tab.LocalTabNavigator
 import cafe.adriel.voyager.navigator.tab.Tab
 import cafe.adriel.voyager.navigator.tab.TabNavigator
-import org.mind.app.presentation.ui.tabs.HomeTab
+import org.mind.app.presentation.ui.tabs.Instructors.InstructorsTab
+import org.mind.app.presentation.ui.tabs.home.HomeTab
+import org.mind.app.presentation.ui.tabs.profile.ProfileTab
+import org.mind.app.presentation.ui.tabs.shop.ShopTab
 import org.mind.app.theme.AppTheme
 import org.mind.app.theme.LocalThemeIsDark
 
 @Composable
 internal fun App() = AppTheme {
-    TabNavigator(HomeTab) { tabNavigator ->
+    TabNavigator(
+        HomeTab,
+        disposeNestedNavigators = false,
+    ) { tabNavigator ->
         Scaffold(bottomBar = {
-
             NavigationBar(
-                modifier = Modifier.fillMaxWidth().windowInsetsPadding(WindowInsets.ime),
-                containerColor = MaterialTheme.colorScheme.background,
+                modifier = Modifier.fillMaxWidth(),
+                containerColor = Color.White,
                 contentColor = contentColorFor(Color.Red),
-                tonalElevation = 8.dp
+                tonalElevation = 8.dp,
+                windowInsets = WindowInsets.ime
             ) {
                 TabItem(HomeTab)
+                TabItem(InstructorsTab)
+                TabItem(ShopTab)
+                TabItem(ProfileTab)
             }
 
         }) {
