@@ -27,6 +27,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -42,12 +43,18 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
+import cafe.adriel.voyager.navigator.LocalNavigator
 import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.auth.auth
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import org.mind.app.domain.repository.Repository
 import org.mind.app.domain.usecases.ResultState
+import org.mind.app.presentation.ui.screens.auth.signup.SignupScreen
 import org.mind.app.presentation.viewmodel.MainViewModel
 import org.mind.app.theme.LocalThemeIsDark
+import org.mind.app.utils.isValidEmail
+import org.mind.app.utils.isValidPassword
 
 class LoginScreen : Screen {
     @Composable
@@ -66,8 +73,9 @@ fun LoginContent() {
     var userMessage by remember { mutableStateOf("") }
     var isLoading by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
+    val navigator = LocalNavigator.current
 
-    val state by viewModel.createUser.collectAsState()
+    val state by viewModel.loginUser.collectAsState()
     when (state) {
         is ResultState.Error -> {
             val error = (state as ResultState.Error).message
@@ -76,7 +84,6 @@ fun LoginContent() {
         }
 
         is ResultState.Loading -> {
-            isLoading = true
         }
 
         is ResultState.Success -> {
@@ -134,11 +141,23 @@ fun LoginContent() {
                 .padding(bottom = 32.dp)
         )
 
-
         Button(
             onClick = {
-                viewModel.createAccount(email, pass)
-                isLoading = true
+                when {
+                    !isValidEmail(email) -> {
+                        userMessage = "Invalid email format"
+                    }
+
+                    !isValidPassword(pass) -> {
+                        userMessage =
+                            "Password must be at least 8 characters long and contain an uppercase letter"
+                    }
+
+                    else -> {
+                        viewModel.login(email, pass)
+                        isLoading = true
+                    }
+                }
             },
             modifier = Modifier
                 .fillMaxWidth()
@@ -156,21 +175,33 @@ fun LoginContent() {
                     visible = isLoading,
                 ) {
                     CircularProgressIndicator(
-                        modifier = Modifier.size(25.dp)
+                        modifier = Modifier.size(25.dp),
+                        color = Color.White,
+                        strokeWidth = 2.dp
                     )
                 }
             }
         }
 
-
         TextButton(
-            onClick = {}
+            onClick = {
+                navigator?.push(SignupScreen())
+            }
         ) {
             Text("Don't have an account? Sign up")
         }
 
         if (userMessage.isNotEmpty()) {
-            Text(userMessage)
+            LaunchedEffect(userMessage) {
+                scope.launch {
+                    delay(2000)
+                    userMessage = ""
+                }
+            }
+            Text(
+                userMessage,
+                color = if (state is ResultState.Error) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
+            )
         }
     }
 }
