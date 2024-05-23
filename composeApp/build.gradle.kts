@@ -81,6 +81,8 @@ kotlin {
             implementation("io.insert-koin:koin-compose")
             implementation("io.insert-koin:koin-annotations:1.3.1")
             implementation("org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose:2.8.0-beta02")
+            implementation("dev.gitlive:firebase-auth:1.12.0")
+            implementation("dev.gitlive:firebase-database:1.12.0")
         }
 
         commonTest.dependencies {
