@@ -21,6 +21,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
+import dev.gitlive.firebase.Firebase
+import dev.gitlive.firebase.auth.auth
 import mind_in_motion.composeapp.generated.resources.IndieFlower_Regular
 import mind_in_motion.composeapp.generated.resources.Res
 import mind_in_motion.composeapp.generated.resources.cyclone
@@ -34,31 +36,31 @@ import org.mind.app.theme.LocalThemeIsDark
 
 @Composable
 internal fun App() = AppTheme {
-   // val viewModel = remember { MainViewModel(Repository(Firebase.auth)) }
+    val viewModel = remember { MainViewModel(Repository(Firebase.auth)) }
     var isDark by LocalThemeIsDark.current
     var email by remember { mutableStateOf("") }
     var pass by remember { mutableStateOf("") }
     var userMessage by remember { mutableStateOf("") }
     var isLoading by remember { mutableStateOf(false) }
 
-//    val state by viewModel.createUser.collectAsState()
-//    when (state) {
-//        is ResultState.Error -> {
-//            val error = (state as ResultState.Error).message
-//            userMessage = error
-//            isLoading = false
-//        }
-//
-//        is ResultState.Loading -> {
-//
-//        }
-//
-//        is ResultState.Success -> {
-//            val response = (state as ResultState.Success).data
-//            userMessage = response
-//            isLoading = false
-//        }
-//    }
+    val state by viewModel.createUser.collectAsState()
+    when (state) {
+        is ResultState.Error -> {
+            val error = (state as ResultState.Error).message
+            userMessage = error
+            isLoading = false
+        }
+
+        is ResultState.Loading -> {
+
+        }
+
+        is ResultState.Success -> {
+            val response = (state as ResultState.Success).data
+            userMessage = response
+            isLoading = false
+        }
+    }
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -91,7 +93,7 @@ internal fun App() = AppTheme {
         )
         Button(
             onClick = {
-               // viewModel.createAccount(email, pass)
+                viewModel.createAccount(email, pass)
                 isLoading = true
             },
         ) {
