@@ -10,7 +10,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import cafe.adriel.voyager.core.screen.Screen
 
-class HomeScreen : Screen {
+class HomeScreen: Screen {
     @Composable
     override fun Content() {
         Column(
