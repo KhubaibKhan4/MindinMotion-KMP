@@ -19,6 +19,8 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -32,6 +34,7 @@ import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import org.koin.compose.koinInject
+import org.mind.app.domain.usecases.ResultState
 import org.mind.app.presentation.viewmodel.MainViewModel
 import org.mind.app.utils.isValidEmail
 
@@ -43,6 +46,28 @@ class ResetPasswordScreen : Screen {
         var userMessage by remember { mutableStateOf("") }
         val viewModel: MainViewModel = koinInject()
         val navigator = LocalNavigator.current
+        val resetPasswordState by viewModel.resetPasswordState.collectAsState()
+        LaunchedEffect(resetPasswordState) {
+            when (resetPasswordState) {
+                is ResultState.Success -> {
+                    if (email.isNotEmpty()) {
+                        userMessage = (resetPasswordState as ResultState.Success<String>).data
+                    }
+                }
+                is ResultState.Error -> {
+                    if (email.isNotEmpty()) {
+                        userMessage = (resetPasswordState as ResultState.Error).message
+                        userMessage = ""
+                    }
+                }
+                is ResultState.Loading -> {
+                    if (email.isNotEmpty()) {
+                        userMessage = "Sending reset email..."
+                    }
+                }
+            }
+        }
+
         Scaffold(
             topBar = {
                 TopAppBar(
@@ -87,8 +112,7 @@ class ResetPasswordScreen : Screen {
                         if (!isValidEmail(email)) {
                             userMessage = "Invalid email format"
                         } else {
-                            //  viewModel.resetPassword(email)
-                            userMessage = "Password reset link sent to your email."
+                            viewModel.resetPassword(email)
                         }
                     },
                     modifier = Modifier
