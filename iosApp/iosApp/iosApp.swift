@@ -6,6 +6,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
 
     init(){
+        Mainkt.doInitKoin()
         FirebaseApp.configure()
     }
     func application(
