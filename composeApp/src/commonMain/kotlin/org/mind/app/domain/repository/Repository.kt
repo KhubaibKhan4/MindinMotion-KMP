@@ -1,5 +1,6 @@
 package org.mind.app.domain.repository
 
+import dev.gitlive.firebase.auth.ActionCodeSettings
 import dev.gitlive.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -24,6 +25,10 @@ class Repository(
 
     override suspend fun createUser(email: String, password: String) {
         auth.createUserWithEmailAndPassword(email, password)
+    }
+
+    override suspend fun resetPassword(email: String) {
+        auth.sendPasswordResetEmail(email)
     }
 
     override suspend fun signOut() {
