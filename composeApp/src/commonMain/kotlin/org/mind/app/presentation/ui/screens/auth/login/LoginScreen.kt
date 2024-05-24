@@ -44,6 +44,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
+import com.example.cmppreference.LocalPreference
+import com.example.cmppreference.LocalPreferenceProvider
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
@@ -68,165 +70,172 @@ class LoginScreen : Screen {
 fun LoginContent(
     viewModel: MainViewModel = koinInject(),
 ) {
-    var email by remember { mutableStateOf("") }
-    var pass by remember { mutableStateOf("") }
-    var passwordVisible by remember { mutableStateOf(false) }
-    var isDark by LocalThemeIsDark.current
-    var userMessage by remember { mutableStateOf("") }
-    var isLoading by remember { mutableStateOf(false) }
-    val scope = rememberCoroutineScope()
-    val navigator = LocalNavigator.current
+    LocalPreferenceProvider {
+        val preference = LocalPreference.current
+        var value by remember { mutableStateOf("") }
+        var email by remember { mutableStateOf("") }
+        var pass by remember { mutableStateOf("") }
+        var passwordVisible by remember { mutableStateOf(false) }
+        var isDark by LocalThemeIsDark.current
+        var userMessage by remember { mutableStateOf("") }
+        var isLoading by remember { mutableStateOf(false) }
+        val scope = rememberCoroutineScope()
+        val navigator = LocalNavigator.current
 
-    val currentUser by viewModel.currentUser.collectAsState()
-    LaunchedEffect(currentUser) {
-        if (currentUser != null) {
-            navigator?.push(HomeScreen())
+        val currentUser by viewModel.currentUser.collectAsState()
+        LaunchedEffect(currentUser) {
+            if (currentUser != null) {
+                navigator?.push(HomeScreen())
+            }
         }
-    }
-    val state by viewModel.loginUser.collectAsState()
-    when (state) {
-        is ResultState.Error -> {
-            val error = (state as ResultState.Error).message
-            userMessage = error
-            isLoading = false
-        }
+        val state by viewModel.loginUser.collectAsState()
+        when (state) {
+            is ResultState.Error -> {
+                val error = (state as ResultState.Error).message
+                userMessage = error
+                isLoading = false
+            }
 
-        is ResultState.Loading -> {
-        }
+            is ResultState.Loading -> {
+            }
 
-        is ResultState.Success -> {
-            val response = (state as ResultState.Success).data
-            userMessage = response
-            isLoading = false
-            if (userMessage.contains("Success")) {
-                email = ""
-                pass = ""
-                navigator?.apply {
-                    push(MainScreen())
+            is ResultState.Success -> {
+                val response = (state as ResultState.Success).data
+                userMessage = response
+                isLoading = false
+                if (userMessage.contains("Success")) {
+                    email = ""
+                    pass = ""
+                    navigator?.apply {
+                        preference.put("is_login",true)
+                        push(MainScreen())
+                    }
                 }
             }
         }
-    }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .windowInsetsPadding(WindowInsets.safeDrawing)
-            .padding(16.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(
-            text = "Login",
-            style = MaterialTheme.typography.headlineLarge,
-            modifier = Modifier.padding(bottom = 32.dp)
-        )
-
-        OutlinedTextField(
-            value = email,
-            onValueChange = { email = it },
-            label = { Text("Email") },
-            keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Next),
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 16.dp)
-        )
-
-        OutlinedTextField(
-            value = pass,
-            onValueChange = { pass = it },
-            label = { Text("Password") },
-            visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-            trailingIcon = {
-                val image = if (passwordVisible)
-                    Icons.Filled.Visibility
-                else Icons.Filled.VisibilityOff
-
-                IconButton(onClick = { passwordVisible = !passwordVisible }) {
-                    Icon(imageVector = image, "")
-                }
-            },
-            keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 6.dp)
-        )
-        TextButton(
-            onClick = {
-                navigator?.push(ResetPasswordScreen())
-            },
-            modifier = Modifier.align(Alignment.End)
+                .fillMaxSize()
+                .windowInsetsPadding(WindowInsets.safeDrawing)
+                .padding(16.dp),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text("Forgot Password?")
-        }
+            Text(
+                text = "Login",
+                style = MaterialTheme.typography.headlineLarge,
+                modifier = Modifier.padding(bottom = 32.dp)
+            )
 
-        Button(
-            onClick = {
-                when {
-                    !isValidEmail(email) -> {
-                        userMessage = "Invalid email format"
+            OutlinedTextField(
+                value = email,
+                onValueChange = { email = it },
+                label = { Text("Email") },
+                keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Next),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 16.dp)
+            )
+
+            OutlinedTextField(
+                value = pass,
+                onValueChange = { pass = it },
+                label = { Text("Password") },
+                visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                trailingIcon = {
+                    val image = if (passwordVisible)
+                        Icons.Filled.Visibility
+                    else Icons.Filled.VisibilityOff
+
+                    IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                        Icon(imageVector = image, "")
                     }
+                },
+                keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 6.dp)
+            )
+            TextButton(
+                onClick = {
+                    navigator?.push(ResetPasswordScreen())
+                },
+                modifier = Modifier.align(Alignment.End)
+            ) {
+                Text("Forgot Password?")
+            }
 
-                    !isValidPassword(pass) -> {
-                        userMessage =
-                            "Password must be at least 8 characters long and contain an uppercase letter"
+            Button(
+                onClick = {
+                    when {
+                        !isValidEmail(email) -> {
+                            userMessage = "Invalid email format"
+                        }
+
+                        !isValidPassword(pass) -> {
+                            userMessage =
+                                "Password must be at least 8 characters long and contain an uppercase letter"
+                        }
+
+                        else -> {
+                            viewModel.login(email, pass)
+                            preference.put("email",email)
+                            isLoading = true
+                        }
                     }
-
-                    else -> {
-                        viewModel.login(email, pass)
-                        isLoading = true
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 16.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(text = "Login", fontSize = 16.sp, color = Color.White)
+                    Spacer(modifier = Modifier.width(4.dp))
+                    AnimatedVisibility(
+                        visible = isLoading,
+                    ) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(25.dp),
+                            color = Color.White,
+                            strokeWidth = 2.dp
+                        )
                     }
                 }
-            },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 16.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
-        ) {
+            }
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(text = "Login", fontSize = 16.sp, color = Color.White)
-                Spacer(modifier = Modifier.width(4.dp))
-                AnimatedVisibility(
-                    visible = isLoading,
+                TextButton(
+                    onClick = {
+                        navigator?.push(SignupScreen())
+                    }
                 ) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(25.dp),
-                        color = Color.White,
-                        strokeWidth = 2.dp
-                    )
+                    Text("Don't have an account? Sign up")
                 }
-            }
-        }
 
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.Center,
-        ) {
-            TextButton(
-                onClick = {
-                    navigator?.push(SignupScreen())
-                }
-            ) {
-                Text("Don't have an account? Sign up")
             }
 
-        }
-
-        if (userMessage.isNotEmpty()) {
-            LaunchedEffect(userMessage) {
-                scope.launch {
-                    delay(2000)
-                    userMessage = ""
+            if (userMessage.isNotEmpty()) {
+                LaunchedEffect(userMessage) {
+                    scope.launch {
+                        delay(2000)
+                        userMessage = ""
+                    }
                 }
+                Text(
+                    userMessage,
+                    color = if (state is ResultState.Error) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
+                )
             }
-            Text(
-                userMessage,
-                color = if (state is ResultState.Error) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
-            )
         }
     }
+
 }
