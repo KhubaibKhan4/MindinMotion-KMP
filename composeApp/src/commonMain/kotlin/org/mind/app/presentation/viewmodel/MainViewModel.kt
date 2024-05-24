@@ -21,6 +21,9 @@ class MainViewModel(private val repository: Repository) : ViewModel() {
 
     private val _resetPasswordState = MutableStateFlow<ResultState<String>>(ResultState.Loading)
     val resetPasswordState = _resetPasswordState.asStateFlow()
+
+    private val _signOutState = MutableStateFlow<ResultState<String>>(ResultState.Loading)
+    val signOutState = _signOutState.asStateFlow()
     fun login(email: String, password: String) {
         viewModelScope.launch {
             _loginUser.value = ResultState.Loading
@@ -52,6 +55,18 @@ class MainViewModel(private val repository: Repository) : ViewModel() {
                 _resetPasswordState.value = ResultState.Success("Password reset email sent.")
             } catch (e: Exception) {
                 _resetPasswordState.value = ResultState.Error(e.message.toString())
+            }
+        }
+    }
+
+    fun signOut() {
+        viewModelScope.launch {
+            _signOutState.value = ResultState.Loading
+            try {
+                repository.signOut()
+                _signOutState.value = ResultState.Success("Signed out successfully.")
+            } catch (e: Exception) {
+                _signOutState.value = ResultState.Error(e.message.toString())
             }
         }
     }

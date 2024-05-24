@@ -16,8 +16,7 @@ import org.mind.app.theme.AppTheme
 internal fun App() = AppTheme {
     LocalPreferenceProvider {
         val preference = LocalPreference.current
-        var isLoggedIn by remember { mutableStateOf(false) }
-        isLoggedIn = preference.getBoolean("is_login", false)
+        val isLoggedIn by remember { mutableStateOf(preference.getBoolean("is_login", false)) }
         if (isLoggedIn) {
             Navigator(MainScreen())
         } else {
