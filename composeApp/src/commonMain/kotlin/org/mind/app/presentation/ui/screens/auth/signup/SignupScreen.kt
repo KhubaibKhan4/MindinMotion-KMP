@@ -52,6 +52,7 @@ import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.auth.auth
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import org.koin.compose.koinInject
 import org.mind.app.domain.repository.Repository
 import org.mind.app.domain.usecases.ResultState
 import org.mind.app.presentation.ui.screens.auth.login.LoginScreen
@@ -68,14 +69,13 @@ class SignupScreen : Screen {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SignupContent() {
+fun SignupContent(viewModel: MainViewModel= koinInject()) {
     val navigator = LocalNavigator.current
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
     var cpasswordVisible by remember { mutableStateOf(false) }
-    val viewModel = remember { MainViewModel(Repository(Firebase.auth)) }
     var userMessage by remember { mutableStateOf("") }
     var isLoading by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()

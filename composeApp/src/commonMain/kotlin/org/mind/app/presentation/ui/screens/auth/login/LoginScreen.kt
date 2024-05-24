@@ -44,11 +44,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
-import dev.gitlive.firebase.Firebase
-import dev.gitlive.firebase.auth.auth
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import org.mind.app.domain.repository.Repository
+import org.koin.compose.koinInject
 import org.mind.app.domain.usecases.ResultState
 import org.mind.app.presentation.ui.screens.auth.signup.SignupScreen
 import org.mind.app.presentation.ui.screens.home.HomeScreen
@@ -66,11 +64,12 @@ class LoginScreen : Screen {
 }
 
 @Composable
-fun LoginContent() {
+fun LoginContent(
+    viewModel: MainViewModel = koinInject(),
+) {
     var email by remember { mutableStateOf("") }
     var pass by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
-    val viewModel = remember { MainViewModel(Repository(Firebase.auth)) }
     var isDark by LocalThemeIsDark.current
     var userMessage by remember { mutableStateOf("") }
     var isLoading by remember { mutableStateOf(false) }
