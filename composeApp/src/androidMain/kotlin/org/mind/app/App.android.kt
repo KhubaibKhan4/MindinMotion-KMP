@@ -10,6 +10,10 @@ import androidx.activity.enableEdgeToEdge
 import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.FirebaseOptions
 import dev.gitlive.firebase.initialize
+import org.koin.android.ext.koin.androidContext
+import org.koin.android.ext.koin.androidLogger
+import org.koin.core.context.startKoin
+import org.mind.app.di.appModule
 
 class AndroidApp : Application() {
     companion object {
@@ -34,7 +38,14 @@ class AppActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        setContent { App() }
+        setContent {
+            startKoin {
+                androidLogger()
+                androidContext(this@AppActivity)
+                modules(appModule)
+            }
+            App()
+        }
     }
 }
 
