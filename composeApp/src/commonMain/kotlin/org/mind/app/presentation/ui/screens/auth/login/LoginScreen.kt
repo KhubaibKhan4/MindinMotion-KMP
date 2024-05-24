@@ -100,7 +100,9 @@ fun LoginContent(
             if (userMessage.contains("Success")) {
                 email = ""
                 pass = ""
-                navigator?.push(MainScreen())
+                navigator?.apply {
+                    push(MainScreen())
+                }
             }
         }
     }
