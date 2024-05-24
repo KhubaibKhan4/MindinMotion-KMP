@@ -18,6 +18,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.tab.CurrentTab
+import cafe.adriel.voyager.navigator.tab.LocalTabNavigator
 import cafe.adriel.voyager.navigator.tab.TabNavigator
 import com.example.cmppreference.LocalPreference
 import com.example.cmppreference.LocalPreferenceProvider
@@ -36,7 +37,6 @@ class MainScreen : Screen {
             if (isLoggedIn) {
                 TabNavigator(
                     tab = HomeTab,
-                    disposeNestedNavigators = true,
                 ) { tabNavigator ->
                     Scaffold(bottomBar = {
                         NavigationBar(

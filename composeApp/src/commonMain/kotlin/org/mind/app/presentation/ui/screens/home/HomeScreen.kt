@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -21,15 +22,17 @@ class HomeScreen : Screen {
         LocalPreferenceProvider {
             val preference = LocalPreference.current
             var email by remember { mutableStateOf("") }
-            var is_Login by remember { mutableStateOf(false) }
-            email = preference.getString("email").toString()
-            is_Login = preference.getBoolean("is_login",false)
+            var isLogin by remember { mutableStateOf(false) }
+            LaunchedEffect(Unit){
+                email = preference.getString("email").toString()
+                isLogin = preference.getBoolean("is_login",false)
+            }
             Column(
                 modifier = Modifier.fillMaxSize(),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
-                Text("HomeTab $email & $is_Login")
+                Text("HomeTab $email & $isLogin")
             }
         }
     }
