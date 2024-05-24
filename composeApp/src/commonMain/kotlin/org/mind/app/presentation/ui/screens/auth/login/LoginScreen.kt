@@ -52,6 +52,7 @@ import org.mind.app.domain.repository.Repository
 import org.mind.app.domain.usecases.ResultState
 import org.mind.app.presentation.ui.screens.auth.signup.SignupScreen
 import org.mind.app.presentation.ui.screens.home.HomeScreen
+import org.mind.app.presentation.ui.screens.main.MainScreen
 import org.mind.app.presentation.viewmodel.MainViewModel
 import org.mind.app.theme.LocalThemeIsDark
 import org.mind.app.utils.isValidEmail
@@ -100,7 +101,7 @@ fun LoginContent() {
             if (userMessage.contains("Success")) {
                 email = ""
                 pass = ""
-                navigator?.push(HomeScreen())
+                navigator?.push(MainScreen())
             }
         }
     }
