@@ -48,6 +48,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 import org.mind.app.domain.usecases.ResultState
+import org.mind.app.presentation.ui.screens.auth.reset.ResetPasswordScreen
 import org.mind.app.presentation.ui.screens.auth.signup.SignupScreen
 import org.mind.app.presentation.ui.screens.home.HomeScreen
 import org.mind.app.presentation.ui.screens.main.MainScreen
@@ -107,7 +108,6 @@ fun LoginContent(
         }
     }
 
-
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -149,8 +149,16 @@ fun LoginContent(
             keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done),
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 32.dp)
+                .padding(bottom = 6.dp)
         )
+        TextButton(
+            onClick = {
+                navigator?.push(ResetPasswordScreen())
+            },
+            modifier = Modifier.align(Alignment.End)
+        ) {
+            Text("Forgot Password?")
+        }
 
         Button(
             onClick = {
@@ -194,12 +202,18 @@ fun LoginContent(
             }
         }
 
-        TextButton(
-            onClick = {
-                navigator?.push(SignupScreen())
-            }
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center,
         ) {
-            Text("Don't have an account? Sign up")
+            TextButton(
+                onClick = {
+                    navigator?.push(SignupScreen())
+                }
+            ) {
+                Text("Don't have an account? Sign up")
+            }
+
         }
 
         if (userMessage.isNotEmpty()) {
