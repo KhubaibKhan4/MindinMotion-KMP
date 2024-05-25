@@ -20,7 +20,7 @@ internal fun App() = AppTheme {
         if (isLoggedIn) {
             Navigator(MainScreen())
         } else {
-            Navigator(LoginScreen())
+            Navigator(LoginScreen)
         }
     }
 }

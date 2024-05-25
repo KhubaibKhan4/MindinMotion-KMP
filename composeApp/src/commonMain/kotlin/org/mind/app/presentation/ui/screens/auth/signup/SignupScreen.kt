@@ -226,7 +226,7 @@ fun SignupContent(viewModel: MainViewModel= koinInject()) {
 
             TextButton(
                 onClick = {
-                    navigator?.push(LoginScreen())
+                    navigator?.push(LoginScreen)
                 }
             ) {
                 Text("Already have an account? Login")

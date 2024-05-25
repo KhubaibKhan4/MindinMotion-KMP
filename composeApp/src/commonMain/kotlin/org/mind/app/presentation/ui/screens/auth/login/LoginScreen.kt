@@ -37,13 +37,15 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
+import cafe.adriel.voyager.navigator.tab.Tab
+import cafe.adriel.voyager.navigator.tab.TabOptions
 import com.example.cmppreference.LocalPreference
 import com.example.cmppreference.LocalPreferenceProvider
 import kotlinx.coroutines.delay
@@ -59,11 +61,20 @@ import org.mind.app.theme.LocalThemeIsDark
 import org.mind.app.utils.isValidEmail
 import org.mind.app.utils.isValidPassword
 
-class LoginScreen : Screen {
+object LoginScreen : Tab {
     @Composable
     override fun Content() {
         LoginContent()
     }
+
+    override val options: TabOptions
+        @Composable
+        get() {
+            val icon = rememberVectorPainter(Icons.Default.Visibility)
+            val title = "Login"
+            val index: UShort = 5u
+            return TabOptions(index, title, icon)
+        }
 }
 
 @Composable
@@ -107,7 +118,7 @@ fun LoginContent(
                     email = ""
                     pass = ""
                     navigator?.apply {
-                        preference.put("is_login",true)
+                        preference.put("is_login", true)
                         push(MainScreen())
                     }
                 }
@@ -180,7 +191,7 @@ fun LoginContent(
 
                         else -> {
                             viewModel.login(email, pass)
-                            preference.put("email",email)
+                            preference.put("email", email)
                             isLoading = true
                         }
                     }
