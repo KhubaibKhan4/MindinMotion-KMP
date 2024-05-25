@@ -39,17 +39,40 @@ class MainViewModel(private val repository: Repository) : ViewModel() {
             }
         }
     }
-    fun signUpUserServer(email: String,password: String) {
+    fun signUpUserServer(
+        email: String,
+        password: String,
+        username: String,
+        fullName: String,
+        address: String,
+        city: String,
+        country: String,
+        postalCode: String,
+        phoneNumber: String,
+        userRole: String
+    ) {
         viewModelScope.launch {
             _signupUsersServer.value = ResultState.Loading
             try {
-               val response =  repository.signUpUser(email,password)
+                val response = repository.signUpUser(
+                    email = email,
+                    password = password,
+                    username = username,
+                    fullName = fullName,
+                    address = address,
+                    city = city,
+                    country = country,
+                    postalCode = postalCode,
+                    phoneNumber = phoneNumber,
+                    userRole = userRole
+                )
                 _signupUsersServer.value = ResultState.Success(response)
             } catch (e: Exception) {
                 _signupUsersServer.value = ResultState.Error(e.message.toString())
             }
         }
     }
+
 
     fun createAccount(email: String, password: String) {
         viewModelScope.launch {

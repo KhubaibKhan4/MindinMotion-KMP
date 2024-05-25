@@ -9,14 +9,11 @@ import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
 import io.ktor.client.request.forms.FormDataContent
-import io.ktor.client.request.forms.formData
-import io.ktor.client.request.get
 import io.ktor.client.request.post
 import io.ktor.http.Parameters
 import io.ktor.serialization.kotlinx.json.json
 import io.ktor.util.InternalAPI
 import kotlinx.serialization.json.Json
-import org.mind.app.domain.model.users.Users
 import org.mind.app.utils.Constant.BASE_URL
 
 object MotionApiClient {
@@ -43,22 +40,34 @@ object MotionApiClient {
             }
         }
     }
+
     @OptIn(InternalAPI::class)
-    suspend fun signUpUser(email: String,password: String): String {
+    suspend fun signUpUser(
+        email: String,
+        password: String,
+        username: String,
+        fullName: String,
+        address: String,
+        city: String,
+        country: String,
+        postalCode: String,
+        phoneNumber: String,
+        userRole: String,
+    ): String {
         val formData = Parameters.build {
-            append("username", "William")
+            append("username", username)
             append("email", email)
             append("password", password)
-            append("fullName", "William Smith")
-            append("address", "123 Main Street")
-            append("city", "New York")
-            append("country","United States")
-            append("postalCode", "134235")
-            append("phoneNumber", "+1232445")
-            append("userRole", "Student")
+            append("fullName", fullName)
+            append("address", address)
+            append("city", city)
+            append("country", country)
+            append("postalCode", postalCode)
+            append("phoneNumber", phoneNumber)
+            append("userRole", userRole)
             append("imageUrl", "null")
         }
-        return client.post(BASE_URL+"v1/signup"){
+        return client.post(BASE_URL + "v1/signup") {
             body = FormDataContent(formData)
         }.body()
     }

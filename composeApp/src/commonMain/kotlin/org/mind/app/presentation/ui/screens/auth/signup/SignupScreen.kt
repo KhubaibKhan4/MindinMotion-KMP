@@ -2,6 +2,7 @@ package org.mind.app.presentation.ui.screens.auth.signup
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -13,18 +14,23 @@ import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIosNew
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -42,6 +48,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
@@ -71,6 +78,13 @@ fun SignupContent(viewModel: MainViewModel = koinInject()) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
+    var fullName by remember { mutableStateOf("") }
+    var address by remember { mutableStateOf("") }
+    var city by remember { mutableStateOf("") }
+    var country by remember { mutableStateOf("") }
+    var postalCode by remember { mutableStateOf("") }
+    var phoneNumber by remember { mutableStateOf("") }
+    var userRole by remember { mutableStateOf("Student") } // Default role
     var passwordVisible by remember { mutableStateOf(false) }
     var cpasswordVisible by remember { mutableStateOf(false) }
     var userMessage by remember { mutableStateOf("") }
@@ -98,7 +112,18 @@ fun SignupContent(viewModel: MainViewModel = koinInject()) {
                 userMessage = response
                 if (response.contains("Success") && !isUserCreated) {
                     isUserCreated = true
-                    viewModel.signUpUserServer(email, password)
+                    viewModel.signUpUserServer(
+                        email,
+                        password,
+                        fullName.trim(),
+                        fullName,
+                        address,
+                        city,
+                        country,
+                        postalCode,
+                        phoneNumber,
+                        userRole
+                    )
                 }
                 isLoading = false
                 scope.launch {
@@ -106,6 +131,12 @@ fun SignupContent(viewModel: MainViewModel = koinInject()) {
                     email = ""
                     password = ""
                     confirmPassword = ""
+                    fullName = ""
+                    address = ""
+                    city = ""
+                    country = ""
+                    postalCode = ""
+                    phoneNumber = ""
                 }
             }
         }
@@ -127,9 +158,6 @@ fun SignupContent(viewModel: MainViewModel = koinInject()) {
                 val response = (serverState as ResultState.Success).data
                 userMessage = response
                 isLoading = false
-                email = ""
-                password = ""
-                confirmPassword = ""
             }
         }
     }
@@ -149,7 +177,7 @@ fun SignupContent(viewModel: MainViewModel = koinInject()) {
             )
         }
     ) {
-        Column(
+        LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
                 .windowInsetsPadding(WindowInsets.safeDrawing)
@@ -157,127 +185,257 @@ fun SignupContent(viewModel: MainViewModel = koinInject()) {
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(
-                text = "Sign Up",
-                style = MaterialTheme.typography.headlineLarge,
-                modifier = Modifier.padding(bottom = 32.dp)
-            )
+            item {
+                Text(
+                    text = "Sign Up",
+                    style = MaterialTheme.typography.headlineLarge,
+                    modifier = Modifier.padding(bottom = 32.dp)
+                )
+            }
 
-            OutlinedTextField(
-                value = email,
-                onValueChange = { email = it },
-                label = { Text("Email") },
-                keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Next),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 16.dp)
-            )
+            // Full Name and Address in a row
+            item {
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                    OutlinedTextField(
+                        value = fullName,
+                        onValueChange = { fullName = it },
+                        label = { Text("Full Name") },
+                        keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Next),
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(bottom = 16.dp)
+                    )
 
-            OutlinedTextField(
-                value = password,
-                onValueChange = { password = it },
-                label = { Text("Password") },
-                visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                trailingIcon = {
-                    val image = if (passwordVisible)
-                        Icons.Filled.Visibility
-                    else Icons.Filled.VisibilityOff
+                    OutlinedTextField(
+                        value = address,
+                        onValueChange = { address = it },
+                        label = { Text("Address") },
+                        keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Next),
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(bottom = 16.dp)
+                    )
+                }
+            }
 
-                    IconButton(onClick = { passwordVisible = !passwordVisible }) {
-                        Icon(imageVector = image, "")
-                    }
-                },
-                keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Next),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 16.dp)
-            )
+            // City and Country in a row
+            item {
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                    OutlinedTextField(
+                        value = city,
+                        onValueChange = { city = it },
+                        label = { Text("City") },
+                        keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Next),
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(bottom = 16.dp)
+                    )
 
-            OutlinedTextField(
-                value = confirmPassword,
-                onValueChange = { confirmPassword = it },
-                label = { Text("Confirm Password") },
-                visualTransformation = if (cpasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                trailingIcon = {
-                    val image = if (cpasswordVisible)
-                        Icons.Filled.Visibility
-                    else Icons.Filled.VisibilityOff
+                    OutlinedTextField(
+                        value = country,
+                        onValueChange = { country = it },
+                        label = { Text("Country") },
+                        keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Next),
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(bottom = 16.dp)
+                    )
+                }
+            }
 
-                    IconButton(onClick = { cpasswordVisible = !cpasswordVisible }) {
-                        Icon(imageVector = image, "")
-                    }
-                },
-                keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 32.dp)
-            )
+            // Postal Code and Phone Number in a row
+            item {
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                    OutlinedTextField(
+                        value = postalCode,
+                        onValueChange = { postalCode = it },
+                        label = { Text("Postal Code") },
+                        keyboardOptions = KeyboardOptions.Default.copy(
+                            keyboardType = KeyboardType.Number,
+                            imeAction = ImeAction.Next
+                        ),
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(bottom = 16.dp)
+                    )
 
-            Button(
-                onClick = {
-                    when {
-                        !isValidEmail(email) -> {
-                            userMessage = "Invalid email format"
+                    OutlinedTextField(
+                        value = phoneNumber,
+                        onValueChange = { phoneNumber = it },
+                        label = { Text("Phone Number") },
+                        keyboardOptions = KeyboardOptions.Default.copy(
+                            keyboardType = KeyboardType.Phone,
+                            imeAction = ImeAction.Next
+                        ),
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(bottom = 16.dp)
+                    )
+                }
+            }
+
+            item {
+                OutlinedTextField(
+                    value = email,
+                    onValueChange = { email = it },
+                    label = { Text("Email") },
+                    keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Next),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 16.dp)
+                )
+            }
+
+            item {
+                OutlinedTextField(
+                    value = password,
+                    onValueChange = { password = it },
+                    label = { Text("Password") },
+                    visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                    trailingIcon = {
+                        val image = if (passwordVisible)
+                            Icons.Filled.Visibility
+                        else Icons.Filled.VisibilityOff
+
+                        IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                            Icon(imageVector = image, "")
                         }
+                    },
+                    keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Next),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 16.dp)
+                )
+            }
 
-                        !isValidPassword(password) -> {
-                            userMessage =
-                                "Password must be at least 8 characters long and contain an uppercase letter"
-                        }
+            item {
+                OutlinedTextField(
+                    value = confirmPassword,
+                    onValueChange = { confirmPassword = it },
+                    label = { Text("Confirm Password") },
+                    visualTransformation = if (cpasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                    trailingIcon = {
+                        val image = if (cpasswordVisible)
+                            Icons.Filled.Visibility
+                        else Icons.Filled.VisibilityOff
 
-                        password != confirmPassword -> {
-                            userMessage = "Passwords do not match"
+                        IconButton(onClick = { cpasswordVisible = !cpasswordVisible }) {
+                            Icon(imageVector = image, "")
                         }
+                    },
+                    keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 16.dp)
+                )
+            }
 
-                        else -> {
-                            viewModel.createAccount(email, password)
-                            isLoading = true
-                        }
-                    }
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 16.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically
+            item {
+                var expanded by remember { mutableStateOf(false) }
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 16.dp)
                 ) {
-                    Text(text = "Sign Up", fontSize = 16.sp, color = Color.White)
-                    Spacer(modifier = Modifier.width(4.dp))
-                    AnimatedVisibility(
-                        visible = isLoading,
+                    OutlinedButton(onClick = { expanded = true }) {
+                        Text(text = userRole)
+                        Spacer(Modifier.weight(1f))
+                        Icon(imageVector = Icons.Filled.ArrowDropDown, contentDescription = null)
+                    }
+                    DropdownMenu(
+                        expanded = expanded,
+                        onDismissRequest = { expanded = false },
                     ) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(25.dp),
-                            color = Color.White,
-                            strokeWidth = 2.dp
+                        DropdownMenuItem(onClick = {
+                            userRole = "Student"
+                            expanded = false
+                        },
+                            text = { Text("Student") })
+                        DropdownMenuItem(onClick = {
+                            userRole = "Teacher"
+                            expanded = false
+                        },
+                            text = { Text("Teacher") }
                         )
                     }
                 }
             }
 
-            TextButton(
-                onClick = {
-                    navigator?.push(LoginScreen)
+            item {
+                Button(
+                    onClick = {
+                        when {
+                            !isValidEmail(email) -> {
+                                userMessage = "Invalid email format"
+                            }
+
+                            !isValidPassword(password) -> {
+                                userMessage =
+                                    "Password must be at least 8 characters long and contain an uppercase letter"
+                            }
+
+                            password != confirmPassword -> {
+                                userMessage = "Passwords do not match"
+                            }
+
+                            else -> {
+                                viewModel.createAccount(
+                                    email,
+                                    password
+                                )
+                                isLoading = true
+                            }
+                        }
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 16.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(text = "Sign Up", fontSize = 16.sp, color = Color.White)
+                        Spacer(modifier = Modifier.width(4.dp))
+                        AnimatedVisibility(
+                            visible = isLoading,
+                        ) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(25.dp),
+                                color = Color.White,
+                                strokeWidth = 2.dp
+                            )
+                        }
+                    }
                 }
-            ) {
-                Text("Already have an account? Login")
+            }
+
+            item {
+                TextButton(
+                    onClick = {
+                        navigator?.push(LoginScreen)
+                    }
+                ) {
+                    Text("Already have an account? Login")
+                }
             }
 
             if (userMessage.isNotEmpty()) {
-                LaunchedEffect(userMessage) {
-                    scope.launch {
-                        delay(2000)
-                        userMessage = ""
+                item {
+                    LaunchedEffect(userMessage) {
+                        scope.launch {
+                            delay(2000)
+                            userMessage = ""
+                        }
                     }
+                    Text(
+                        userMessage,
+                        color = if (state is ResultState.Error) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
+                    )
                 }
-                Text(
-                    userMessage,
-                    color = if (state is ResultState.Error) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
-                )
             }
         }
     }
