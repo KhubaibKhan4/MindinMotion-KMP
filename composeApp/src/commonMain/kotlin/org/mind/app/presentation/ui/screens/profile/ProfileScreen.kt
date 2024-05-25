@@ -3,10 +3,12 @@ package org.mind.app.presentation.ui.screens.profile
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -23,8 +25,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.window.Dialog
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
+import cafe.adriel.voyager.navigator.Navigator
 import com.example.cmppreference.LocalPreference
 import com.example.cmppreference.LocalPreferenceProvider
 import org.koin.compose.koinInject
@@ -48,8 +52,14 @@ fun ProfileScreenContent(
         val preference = LocalPreference.current
         val navigator = LocalNavigator.current
         var isMenuVisible by remember { mutableStateOf(false) }
+        var isLogin by remember { mutableStateOf(false) }
+        var email by remember { mutableStateOf("") }
         val signOutState by viewModel.signOutState.collectAsState()
 
+        LaunchedEffect(isLogin){
+            isLogin = preference.getBoolean("is_login", false)
+            email = preference.getString("email").toString()
+        }
         when (signOutState) {
             is ResultState.Loading -> {
 
@@ -59,12 +69,12 @@ fun ProfileScreenContent(
                 LaunchedEffect(Unit) {
                     preference.put("is_login", false)
                     preference.put("email", "")
-                    navigator?.let {
+                   /* navigator?.let {
                         while (it.canPop) {
                             it.pop()
                         }
                         it.push(LoginScreen())
-                    }
+                    }*/
                 }
             }
 
@@ -102,13 +112,21 @@ fun ProfileScreenContent(
                 )
             }
         ) {
-            Column(
-                modifier = Modifier.fillMaxWidth()
-                    .padding(top = it.calculateTopPadding()),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ) {
-
+            if (!isLogin){
+                Dialog(
+                    onDismissRequest = {},
+                ){
+                    Navigator(LoginScreen())
+                }
+            }else {
+                Column(
+                    modifier = Modifier.fillMaxSize()
+                        .padding(top = it.calculateTopPadding()),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Text("Shop Content Email: $email & isLogin: $isLogin")
+                }
             }
         }
     }
