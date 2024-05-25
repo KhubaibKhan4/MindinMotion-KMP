@@ -3,8 +3,10 @@ package org.mind.app.domain.repository
 import dev.gitlive.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import org.mind.app.data.remote.MotionApiClient
 import org.mind.app.data.repository.AuthService
 import org.mind.app.domain.model.user.User
+import org.mind.app.domain.model.users.Users
 
 class Repository(
     private val auth: FirebaseAuth,
@@ -34,5 +36,9 @@ class Repository(
         if (auth.currentUser?.isAnonymous == true) {
             auth.currentUser?.delete()
         }
+    }
+
+    override suspend fun signUpUser(users: Users): Users {
+        return MotionApiClient.signUpUser(users)
     }
 }

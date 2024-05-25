@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import org.mind.app.domain.model.user.User
+import org.mind.app.domain.model.users.Users
 import org.mind.app.domain.repository.Repository
 import org.mind.app.domain.usecases.ResultState
 
@@ -24,6 +25,9 @@ class MainViewModel(private val repository: Repository) : ViewModel() {
 
     private val _signOutState = MutableStateFlow<ResultState<String>>(ResultState.Loading)
     val signOutState = _signOutState.asStateFlow()
+
+    private val _signupUsersServer = MutableStateFlow<ResultState<Users>>(ResultState.Loading)
+    val signupUsersServer = _signupUsersServer.asStateFlow()
     fun login(email: String, password: String) {
         viewModelScope.launch {
             _loginUser.value = ResultState.Loading
@@ -32,6 +36,17 @@ class MainViewModel(private val repository: Repository) : ViewModel() {
                 _loginUser.value = ResultState.Success("Success")
             } catch (e: Exception) {
                 _loginUser.value = ResultState.Error(e.message.toString())
+            }
+        }
+    }
+    fun signUpUserServer(users: Users) {
+        viewModelScope.launch {
+            _signupUsersServer.value = ResultState.Loading
+            try {
+               val response =  repository.signUpUser(users)
+                _signupUsersServer.value = ResultState.Success(response)
+            } catch (e: Exception) {
+                _signupUsersServer.value = ResultState.Error(e.message.toString())
             }
         }
     }

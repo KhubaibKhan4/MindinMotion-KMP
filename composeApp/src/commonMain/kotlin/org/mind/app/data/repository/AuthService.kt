@@ -2,6 +2,7 @@ package org.mind.app.data.repository
 
 import kotlinx.coroutines.flow.Flow
 import org.mind.app.domain.model.user.User
+import org.mind.app.domain.model.users.Users
 
 interface AuthService {
     val currentUserId: String
@@ -14,4 +15,5 @@ interface AuthService {
     suspend fun resetPassword(email: String)
 
     suspend fun signOut()
+    suspend fun signUpUser(users: Users): Users
 }
