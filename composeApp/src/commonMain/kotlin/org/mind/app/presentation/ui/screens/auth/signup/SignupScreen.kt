@@ -3,7 +3,6 @@ package org.mind.app.presentation.ui.screens.auth.signup
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -61,8 +60,14 @@ import org.koin.compose.koinInject
 import org.mind.app.domain.usecases.ResultState
 import org.mind.app.presentation.ui.screens.auth.login.LoginScreen
 import org.mind.app.presentation.viewmodel.MainViewModel
+import org.mind.app.utils.isValidAddress
+import org.mind.app.utils.isValidCity
+import org.mind.app.utils.isValidCountry
 import org.mind.app.utils.isValidEmail
+import org.mind.app.utils.isValidFullName
 import org.mind.app.utils.isValidPassword
+import org.mind.app.utils.isValidPhoneNumber
+import org.mind.app.utils.isValidPostalCode
 
 class SignupScreen : Screen {
     @Composable
@@ -84,7 +89,7 @@ fun SignupContent(viewModel: MainViewModel = koinInject()) {
     var country by remember { mutableStateOf("") }
     var postalCode by remember { mutableStateOf("") }
     var phoneNumber by remember { mutableStateOf("") }
-    var userRole by remember { mutableStateOf("Student") } // Default role
+    var userRole by remember { mutableStateOf("Student") }
     var passwordVisible by remember { mutableStateOf(false) }
     var cpasswordVisible by remember { mutableStateOf(false) }
     var userMessage by remember { mutableStateOf("") }
@@ -156,7 +161,8 @@ fun SignupContent(viewModel: MainViewModel = koinInject()) {
 
             is ResultState.Success -> {
                 val response = (serverState as ResultState.Success).data
-                userMessage = response
+               // userMessage = response
+                navigator?.push(LoginScreen)
                 isLoading = false
             }
         }
@@ -193,9 +199,11 @@ fun SignupContent(viewModel: MainViewModel = koinInject()) {
                 )
             }
 
-            // Full Name and Address in a row
             item {
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
                     OutlinedTextField(
                         value = fullName,
                         onValueChange = { fullName = it },
@@ -203,7 +211,8 @@ fun SignupContent(viewModel: MainViewModel = koinInject()) {
                         keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Next),
                         modifier = Modifier
                             .weight(1f)
-                            .padding(bottom = 16.dp)
+                            .padding(bottom = 16.dp),
+                        singleLine = true
                     )
 
                     OutlinedTextField(
@@ -213,14 +222,17 @@ fun SignupContent(viewModel: MainViewModel = koinInject()) {
                         keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Next),
                         modifier = Modifier
                             .weight(1f)
-                            .padding(bottom = 16.dp)
+                            .padding(bottom = 16.dp),
+                        singleLine = true
                     )
                 }
             }
 
-            // City and Country in a row
             item {
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
                     OutlinedTextField(
                         value = city,
                         onValueChange = { city = it },
@@ -228,7 +240,8 @@ fun SignupContent(viewModel: MainViewModel = koinInject()) {
                         keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Next),
                         modifier = Modifier
                             .weight(1f)
-                            .padding(bottom = 16.dp)
+                            .padding(bottom = 16.dp),
+                        singleLine = true
                     )
 
                     OutlinedTextField(
@@ -238,14 +251,17 @@ fun SignupContent(viewModel: MainViewModel = koinInject()) {
                         keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Next),
                         modifier = Modifier
                             .weight(1f)
-                            .padding(bottom = 16.dp)
+                            .padding(bottom = 16.dp),
+                        singleLine = true
                     )
                 }
             }
 
-            // Postal Code and Phone Number in a row
             item {
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
                     OutlinedTextField(
                         value = postalCode,
                         onValueChange = { postalCode = it },
@@ -256,7 +272,8 @@ fun SignupContent(viewModel: MainViewModel = koinInject()) {
                         ),
                         modifier = Modifier
                             .weight(1f)
-                            .padding(bottom = 16.dp)
+                            .padding(bottom = 16.dp),
+                        singleLine = true
                     )
 
                     OutlinedTextField(
@@ -269,7 +286,8 @@ fun SignupContent(viewModel: MainViewModel = koinInject()) {
                         ),
                         modifier = Modifier
                             .weight(1f)
-                            .padding(bottom = 16.dp)
+                            .padding(bottom = 16.dp),
+                        singleLine = true
                     )
                 }
             }
@@ -282,7 +300,8 @@ fun SignupContent(viewModel: MainViewModel = koinInject()) {
                     keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Next),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(bottom = 16.dp)
+                        .padding(bottom = 16.dp),
+                    singleLine = true
                 )
             }
 
@@ -304,7 +323,8 @@ fun SignupContent(viewModel: MainViewModel = koinInject()) {
                     keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Next),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(bottom = 16.dp)
+                        .padding(bottom = 16.dp),
+                    singleLine = true
                 )
             }
 
@@ -326,7 +346,8 @@ fun SignupContent(viewModel: MainViewModel = koinInject()) {
                     keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(bottom = 16.dp)
+                        .padding(bottom = 16.dp),
+                    singleLine = true
                 )
             }
 
@@ -346,12 +367,15 @@ fun SignupContent(viewModel: MainViewModel = koinInject()) {
                     DropdownMenu(
                         expanded = expanded,
                         onDismissRequest = { expanded = false },
+                        modifier = Modifier.fillMaxWidth(0.90f).align(Alignment.Center)
                     ) {
-                        DropdownMenuItem(onClick = {
-                            userRole = "Student"
-                            expanded = false
-                        },
-                            text = { Text("Student") })
+                        DropdownMenuItem(
+                            onClick = {
+                                userRole = "Student"
+                                expanded = false
+                            },
+                            text = { Text("Student") },
+                        )
                         DropdownMenuItem(onClick = {
                             userRole = "Teacher"
                             expanded = false
@@ -377,6 +401,30 @@ fun SignupContent(viewModel: MainViewModel = koinInject()) {
 
                             password != confirmPassword -> {
                                 userMessage = "Passwords do not match"
+                            }
+
+                            !isValidPhoneNumber(phoneNumber) -> {
+                                userMessage = "Invalid phone number format"
+                            }
+
+                            !isValidPostalCode(postalCode) -> {
+                                userMessage = "Invalid postal code format"
+                            }
+
+                            !isValidFullName(fullName) -> {
+                                userMessage = "Full name cannot be empty"
+                            }
+
+                            !isValidAddress(address) -> {
+                                userMessage = "Address cannot be empty"
+                            }
+
+                            !isValidCity(city) -> {
+                                userMessage = "City cannot be empty"
+                            }
+
+                            !isValidCountry(country) -> {
+                                userMessage = "Country cannot be empty"
                             }
 
                             else -> {
