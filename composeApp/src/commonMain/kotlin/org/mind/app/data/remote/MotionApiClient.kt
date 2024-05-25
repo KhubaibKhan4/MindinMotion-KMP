@@ -44,21 +44,21 @@ object MotionApiClient {
         }
     }
     @OptIn(InternalAPI::class)
-    suspend fun signUpUser(users: Users): Users {
+    suspend fun signUpUser(email: String,password: String): String {
         val formData = Parameters.build {
             append("username", "William")
-            append("email", users.email)
-            append("password", users.password)
+            append("email", email)
+            append("password", password)
             append("fullName", "William Smith")
             append("address", "123 Main Street")
             append("city", "New York")
             append("country","United States")
             append("postalCode", "134235")
             append("phoneNumber", "+1232445")
-            append("userRole", users.userRole)
+            append("userRole", "Student")
             append("imageUrl", "null")
         }
-        return client.post(BASE_URL+"v1/users"){
+        return client.post(BASE_URL+"v1/signup"){
             body = FormDataContent(formData)
         }.body()
     }

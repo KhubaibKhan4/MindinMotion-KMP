@@ -3,6 +3,7 @@
 
     <application
         android:name=".AndroidApp"
+        android:usesCleartextTraffic="true"
         android:icon="@android:drawable/ic_menu_compass"
         android:label="Mind in Motion"
         android:theme="@android:style/Theme.Material.NoActionBar">

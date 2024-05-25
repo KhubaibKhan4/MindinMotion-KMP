@@ -38,7 +38,7 @@ class Repository(
         }
     }
 
-    override suspend fun signUpUser(users: Users): Users {
-        return MotionApiClient.signUpUser(users)
+   override suspend fun signUpUser(email: String,password: String): String {
+        return MotionApiClient.signUpUser(email,password)
     }
 }

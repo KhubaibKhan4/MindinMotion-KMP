@@ -48,12 +48,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
-import dev.gitlive.firebase.Firebase
-import dev.gitlive.firebase.auth.auth
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
-import org.mind.app.domain.repository.Repository
 import org.mind.app.domain.usecases.ResultState
 import org.mind.app.presentation.ui.screens.auth.login.LoginScreen
 import org.mind.app.presentation.viewmodel.MainViewModel
@@ -69,7 +66,7 @@ class SignupScreen : Screen {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SignupContent(viewModel: MainViewModel= koinInject()) {
+fun SignupContent(viewModel: MainViewModel = koinInject()) {
     val navigator = LocalNavigator.current
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -78,27 +75,62 @@ fun SignupContent(viewModel: MainViewModel= koinInject()) {
     var cpasswordVisible by remember { mutableStateOf(false) }
     var userMessage by remember { mutableStateOf("") }
     var isLoading by remember { mutableStateOf(false) }
+    var isUserCreated by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
 
     val state by viewModel.createUser.collectAsState()
-    when (state) {
-        is ResultState.Error -> {
-            val error = (state as ResultState.Error).message
-            userMessage = error
-            isLoading = false
+    val serverState by viewModel.signupUsersServer.collectAsState()
+
+    LaunchedEffect(state) {
+        when (state) {
+            is ResultState.Error -> {
+                val error = (state as ResultState.Error).message
+                userMessage = error
+                isLoading = false
+            }
+
+            is ResultState.Loading -> {
+                // handle loading state if needed
+            }
+
+            is ResultState.Success -> {
+                val response = (state as ResultState.Success).data
+                userMessage = response
+                if (response.contains("Success") && !isUserCreated) {
+                    isUserCreated = true
+                    viewModel.signUpUserServer(email, password)
+                }
+                isLoading = false
+                scope.launch {
+                    delay(2000)
+                    email = ""
+                    password = ""
+                    confirmPassword = ""
+                }
+            }
         }
+    }
 
-        is ResultState.Loading -> {
+    LaunchedEffect(serverState) {
+        when (serverState) {
+            is ResultState.Error -> {
+                val error = (serverState as ResultState.Error).message
+                userMessage = error
+                isLoading = false
+            }
 
-        }
+            is ResultState.Loading -> {
+                // handle loading state if needed
+            }
 
-        is ResultState.Success -> {
-            val response = (state as ResultState.Success).data
-            userMessage = response
-            isLoading = false
-            email = ""
-            password = ""
-            confirmPassword = ""
+            is ResultState.Success -> {
+                val response = (serverState as ResultState.Success).data
+                userMessage = response
+                isLoading = false
+                email = ""
+                password = ""
+                confirmPassword = ""
+            }
         }
     }
 
@@ -115,7 +147,6 @@ fun SignupContent(viewModel: MainViewModel= koinInject()) {
                     }
                 }
             )
-
         }
     ) {
         Column(
@@ -188,12 +219,16 @@ fun SignupContent(viewModel: MainViewModel= koinInject()) {
                         !isValidEmail(email) -> {
                             userMessage = "Invalid email format"
                         }
+
                         !isValidPassword(password) -> {
-                            userMessage = "Password must be at least 8 characters long and contain an uppercase letter"
+                            userMessage =
+                                "Password must be at least 8 characters long and contain an uppercase letter"
                         }
+
                         password != confirmPassword -> {
                             userMessage = "Passwords do not match"
                         }
+
                         else -> {
                             viewModel.createAccount(email, password)
                             isLoading = true
