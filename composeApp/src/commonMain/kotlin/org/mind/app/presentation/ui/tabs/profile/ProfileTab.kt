@@ -11,6 +11,7 @@ import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.tab.Tab
 import cafe.adriel.voyager.navigator.tab.TabOptions
 import org.mind.app.presentation.ui.screens.profile.ProfileScreen
+import org.mind.app.presentation.ui.screens.profile.ProfileScreenContent
 
 object ProfileTab : Tab {
     @Composable

@@ -119,7 +119,7 @@ fun LoginContent(
                     pass = ""
                     navigator?.apply {
                         preference.put("is_login", true)
-                        push(MainScreen())
+                        push(MainScreen)
                     }
                 }
             }

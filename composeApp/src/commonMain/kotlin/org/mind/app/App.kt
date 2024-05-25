@@ -4,7 +4,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import cafe.adriel.voyager.navigator.Navigator
 import com.example.cmppreference.LocalPreference
 import com.example.cmppreference.LocalPreferenceProvider
@@ -18,7 +17,7 @@ internal fun App() = AppTheme {
         val preference = LocalPreference.current
         val isLoggedIn by remember { mutableStateOf(preference.getBoolean("is_login", false)) }
         if (isLoggedIn) {
-            Navigator(MainScreen())
+            Navigator(MainScreen)
         } else {
             Navigator(LoginScreen)
         }

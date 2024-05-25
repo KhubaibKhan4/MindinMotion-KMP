@@ -29,10 +29,10 @@ import com.example.cmppreference.LocalPreference
 import com.example.cmppreference.LocalPreferenceProvider
 import org.koin.compose.koinInject
 import org.mind.app.domain.usecases.ResultState
-import org.mind.app.presentation.ui.components.LoginDialog
+import org.mind.app.presentation.ui.screens.auth.login.LoginScreen
 import org.mind.app.presentation.viewmodel.MainViewModel
 
-class ProfileScreen() : Screen {
+class ProfileScreen : Screen {
     @Composable
     override fun Content() {
         ProfileScreenContent()
@@ -51,12 +51,10 @@ fun ProfileScreenContent(
         var isLogin by remember { mutableStateOf(false) }
         var email by remember { mutableStateOf("") }
         val signOutState by viewModel.signOutState.collectAsState()
-
-        LaunchedEffect(Unit) {
+        LaunchedEffect(isLogin) {
             isLogin = preference.getBoolean("is_login", false)
             email = preference.getString("email").toString()
         }
-
         when (signOutState) {
             is ResultState.Loading -> {
 
@@ -68,6 +66,7 @@ fun ProfileScreenContent(
                     preference.put("email", "")
                     isLogin = preference.getBoolean("is_login", false)
                     email = preference.getString("email").toString()
+                    navigator.current = LoginScreen
                 }
             }
 
@@ -113,15 +112,6 @@ fun ProfileScreenContent(
                 verticalArrangement = Arrangement.Center
             ) {
                 Text("Shop Content Email: $email & isLogin: $isLogin")
-            }
-            if (!isLogin) {
-                LoginDialog(
-                    viewModel = viewModel,
-                    onLoginSuccess = {
-                        isLogin = true
-                        email = preference.getString("email").toString()
-                    }
-                )
             }
         }
     }
