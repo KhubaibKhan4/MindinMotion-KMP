@@ -23,9 +23,9 @@ class HomeScreen : Screen {
             val preference = LocalPreference.current
             var email by remember { mutableStateOf("") }
             var isLogin by remember { mutableStateOf(false) }
-            LaunchedEffect(Unit){
+            LaunchedEffect(Unit) {
                 email = preference.getString("email").toString()
-                isLogin = preference.getBoolean("is_login",false)
+                isLogin = preference.getBoolean("is_login", false)
             }
             Column(
                 modifier = Modifier.fillMaxSize(),

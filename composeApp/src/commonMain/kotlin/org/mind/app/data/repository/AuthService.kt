@@ -40,4 +40,8 @@ interface AuthService {
         postalCode: String,
         phoneNumber: String,
     )
+    suspend fun loginServerUser(
+        email: String,
+        password: String,
+    ): Users
 }

@@ -91,4 +91,8 @@ class Repository(
             phoneNumber
         )
     }
+
+    override suspend fun loginServerUser(email: String, password: String): Users {
+        return MotionApiClient.loginServerUser(email,password)
+    }
 }

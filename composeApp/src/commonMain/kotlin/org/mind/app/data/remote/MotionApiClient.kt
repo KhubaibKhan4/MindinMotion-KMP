@@ -74,9 +74,11 @@ object MotionApiClient {
             body = FormDataContent(formData)
         }.body()
     }
-    suspend fun getUsersById(userId: Int):Users{
-        return client.get(BASE_URL+"v1/users/$userId").body()
+
+    suspend fun getUsersById(userId: Int): Users {
+        return client.get(BASE_URL + "v1/users/$userId").body()
     }
+
     @OptIn(InternalAPI::class)
     suspend fun updateUserDetails(
         userId: Int,
@@ -88,7 +90,7 @@ object MotionApiClient {
         country: String,
         postalCode: String,
         phoneNumber: String,
-    ){
+    ) {
         val formData = Parameters.build {
             append("username", username)
             append("email", email)
@@ -100,6 +102,20 @@ object MotionApiClient {
             append("phoneNumber", phoneNumber)
         }
         return client.put(BASE_URL + "v1/users/userDetail/$userId") {
+            body = FormDataContent(formData)
+        }.body()
+    }
+
+    @OptIn(InternalAPI::class)
+    suspend fun loginServerUser(
+        email: String,
+        password: String,
+    ): Users {
+        val formData = Parameters.build {
+            append("email", email)
+            append("password", password)
+        }
+        return client.post(BASE_URL + "v1/login") {
             body = FormDataContent(formData)
         }.body()
     }

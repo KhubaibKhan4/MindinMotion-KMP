@@ -51,7 +51,9 @@ import com.example.cmppreference.LocalPreferenceProvider
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
+import org.mind.app.domain.model.users.Users
 import org.mind.app.domain.usecases.ResultState
+import org.mind.app.notify
 import org.mind.app.presentation.ui.screens.auth.reset.ResetPasswordScreen
 import org.mind.app.presentation.ui.screens.auth.signup.SignupScreen
 import org.mind.app.presentation.ui.screens.home.HomeScreen
@@ -99,20 +101,24 @@ fun LoginContent(
                 navigator?.push(HomeScreen())
             }
         }
+
         val state by viewModel.loginUser.collectAsState()
         when (state) {
             is ResultState.Error -> {
                 val error = (state as ResultState.Error).message
                 userMessage = error
+                notify(userMessage)
                 isLoading = false
             }
 
             is ResultState.Loading -> {
+
             }
 
             is ResultState.Success -> {
                 val response = (state as ResultState.Success).data
                 userMessage = response
+                notify(userMessage)
                 isLoading = false
                 if (userMessage.contains("Success")) {
                     email = ""
@@ -120,10 +126,11 @@ fun LoginContent(
                     navigator?.apply {
                         preference.put("is_login", true)
                         push(MainScreen)
-                    }
+                   }
                 }
             }
         }
+
 
         Column(
             modifier = Modifier

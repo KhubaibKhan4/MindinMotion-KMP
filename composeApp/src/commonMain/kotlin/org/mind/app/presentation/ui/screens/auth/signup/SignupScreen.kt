@@ -36,7 +36,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -59,6 +58,8 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 import org.mind.app.domain.usecases.ResultState
+import org.mind.app.notify
+import org.mind.app.presentation.ui.components.ErrorBox
 import org.mind.app.presentation.ui.screens.auth.login.LoginScreen
 import org.mind.app.presentation.viewmodel.MainViewModel
 import org.mind.app.utils.isValidAddress
@@ -101,70 +102,71 @@ fun SignupContent(viewModel: MainViewModel = koinInject()) {
     val state by viewModel.createUser.collectAsState()
     val serverState by viewModel.signupUsersServer.collectAsState()
 
-    LaunchedEffect(state) {
-        when (state) {
-            is ResultState.Error -> {
-                val error = (state as ResultState.Error).message
-                userMessage = error
-                isLoading = false
-            }
 
-            is ResultState.Loading -> {
-                // handle loading state if needed
-            }
+    when (state) {
+        is ResultState.Error -> {
+            val error = (state as ResultState.Error).message
+            userMessage = error
+            notify(userMessage)
+            isLoading = false
+        }
 
-            is ResultState.Success -> {
-                val response = (state as ResultState.Success).data
-                userMessage = response
-                if (response.contains("Success") && !isUserCreated) {
-                    isUserCreated = true
-                    viewModel.signUpUserServer(
-                        email,
-                        password,
-                        fullName.trim(),
-                        fullName,
-                        address,
-                        city,
-                        country,
-                        postalCode,
-                        phoneNumber,
-                        userRole
-                    )
-                }
-                isLoading = false
-                scope.launch {
-                    delay(2000)
-                    email = ""
-                    password = ""
-                    confirmPassword = ""
-                    fullName = ""
-                    address = ""
-                    city = ""
-                    country = ""
-                    postalCode = ""
-                    phoneNumber = ""
-                }
+        is ResultState.Loading -> {
+        }
+
+        is ResultState.Success -> {
+            val response = (state as ResultState.Success).data
+            userMessage = response
+            if (response.contains("Success") && !isUserCreated) {
+                isUserCreated = true
+                viewModel.signUpUserServer(
+                    email,
+                    password,
+                    fullName.trim(),
+                    fullName,
+                    address,
+                    city,
+                    country,
+                    postalCode,
+                    phoneNumber,
+                    userRole
+                )
+            }
+            isLoading = false
+            scope.launch {
+                delay(2000)
+                email = ""
+                password = ""
+                confirmPassword = ""
+                fullName = ""
+                address = ""
+                city = ""
+                country = ""
+                postalCode = ""
+                phoneNumber = ""
             }
         }
     }
 
-    LaunchedEffect(serverState) {
-        when (serverState) {
-            is ResultState.Error -> {
-                val error = (serverState as ResultState.Error).message
-                userMessage = error
-                isLoading = false
-            }
 
-            is ResultState.Loading -> {
-                // handle loading state if needed
-            }
 
-            is ResultState.Success -> {
-                val response = (serverState as ResultState.Success).data
-                //userMessage = response
-                isLoading = false
-            }
+    when (serverState) {
+        is ResultState.Error -> {
+            val error = (serverState as ResultState.Error).message
+            userMessage = error
+            ErrorBox(error)
+            isLoading = false
+        }
+
+        is ResultState.Loading -> {
+            // handle loading state if needed
+        }
+
+        is ResultState.Success -> {
+            val response = (serverState as ResultState.Success).data
+            //userMessage = response
+            notify(response)
+            isLoading = false
         }
     }
 
@@ -469,21 +471,6 @@ fun SignupContent(viewModel: MainViewModel = koinInject()) {
                     }
                 ) {
                     Text("Already have an account? Login")
-                }
-            }
-
-            if (userMessage.isNotEmpty()) {
-                item {
-                    LaunchedEffect(userMessage) {
-                        scope.launch {
-                            delay(2000)
-                            userMessage = ""
-                        }
-                    }
-                    Text(
-                        userMessage,
-                        color = if (state is ResultState.Error) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
-                    )
                 }
             }
         }

@@ -34,6 +34,24 @@ class MainViewModel(private val repository: Repository) : ViewModel() {
 
     private val _updateUserDetails = MutableStateFlow<ResultState<String>>(ResultState.Loading)
     val updateUserDetails = _updateUserDetails.asStateFlow()
+
+    private val _loginServer = MutableStateFlow<ResultState<Users>>(ResultState.Loading)
+    val loginServer = _loginServer.asStateFlow()
+
+    fun loginServer(
+        email: String,
+        password: String
+    ){
+        viewModelScope.launch {
+            _loginServer.value = ResultState.Loading
+            try {
+                val response =repository.loginServerUser(email, password)
+                _loginServer.value = ResultState.Success(response)
+            } catch (e: Exception) {
+                _loginServer.value = ResultState.Error(e.toString())
+            }
+        }
+    }
     fun updateUserDetails(
         userId: Int,
         email: String,

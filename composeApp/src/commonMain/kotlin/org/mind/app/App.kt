@@ -34,5 +34,6 @@ internal fun App() = AppTheme {
 
 
 internal expect fun openUrl(url: String?)
+
 @Composable
 internal expect fun notify(message: String)

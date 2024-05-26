@@ -39,7 +39,7 @@ import org.mind.app.theme.AppTheme
 import org.mind.app.theme.LocalThemeIsDark
 import kotlin.random.Random
 
-object MainScreen : Tab {
+object MainScreen: Tab {
     override val key: ScreenKey =
         super.key + "${Random.nextDouble(Double.MIN_VALUE, Double.MAX_VALUE)}"
 
