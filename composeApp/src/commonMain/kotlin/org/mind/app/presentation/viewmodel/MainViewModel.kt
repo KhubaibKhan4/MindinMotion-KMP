@@ -31,6 +31,43 @@ class MainViewModel(private val repository: Repository) : ViewModel() {
 
     private val _userDetail = MutableStateFlow<ResultState<Users>>(ResultState.Loading)
     val userDetail = _userDetail.asStateFlow()
+
+    private val _updateUserDetails = MutableStateFlow<ResultState<String>>(ResultState.Loading)
+    val updateUserDetails = _updateUserDetails.asStateFlow()
+    fun updateUserDetails(
+        userId: Int,
+        email: String,
+        password: String,
+        username: String,
+        fullName: String,
+        address: String,
+        city: String,
+        country: String,
+        postalCode: String,
+        phoneNumber: String,
+    ) {
+        viewModelScope.launch {
+            _updateUserDetails.value = ResultState.Loading
+            try {
+                repository.updateUserDetails(
+                    userId,
+                    email,
+                    password,
+                    username,
+                    fullName,
+                    address,
+                    city,
+                    country,
+                    postalCode,
+                    phoneNumber
+                )
+                _updateUserDetails.value = ResultState.Success("Updated Successfully")
+            } catch (e: Exception) {
+                _updateUserDetails.value = ResultState.Error(e.toString())
+            }
+        }
+    }
+
     fun login(email: String, password: String) {
         viewModelScope.launch {
             _loginUser.value = ResultState.Loading
@@ -42,17 +79,19 @@ class MainViewModel(private val repository: Repository) : ViewModel() {
             }
         }
     }
+
     fun getUserDetail(userId: Int) {
         viewModelScope.launch {
             _userDetail.value = ResultState.Loading
             try {
-                val response =repository.getUsersById(userId)
+                val response = repository.getUsersById(userId)
                 _userDetail.value = ResultState.Success(response)
             } catch (e: Exception) {
                 _userDetail.value = ResultState.Error(e.message.toString())
             }
         }
     }
+
     fun signUpUserServer(
         email: String,
         password: String,
@@ -63,7 +102,7 @@ class MainViewModel(private val repository: Repository) : ViewModel() {
         country: String,
         postalCode: String,
         phoneNumber: String,
-        userRole: String
+        userRole: String,
     ) {
         viewModelScope.launch {
             _signupUsersServer.value = ResultState.Loading
@@ -99,6 +138,7 @@ class MainViewModel(private val repository: Repository) : ViewModel() {
             }
         }
     }
+
     fun resetPassword(email: String) {
         viewModelScope.launch {
             _resetPasswordState.value = ResultState.Loading

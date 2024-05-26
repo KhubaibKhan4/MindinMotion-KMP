@@ -38,7 +38,7 @@ class Repository(
         }
     }
 
-   override suspend fun signUpUser(
+    override suspend fun signUpUser(
         email: String,
         password: String,
         username: String,
@@ -48,7 +48,7 @@ class Repository(
         country: String,
         postalCode: String,
         phoneNumber: String,
-        userRole: String
+        userRole: String,
     ): String {
         return MotionApiClient.signUpUser(
             email = email,
@@ -66,5 +66,31 @@ class Repository(
 
     override suspend fun getUsersById(userId: Int): Users {
         return MotionApiClient.getUsersById(userId)
+    }
+
+    override suspend fun updateUserDetails(
+        userId: Int,
+        email: String,
+        password: String,
+        username: String,
+        fullName: String,
+        address: String,
+        city: String,
+        country: String,
+        postalCode: String,
+        phoneNumber: String,
+    ) {
+        return MotionApiClient.updateUserDetails(
+            userId,
+            email,
+            password,
+            username,
+            fullName,
+            address,
+            city,
+            country,
+            postalCode,
+            phoneNumber
+        )
     }
 }

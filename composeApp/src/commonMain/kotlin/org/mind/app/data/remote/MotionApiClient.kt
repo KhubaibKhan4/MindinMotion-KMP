@@ -11,6 +11,7 @@ import io.ktor.client.plugins.logging.Logging
 import io.ktor.client.request.forms.FormDataContent
 import io.ktor.client.request.get
 import io.ktor.client.request.post
+import io.ktor.client.request.put
 import io.ktor.http.Parameters
 import io.ktor.serialization.kotlinx.json.json
 import io.ktor.util.InternalAPI
@@ -75,5 +76,33 @@ object MotionApiClient {
     }
     suspend fun getUsersById(userId: Int):Users{
         return client.get(BASE_URL+"v1/users/$userId").body()
+    }
+    @OptIn(InternalAPI::class)
+    suspend fun updateUserDetails(
+        userId: Int,
+        email: String,
+        password: String,
+        username: String,
+        fullName: String,
+        address: String,
+        city: String,
+        country: String,
+        postalCode: String,
+        phoneNumber: String,
+    ){
+        val formData = Parameters.build {
+            append("username", username)
+            append("email", email)
+            append("password", password)
+            append("fullName", fullName)
+            append("address", address)
+            append("city", city)
+            append("country", country)
+            append("postalCode", postalCode)
+            append("phoneNumber", phoneNumber)
+        }
+        return client.put(BASE_URL + "v1/users/userDetail/$userId") {
+            body = FormDataContent(formData)
+        }.body()
     }
 }
