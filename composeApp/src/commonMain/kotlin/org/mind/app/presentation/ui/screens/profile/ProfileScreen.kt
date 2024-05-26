@@ -217,10 +217,6 @@ fun DetailCard(
             .fillMaxWidth()
             .padding(vertical = 4.dp),
         shape = RoundedCornerShape(8.dp),
-        colors = CardDefaults.cardColors(
-            containerColor =if (isDark) Color.White else Color.LightGray,
-            contentColor =if (isDark) Color.Black else Color.Black
-        ),
         elevation = CardDefaults.cardElevation(4.dp)
     ) {
         Column(
