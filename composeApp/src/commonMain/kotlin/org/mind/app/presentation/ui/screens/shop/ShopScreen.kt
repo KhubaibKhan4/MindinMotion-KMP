@@ -27,19 +27,12 @@ class ShopScreen : Screen {
 @Composable
 fun ShopContent() {
     LocalPreferenceProvider {
-        val preference = LocalPreference.current
-        var email by remember { mutableStateOf("") }
-        var isLogin by remember { mutableStateOf(false) }
-        LaunchedEffect(Unit){
-            isLogin = preference.getBoolean("is_login",false)
-            email = preference.getString("email").toString()
-        }
         Column(
             modifier = Modifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            Text("Shop Content Email: $email & isLogin: $isLogin")
+            Text("Shop Coming Soon")
         }
     }
 }
