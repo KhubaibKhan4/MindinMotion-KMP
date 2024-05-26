@@ -1,5 +1,6 @@
 package org.mind.app.presentation.ui.screens.setting
 
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -27,6 +28,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -38,6 +40,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.Screen
@@ -138,16 +141,10 @@ fun SettingScreenContent(
                     title = "Dark Mode",
                     icon = if (isDark) Icons.Default.NightsStay else Icons.Default.WbSunny,
                     content = {
-                        Switch(
-                            checked = isDark,
+                        AnimatedSwitch(
+                            isDark = isDark,
                             onCheckedChange = {
                                 isDark = it
-                            },
-                            thumbContent = {
-                                Icon(
-                                    imageVector = if (isDark) Icons.Default.NightsStay else Icons.Default.WbSunny,
-                                    contentDescription = null,
-                                )
                             }
                         )
                     }
@@ -189,6 +186,37 @@ fun SettingScreenContent(
         }
     }
 }
+@Composable
+fun AnimatedSwitch(
+    isDark: Boolean,
+    onCheckedChange: (Boolean) -> Unit
+) {
+    val thumbColor by animateColorAsState(
+        targetValue = if (isDark) Color.DarkGray else Color.White
+    )
+    val trackColor by animateColorAsState(
+        targetValue = if (isDark) Color(0xFF1C1C1C) else Color(0xFFB0BEC5)
+    )
+
+    Switch(
+        modifier = Modifier.size(30.dp),
+        checked = isDark,
+        onCheckedChange = onCheckedChange,
+        colors = SwitchDefaults.colors(
+            checkedThumbColor = thumbColor,
+            uncheckedThumbColor = thumbColor,
+            checkedTrackColor = trackColor,
+            uncheckedTrackColor = trackColor
+        ),
+        thumbContent = {
+            Icon(
+                imageVector = if (isDark) Icons.Default.NightsStay else Icons.Default.WbSunny,
+                contentDescription = null,
+            )
+        }
+    )
+}
+
 
 @Composable
 fun SettingCard(
@@ -200,7 +228,7 @@ fun SettingCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp)
+            .padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 8.dp)
             .clickable(onClick = onClick ?: {}),
         elevation = CardDefaults.cardElevation(8.dp)
     ) {
