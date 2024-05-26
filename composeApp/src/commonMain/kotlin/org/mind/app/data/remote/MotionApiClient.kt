@@ -119,4 +119,7 @@ object MotionApiClient {
             body = FormDataContent(formData)
         }.body()
     }
+    suspend fun getUserByEmail(email: String): Users{
+        return client.get(BASE_URL+"v1/users/email/$email").body()
+    }
 }

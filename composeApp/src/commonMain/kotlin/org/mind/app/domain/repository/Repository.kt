@@ -95,4 +95,8 @@ class Repository(
     override suspend fun loginServerUser(email: String, password: String): Users {
         return MotionApiClient.loginServerUser(email,password)
     }
+
+    override suspend fun getUserByEmail(email: String): Users {
+        return MotionApiClient.getUserByEmail(email)
+    }
 }

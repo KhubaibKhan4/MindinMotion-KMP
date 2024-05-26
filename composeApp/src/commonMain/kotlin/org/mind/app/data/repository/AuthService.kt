@@ -44,4 +44,5 @@ interface AuthService {
         email: String,
         password: String,
     ): Users
+    suspend fun getUserByEmail(email: String): Users
 }

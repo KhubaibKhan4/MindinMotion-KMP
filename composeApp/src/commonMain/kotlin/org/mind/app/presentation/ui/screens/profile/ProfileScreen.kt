@@ -47,11 +47,9 @@ import com.seiko.imageloader.rememberImagePainter
 import org.koin.compose.koinInject
 import org.mind.app.domain.model.users.Users
 import org.mind.app.domain.usecases.ResultState
-import org.mind.app.notify
 import org.mind.app.presentation.ui.components.ErrorBox
 import org.mind.app.presentation.ui.components.LoadingBox
 import org.mind.app.presentation.ui.components.LocalImage
-import org.mind.app.presentation.ui.screens.auth.login.LoginScreen
 import org.mind.app.presentation.ui.screens.setting.SettingScreen
 import org.mind.app.presentation.viewmodel.MainViewModel
 import org.mind.app.theme.LocalThemeIsDark
@@ -81,21 +79,22 @@ fun ProfileScreenContent(
             email = preference.getString("email").toString()
         }
         LaunchedEffect(Unit) {
-            viewModel.getUserDetail(1)
+            viewModel.getUserByEmail(email)
+
         }
-        val userDetailState by viewModel.userDetail.collectAsState()
-        when (userDetailState) {
+        val userByEmailState by viewModel.userByEmail.collectAsState()
+        when (userByEmailState) {
             is ResultState.Error -> {
-                val error = (userDetailState as ResultState.Error).message
+                val error = (userByEmailState as ResultState.Error).message
                 ErrorBox(error)
             }
 
             ResultState.Loading -> {
-                LoadingBox()
+                // LoadingBox()
             }
 
             is ResultState.Success -> {
-                val response = (userDetailState as ResultState.Success).data
+                val response = (userByEmailState as ResultState.Success).data
                 usersDetails = response
             }
         }
