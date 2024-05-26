@@ -71,9 +71,8 @@ fun ProfileScreenContent(
     LocalPreferenceProvider {
         val preference = LocalPreference.current
         val tabNavigator = LocalTabNavigator.current
-        val navigator = LocalNavigator.current
         var isDark by LocalThemeIsDark.current
-        var isMenuVisible by remember { mutableStateOf(false) }
+        val navigator = LocalNavigator.current
         var isLogin by remember { mutableStateOf(false) }
         var email by remember { mutableStateOf("") }
         val signOutState by viewModel.signOutState.collectAsState()
@@ -119,7 +118,7 @@ fun ProfileScreenContent(
                             imageVector = Icons.Default.Settings,
                             contentDescription = null,
                             modifier = Modifier.clickable {
-                                navigator?.push(SettingScreen())
+                               navigator?.push(SettingScreen())
                             }
                         )
                     }
@@ -211,7 +210,6 @@ fun DetailCard(
     title: String,
     name: String,
 ) {
-    val isDark by LocalThemeIsDark.current
     Card(
         modifier = Modifier
             .fillMaxWidth()

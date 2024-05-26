@@ -13,10 +13,13 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Logout
+import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.Policy
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.WbSunny
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -34,13 +37,18 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.Screen
+import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.tab.LocalTabNavigator
+import cafe.adriel.voyager.navigator.tab.Tab
+import cafe.adriel.voyager.navigator.tab.TabOptions
 import com.example.cmppreference.LocalPreference
 import org.koin.compose.koinInject
 import org.mind.app.domain.usecases.ResultState
 import org.mind.app.presentation.ui.screens.auth.login.LoginScreen
+import org.mind.app.presentation.ui.tabs.profile.ProfileTab
 import org.mind.app.presentation.viewmodel.MainViewModel
 import org.mind.app.theme.LocalThemeIsDark
 
@@ -49,6 +57,15 @@ class SettingScreen : Screen {
     override fun Content() {
         SettingScreenContent()
     }
+
+   /* override val options: TabOptions
+        @Composable
+        get() {
+            val index : UShort = 8u
+            val title = "Setting"
+            val icon = rememberVectorPainter(Icons.Default.Settings)
+            return TabOptions(index, title, icon)
+        }*/
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -56,7 +73,8 @@ class SettingScreen : Screen {
 fun SettingScreenContent(
     viewModel: MainViewModel = koinInject()
 ) {
-    val navigator = LocalTabNavigator.current
+    val tabNavigator = LocalTabNavigator.current
+    val navigator = LocalNavigator.current
     val preference = LocalPreference.current
     var isDark by LocalThemeIsDark.current
     var isLogin by remember { mutableStateOf(false) }
@@ -73,20 +91,28 @@ fun SettingScreenContent(
         is ResultState.Success -> {
             LaunchedEffect(Unit) {
                 preference.put("is_login", false)
-                navigator.current = LoginScreen
+                tabNavigator.current = LoginScreen
             }
         }
 
         is ResultState.Error -> {
-            val errorMessage = (signOutState as ResultState.Error).message
-            // Handle error state
+           // val errorMessage = (signOutState as ResultState.Error).message
         }
     }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Settings") }
+                title = { Text("Settings") },
+                navigationIcon = {
+                    Icon(
+                        imageVector = Icons.Default.ArrowBackIosNew,
+                        contentDescription = null,
+                        modifier = Modifier.clickable {
+                            navigator?.push(ProfileTab)
+                        }
+                    )
+                }
             )
         }
     ) {
@@ -125,7 +151,7 @@ fun SettingScreenContent(
                 }
             )
             SettingItem(
-                icon = Icons.Default.Logout,
+                icon = Icons.AutoMirrored.Filled.Logout,
                 title = "Logout",
                 onClick = {
                     viewModel.signOut()
