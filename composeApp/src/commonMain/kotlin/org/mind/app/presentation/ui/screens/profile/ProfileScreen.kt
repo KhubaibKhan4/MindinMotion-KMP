@@ -17,7 +17,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -48,6 +47,9 @@ import com.seiko.imageloader.rememberImagePainter
 import org.koin.compose.koinInject
 import org.mind.app.domain.model.users.Users
 import org.mind.app.domain.usecases.ResultState
+import org.mind.app.notify
+import org.mind.app.presentation.ui.components.ErrorBox
+import org.mind.app.presentation.ui.components.LoadingBox
 import org.mind.app.presentation.ui.components.LocalImage
 import org.mind.app.presentation.ui.screens.auth.login.LoginScreen
 import org.mind.app.presentation.ui.screens.setting.SettingScreen
@@ -69,7 +71,7 @@ fun ProfileScreenContent(
     LocalPreferenceProvider {
         val preference = LocalPreference.current
         val tabNavigator = LocalTabNavigator.current
-        var isDark by LocalThemeIsDark.current
+        val isDark by LocalThemeIsDark.current
         val navigator = LocalNavigator.current
         var isLogin by remember { mutableStateOf(false) }
         var usersDetails by remember { mutableStateOf<Users?>(null) }
@@ -86,10 +88,11 @@ fun ProfileScreenContent(
         when (userDetailState) {
             is ResultState.Error -> {
                 val error = (userDetailState as ResultState.Error).message
+                ErrorBox(error)
             }
 
             ResultState.Loading -> {
-                CircularProgressIndicator()
+                LoadingBox()
             }
 
             is ResultState.Success -> {
@@ -99,10 +102,12 @@ fun ProfileScreenContent(
         }
         when (signOutState) {
             is ResultState.Loading -> {
-                // Handle loading state
+                LoadingBox()
             }
 
             is ResultState.Success -> {
+                val response = (signOutState as ResultState.Success).data
+                notify(response)
                 LaunchedEffect(Unit) {
                     preference.put("is_login", false)
                     preference.put("email", "")
@@ -114,7 +119,7 @@ fun ProfileScreenContent(
 
             is ResultState.Error -> {
                 val errorMessage = (signOutState as ResultState.Error).message
-                // Handle error state
+                ErrorBox(errorMessage)
             }
         }
 
