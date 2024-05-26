@@ -1,19 +1,20 @@
 package org.mind.app.presentation.ui.components
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.material.BottomNavigationItem
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -26,8 +27,9 @@ fun RowScope.TabItem(tab: Tab) {
     val isDark by LocalThemeIsDark.current
     val tabNavigator = LocalTabNavigator.current
     NavigationBarItem(
-        modifier = Modifier.background(MaterialTheme.colorScheme.surface)
-            .height(58.dp).clip(RoundedCornerShape(16.dp)),
+        modifier = Modifier
+            .height(49.dp)
+            .windowInsetsPadding(WindowInsets.ime),
         selected = tabNavigator.current == tab,
         onClick = {
             tabNavigator.current = tab
@@ -54,9 +56,11 @@ fun RowScope.TabItem(tab: Tab) {
         alwaysShowLabel = true,
         interactionSource = MutableInteractionSource(),
         colors = NavigationBarItemDefaults.colors(
-            indicatorColor = Color.Transparent,
+            selectedTextColor = Color.Red,
+            unselectedTextColor = if (isDark) Color.White else Color.Black,
             selectedIconColor = Color.Red,
-            unselectedIconColor = Color.Black,
+            unselectedIconColor = if (isDark) Color.White else Color.Black,
+            indicatorColor = Color.LightGray,
         )
     )
 }

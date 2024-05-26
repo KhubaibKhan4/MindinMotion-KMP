@@ -6,9 +6,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material.icons.filled.WbSunny
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
@@ -31,6 +29,7 @@ import org.koin.compose.koinInject
 import org.mind.app.domain.usecases.ResultState
 import org.mind.app.presentation.ui.screens.auth.login.LoginScreen
 import org.mind.app.presentation.viewmodel.MainViewModel
+import org.mind.app.theme.LocalThemeIsDark
 
 class ProfileScreen : Screen {
     @Composable
@@ -47,6 +46,7 @@ fun ProfileScreenContent(
     LocalPreferenceProvider {
         val preference = LocalPreference.current
         val navigator = LocalTabNavigator.current
+        var isDark by LocalThemeIsDark.current
         var isMenuVisible by remember { mutableStateOf(false) }
         var isLogin by remember { mutableStateOf(false) }
         var email by remember { mutableStateOf("") }
@@ -81,26 +81,12 @@ fun ProfileScreenContent(
                     title = { Text("Profile") },
                     actions = {
                         Icon(
-                            imageVector = Icons.Default.MoreVert,
+                            imageVector = Icons.Default.WbSunny,
                             contentDescription = null,
                             modifier = Modifier.clickable {
-                                isMenuVisible = !isMenuVisible
+                                isDark = !isDark
                             }
                         )
-                        if (isMenuVisible) {
-                            DropdownMenu(
-                                expanded = isMenuVisible,
-                                onDismissRequest = { isMenuVisible = false }
-                            ) {
-                                DropdownMenuItem(
-                                    text = { Text("Logout") },
-                                    onClick = {
-                                        viewModel.signOut()
-                                        isMenuVisible = false
-                                    }
-                                )
-                            }
-                        }
                     }
                 )
             }
