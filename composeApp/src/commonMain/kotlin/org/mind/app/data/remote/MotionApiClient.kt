@@ -81,7 +81,6 @@ object MotionApiClient {
     suspend fun updateUserDetails(
         userId: Int,
         email: String,
-        password: String,
         username: String,
         fullName: String,
         address: String,
@@ -93,7 +92,6 @@ object MotionApiClient {
         val formData = Parameters.build {
             append("username", username)
             append("email", email)
-            append("password", password)
             append("fullName", fullName)
             append("address", address)
             append("city", city)

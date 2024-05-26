@@ -3,6 +3,7 @@ package org.mind.app.presentation.ui.screens.profile
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -135,44 +136,54 @@ fun ProfileScreenContent(
                 )
             }
         ) {
-            Column(
-                modifier = Modifier.fillMaxSize()
-                    .padding(top = it.calculateTopPadding()),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Top
-            ) {
-                if (usersDetails?.profileImage != "null") {
-                    Image(
-                        painter = rememberImagePainter(usersDetails?.profileImage.toString()),
-                        contentDescription = null,
-                        modifier = Modifier
-                            .size(150.dp)
-                            .clip(CircleShape)
-                    )
-                } else {
-                    LocalImage(modifier = Modifier.size(150.dp).clip(CircleShape))
-                }
-                Spacer(modifier = Modifier.height(6.dp))
+            if (usersDetails != null) {
                 Column(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxSize()
+                        .padding(top = it.calculateTopPadding()),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Top
                 ) {
-                    Text(
-                        text = usersDetails?.fullName.toString(),
-                        fontSize = MaterialTheme.typography.titleLarge.fontSize,
-                        color = if (isDark) Color.White else Color.Black,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Text(
-                        text = usersDetails?.email.toString(),
-                        fontSize = MaterialTheme.typography.labelMedium.fontSize,
-                        color = Color.Gray
-                    )
+                    if (usersDetails?.profileImage != "null") {
+                        Image(
+                            painter = rememberImagePainter(usersDetails?.profileImage.toString()),
+                            contentDescription = null,
+                            modifier = Modifier
+                                .size(150.dp)
+                                .clip(CircleShape)
+                        )
+                    } else {
+                        LocalImage(modifier = Modifier.size(150.dp).clip(CircleShape))
+                    }
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Top
+                    ) {
+                        Text(
+                            text = usersDetails?.fullName.toString(),
+                            fontSize = MaterialTheme.typography.titleLarge.fontSize,
+                            color = if (isDark) Color.White else Color.Black,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            text = usersDetails?.email.toString(),
+                            fontSize = MaterialTheme.typography.labelMedium.fontSize,
+                            color = Color.Gray
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(12.dp))
+                    usersDetails?.let { it1 -> ProfileDetails(it1) }
                 }
-                Spacer(modifier = Modifier.height(12.dp))
-                usersDetails?.let { it1 -> ProfileDetails(it1) }
+            } else {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text("No User Data is Found!")
+                }
             }
+
         }
     }
 }

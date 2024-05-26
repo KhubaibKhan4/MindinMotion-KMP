@@ -287,7 +287,8 @@ fun SignupContent(viewModel: MainViewModel = koinInject()) {
                         modifier = Modifier
                             .weight(1f)
                             .padding(bottom = 16.dp),
-                        singleLine = true
+                        singleLine = true,
+                        prefix = { Text("+") }
                     )
                 }
             }

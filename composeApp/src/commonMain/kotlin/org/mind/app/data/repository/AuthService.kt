@@ -29,11 +29,9 @@ interface AuthService {
         userRole: String,
     ): String
     suspend fun getUsersById(userId: Int): Users
-    @OptIn(InternalAPI::class)
     suspend fun updateUserDetails(
         userId: Int,
         email: String,
-        password: String,
         username: String,
         fullName: String,
         address: String,

@@ -8,6 +8,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIosNew
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -16,11 +17,15 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -28,7 +33,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import org.koin.compose.koinInject
 import org.mind.app.domain.model.users.Users
+import org.mind.app.domain.usecases.ResultState
+import org.mind.app.presentation.viewmodel.MainViewModel
 import org.mind.app.utils.isValidAddress
 import org.mind.app.utils.isValidCity
 import org.mind.app.utils.isValidCountry
@@ -46,7 +56,10 @@ class EditProfileScreen(private val users: Users) : Screen {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun EditProfileScreenContent(profile: Users) {
+fun EditProfileScreenContent(
+    profile: Users,
+    viewModel: MainViewModel = koinInject(),
+) {
     val navigator = LocalNavigator.current
     var username by remember { mutableStateOf(profile.username) }
     var email by remember { mutableStateOf(profile.email) }
@@ -65,11 +78,44 @@ fun EditProfileScreenContent(profile: Users) {
     var countryError by remember { mutableStateOf<String?>(null) }
     var postalCodeError by remember { mutableStateOf<String?>(null) }
     var phoneNumberError by remember { mutableStateOf<String?>(null) }
+    var isLoading by remember { mutableStateOf(false) }
+    var userMessage by remember { mutableStateOf("") }
+
+    val scope = rememberCoroutineScope()
+
+    val updateState by viewModel.updateUserDetails.collectAsState()
+    when (updateState) {
+        is ResultState.Error -> {
+            val error = (updateState as ResultState.Error).message
+            userMessage = error
+            isLoading = false
+        }
+
+        ResultState.Loading -> {
+            isLoading = true
+        }
+
+        is ResultState.Success -> {
+            val response = (updateState as ResultState.Success).data
+            userMessage = response
+            isLoading = false
+            scope.launch {
+                delay(2000)
+                userMessage = ""
+            }
+        }
+    }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("") },
+                title = {
+                    if (userMessage.isNotBlank()) {
+                        Text(
+                            text = userMessage
+                        )
+                    }
+                },
                 navigationIcon = {
                     IconButton(onClick = { navigator?.pop() }) {
                         Icon(
@@ -210,7 +256,8 @@ fun EditProfileScreenContent(profile: Users) {
                 label = { Text("Phone Number") },
                 modifier = Modifier.fillMaxWidth(),
                 isError = phoneNumberError != null,
-                singleLine = true
+                singleLine = true,
+                prefix = { Text("+") }
             )
             if (phoneNumberError != null) {
                 Text(phoneNumberError!!, color = MaterialTheme.colorScheme.error)
@@ -224,7 +271,18 @@ fun EditProfileScreenContent(profile: Users) {
                                 postalCodeError == null && phoneNumberError == null
 
                     if (isValid) {
-
+                        viewModel.updateUserDetails(
+                            userId = 1,
+                            email = email,
+                            username = username,
+                            fullName = fullName,
+                            address = address,
+                            city = city,
+                            country = country,
+                            postalCode = postalCode,
+                            phoneNumber = phoneNumber
+                        )
+                        isLoading = true
                     }
                 },
                 modifier = Modifier

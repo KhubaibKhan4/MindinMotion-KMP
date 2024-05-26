@@ -37,7 +37,6 @@ class MainViewModel(private val repository: Repository) : ViewModel() {
     fun updateUserDetails(
         userId: Int,
         email: String,
-        password: String,
         username: String,
         fullName: String,
         address: String,
@@ -52,7 +51,6 @@ class MainViewModel(private val repository: Repository) : ViewModel() {
                 repository.updateUserDetails(
                     userId,
                     email,
-                    password,
                     username,
                     fullName,
                     address,

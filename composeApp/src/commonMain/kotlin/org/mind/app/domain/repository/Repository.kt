@@ -71,7 +71,6 @@ class Repository(
     override suspend fun updateUserDetails(
         userId: Int,
         email: String,
-        password: String,
         username: String,
         fullName: String,
         address: String,
@@ -83,7 +82,6 @@ class Repository(
         return MotionApiClient.updateUserDetails(
             userId,
             email,
-            password,
             username,
             fullName,
             address,
