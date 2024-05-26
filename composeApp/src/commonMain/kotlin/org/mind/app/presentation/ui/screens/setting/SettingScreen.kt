@@ -3,6 +3,7 @@ package org.mind.app.presentation.ui.screens.setting
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.MutatePriority
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -50,16 +51,18 @@ import cafe.adriel.voyager.navigator.tab.LocalTabNavigator
 import com.example.cmppreference.LocalPreference
 import com.example.cmppreference.LocalPreferenceProvider
 import org.koin.compose.koinInject
+import org.mind.app.domain.model.users.Users
 import org.mind.app.domain.usecases.ResultState
 import org.mind.app.presentation.ui.screens.auth.login.LoginScreen
+import org.mind.app.presentation.ui.screens.setting.edit.EditProfileScreen
 import org.mind.app.presentation.ui.tabs.profile.ProfileTab
 import org.mind.app.presentation.viewmodel.MainViewModel
 import org.mind.app.theme.LocalThemeIsDark
 
-class SettingScreen : Screen {
+class SettingScreen(private val users: Users) : Screen {
     @Composable
     override fun Content() {
-        SettingScreenContent()
+        SettingScreenContent(users)
     }
 
 }
@@ -67,6 +70,7 @@ class SettingScreen : Screen {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingScreenContent(
+    users: Users,
     viewModel: MainViewModel = koinInject(),
 ) {
     LocalPreferenceProvider {
@@ -147,7 +151,7 @@ fun SettingScreenContent(
                     title = "Edit Profile",
                     icon = Icons.Default.Edit,
                     onClick = {
-                        // Navigate to edit profile screen
+                        navigator?.push(EditProfileScreen(users))
                     }
                 )
 

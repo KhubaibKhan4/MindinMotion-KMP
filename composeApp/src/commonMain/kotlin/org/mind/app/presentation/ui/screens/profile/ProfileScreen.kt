@@ -107,18 +107,10 @@ fun ProfileScreenContent(
                     title = { Text("Profile") },
                     actions = {
                         Icon(
-                            imageVector = Icons.Default.WbSunny,
-                            contentDescription = null,
-                            modifier = Modifier.clickable {
-                                isDark = !isDark
-                            }
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Icon(
                             imageVector = Icons.Default.Settings,
                             contentDescription = null,
                             modifier = Modifier.clickable {
-                               navigator?.push(SettingScreen())
+                               navigator?.push(SettingScreen(user))
                             }
                         )
                     }
