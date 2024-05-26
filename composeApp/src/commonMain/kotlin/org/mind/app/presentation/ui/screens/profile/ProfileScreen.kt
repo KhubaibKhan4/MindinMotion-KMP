@@ -76,7 +76,6 @@ fun ProfileScreenContent(
         var isLogin by remember { mutableStateOf(false) }
         var usersDetails by remember { mutableStateOf<Users?>(null) }
         var email by remember { mutableStateOf("") }
-        val signOutState by viewModel.signOutState.collectAsState()
         LaunchedEffect(isLogin) {
             isLogin = preference.getBoolean("is_login", false)
             email = preference.getString("email").toString()
@@ -100,28 +99,7 @@ fun ProfileScreenContent(
                 usersDetails = response
             }
         }
-        when (signOutState) {
-            is ResultState.Loading -> {
-                LoadingBox()
-            }
 
-            is ResultState.Success -> {
-                val response = (signOutState as ResultState.Success).data
-                notify(response)
-                LaunchedEffect(Unit) {
-                    preference.put("is_login", false)
-                    preference.put("email", "")
-                    isLogin = preference.getBoolean("is_login", false)
-                    email = preference.getString("email").toString()
-                    tabNavigator.current = LoginScreen
-                }
-            }
-
-            is ResultState.Error -> {
-                val errorMessage = (signOutState as ResultState.Error).message
-                ErrorBox(errorMessage)
-            }
-        }
 
         Scaffold(
             topBar = {

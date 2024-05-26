@@ -1,9 +1,5 @@
 package org.mind.app.presentation.ui.screens.setting
 
-import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.animateContentSize
-import androidx.compose.animation.core.tween
-import androidx.compose.foundation.MutatePriority
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -42,7 +38,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.Screen
@@ -53,6 +48,9 @@ import com.example.cmppreference.LocalPreferenceProvider
 import org.koin.compose.koinInject
 import org.mind.app.domain.model.users.Users
 import org.mind.app.domain.usecases.ResultState
+import org.mind.app.notify
+import org.mind.app.presentation.ui.components.ErrorBox
+import org.mind.app.presentation.ui.components.LoadingBox
 import org.mind.app.presentation.ui.screens.auth.login.LoginScreen
 import org.mind.app.presentation.ui.screens.setting.edit.EditProfileScreen
 import org.mind.app.presentation.ui.tabs.profile.ProfileTab
@@ -79,6 +77,7 @@ fun SettingScreenContent(
         val preference = LocalPreference.current
         var isDark by LocalThemeIsDark.current
         var isLogin by remember { mutableStateOf(false) }
+        var isLoading by remember { mutableStateOf(false) }
         val signOutState by viewModel.signOutState.collectAsState()
 
         LaunchedEffect(isLogin) {
@@ -89,18 +88,25 @@ fun SettingScreenContent(
         }
         when (signOutState) {
             is ResultState.Loading -> {
-                // Handle loading state
+                if (isLoading) {
+                    LoadingBox()
+                }
             }
 
             is ResultState.Success -> {
+                val response = (signOutState as ResultState.Success).data
+                notify(response)
                 LaunchedEffect(Unit) {
                     preference.put("is_login", false)
                     tabNavigator.current = LoginScreen
+                    isLoading = false
                 }
             }
 
             is ResultState.Error -> {
-                // Handle error state
+                val error = (signOutState as ResultState.Error).message
+                ErrorBox(error)
+                isLoading = false
             }
         }
 
@@ -119,7 +125,7 @@ fun SettingScreenContent(
                     }
                 )
             }
-        ) {padding->
+        ) { padding ->
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -175,6 +181,7 @@ fun SettingScreenContent(
                     title = "Logout",
                     icon = Icons.AutoMirrored.Filled.Logout,
                     onClick = {
+                        isLogin = true
                         viewModel.signOut()
                     }
                 )
