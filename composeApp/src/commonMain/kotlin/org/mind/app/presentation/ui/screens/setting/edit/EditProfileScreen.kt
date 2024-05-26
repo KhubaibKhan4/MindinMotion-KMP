@@ -1,5 +1,6 @@
 package org.mind.app.presentation.ui.screens.setting.edit
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -8,7 +9,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIosNew
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -17,10 +17,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -38,6 +36,7 @@ import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 import org.mind.app.domain.model.users.Users
 import org.mind.app.domain.usecases.ResultState
+import org.mind.app.notify
 import org.mind.app.presentation.viewmodel.MainViewModel
 import org.mind.app.utils.isValidAddress
 import org.mind.app.utils.isValidCity
@@ -99,10 +98,6 @@ fun EditProfileScreenContent(
             val response = (updateState as ResultState.Success).data
             userMessage = response
             isLoading = false
-            scope.launch {
-                delay(2000)
-                userMessage = ""
-            }
         }
     }
 
@@ -110,11 +105,7 @@ fun EditProfileScreenContent(
         topBar = {
             TopAppBar(
                 title = {
-                    if (userMessage.isNotBlank()) {
-                        Text(
-                            text = userMessage
-                        )
-                    }
+                    Text("")
                 },
                 navigationIcon = {
                     IconButton(onClick = { navigator?.pop() }) {
@@ -290,6 +281,9 @@ fun EditProfileScreenContent(
                     .padding(vertical = 16.dp)
             ) {
                 Text("Save Profile")
+            }
+            AnimatedVisibility (userMessage.isNotBlank()) {
+                notify(userMessage)
             }
         }
     }

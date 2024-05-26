@@ -4,9 +4,12 @@ import android.app.Application
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.platform.LocalContext
 import com.example.cmppreference.AppContext
 import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.FirebaseOptions
@@ -59,4 +62,10 @@ internal actual fun openUrl(url: String?) {
         addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
     }
     AndroidApp.INSTANCE.startActivity(intent)
+}
+
+@Composable
+internal actual fun notify(message: String) {
+    val context = LocalContext.current
+    Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
 }
