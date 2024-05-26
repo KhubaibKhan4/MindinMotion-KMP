@@ -55,6 +55,7 @@ import org.mind.app.notify
 import org.mind.app.presentation.ui.components.ErrorBox
 import org.mind.app.presentation.ui.components.LoadingBox
 import org.mind.app.presentation.ui.screens.auth.login.LoginScreen
+import org.mind.app.presentation.ui.screens.setting.about.AboutScreen
 import org.mind.app.presentation.ui.screens.setting.edit.EditProfileScreen
 import org.mind.app.presentation.ui.tabs.profile.ProfileTab
 import org.mind.app.presentation.viewmodel.MainViewModel
@@ -162,7 +163,7 @@ fun SettingScreenContent(
                     title = "About App",
                     icon = Icons.Default.Info,
                     onClick = {
-                        // Navigate to about app screen
+                        navigator?.push(AboutScreen())
                     }
                 )
 
