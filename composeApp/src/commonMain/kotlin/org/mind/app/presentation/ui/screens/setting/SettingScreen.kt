@@ -57,6 +57,7 @@ import org.mind.app.presentation.ui.components.LoadingBox
 import org.mind.app.presentation.ui.screens.auth.login.LoginScreen
 import org.mind.app.presentation.ui.screens.setting.about.AboutScreen
 import org.mind.app.presentation.ui.screens.setting.edit.EditProfileScreen
+import org.mind.app.presentation.ui.screens.setting.privacy.PrivacyScreen
 import org.mind.app.presentation.ui.tabs.profile.ProfileTab
 import org.mind.app.presentation.viewmodel.MainViewModel
 import org.mind.app.theme.LocalThemeIsDark
@@ -171,7 +172,7 @@ fun SettingScreenContent(
                     title = "Privacy Policy",
                     icon = Icons.Default.Policy,
                     onClick = {
-                        // Navigate to privacy policy screen
+                        navigator?.push(PrivacyScreen())
                     }
                 )
 
