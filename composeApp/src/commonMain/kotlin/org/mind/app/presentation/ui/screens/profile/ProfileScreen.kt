@@ -4,7 +4,6 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -12,11 +11,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.WbSunny
 import androidx.compose.material3.Card
@@ -43,6 +40,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
+import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.tab.LocalTabNavigator
 import com.example.cmppreference.LocalPreference
 import com.example.cmppreference.LocalPreferenceProvider
@@ -52,6 +50,8 @@ import org.mind.app.domain.model.users.Users
 import org.mind.app.domain.usecases.ResultState
 import org.mind.app.presentation.ui.components.LocalImage
 import org.mind.app.presentation.ui.screens.auth.login.LoginScreen
+import org.mind.app.presentation.ui.screens.home.HomeScreen
+import org.mind.app.presentation.ui.screens.setting.SettingScreen
 import org.mind.app.presentation.viewmodel.MainViewModel
 import org.mind.app.theme.LocalThemeIsDark
 
@@ -70,7 +70,8 @@ fun ProfileScreenContent(
     val user = remember { getUserDetails(1) }
     LocalPreferenceProvider {
         val preference = LocalPreference.current
-        val navigator = LocalTabNavigator.current
+        val tabNavigator = LocalTabNavigator.current
+        val navigator = LocalNavigator.current
         var isDark by LocalThemeIsDark.current
         var isMenuVisible by remember { mutableStateOf(false) }
         var isLogin by remember { mutableStateOf(false) }
@@ -91,7 +92,7 @@ fun ProfileScreenContent(
                     preference.put("email", "")
                     isLogin = preference.getBoolean("is_login", false)
                     email = preference.getString("email").toString()
-                    navigator.current = LoginScreen
+                    tabNavigator.current = LoginScreen
                 }
             }
 
@@ -113,11 +114,12 @@ fun ProfileScreenContent(
                                 isDark = !isDark
                             }
                         )
+                        Spacer(modifier = Modifier.width(4.dp))
                         Icon(
                             imageVector = Icons.Default.Settings,
                             contentDescription = null,
                             modifier = Modifier.clickable {
-                                isMenuVisible = !isMenuVisible
+                                navigator?.push(SettingScreen())
                             }
                         )
                     }
