@@ -63,4 +63,8 @@ class Repository(
             userRole = userRole
         )
     }
+
+    override suspend fun getUsersById(userId: Int): Users {
+        return MotionApiClient.getUsersById(userId)
+    }
 }

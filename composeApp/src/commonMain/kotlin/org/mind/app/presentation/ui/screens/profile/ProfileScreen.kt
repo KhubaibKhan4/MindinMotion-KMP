@@ -10,14 +10,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.WbSunny
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -50,7 +49,6 @@ import org.mind.app.domain.model.users.Users
 import org.mind.app.domain.usecases.ResultState
 import org.mind.app.presentation.ui.components.LocalImage
 import org.mind.app.presentation.ui.screens.auth.login.LoginScreen
-import org.mind.app.presentation.ui.screens.home.HomeScreen
 import org.mind.app.presentation.ui.screens.setting.SettingScreen
 import org.mind.app.presentation.viewmodel.MainViewModel
 import org.mind.app.theme.LocalThemeIsDark
@@ -67,18 +65,36 @@ class ProfileScreen : Screen {
 fun ProfileScreenContent(
     viewModel: MainViewModel = koinInject(),
 ) {
-    val user = remember { getUserDetails(1) }
     LocalPreferenceProvider {
         val preference = LocalPreference.current
         val tabNavigator = LocalTabNavigator.current
         var isDark by LocalThemeIsDark.current
         val navigator = LocalNavigator.current
         var isLogin by remember { mutableStateOf(false) }
+        var usersDetails by remember { mutableStateOf<Users?>(null) }
         var email by remember { mutableStateOf("") }
         val signOutState by viewModel.signOutState.collectAsState()
         LaunchedEffect(isLogin) {
             isLogin = preference.getBoolean("is_login", false)
             email = preference.getString("email").toString()
+        }
+        LaunchedEffect(Unit) {
+            viewModel.getUserDetail(1)
+        }
+        val userDetailState by viewModel.userDetail.collectAsState()
+        when (userDetailState) {
+            is ResultState.Error -> {
+                val error = (userDetailState as ResultState.Error).message
+            }
+
+            ResultState.Loading -> {
+                CircularProgressIndicator()
+            }
+
+            is ResultState.Success -> {
+                val response = (userDetailState as ResultState.Success).data
+                usersDetails = response
+            }
         }
         when (signOutState) {
             is ResultState.Loading -> {
@@ -110,7 +126,9 @@ fun ProfileScreenContent(
                             imageVector = Icons.Default.Settings,
                             contentDescription = null,
                             modifier = Modifier.clickable {
-                               navigator?.push(SettingScreen(user))
+                                usersDetails?.let {
+                                    navigator?.push(SettingScreen(it))
+                                }
                             }
                         )
                     }
@@ -123,16 +141,16 @@ fun ProfileScreenContent(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Top
             ) {
-                if (user.profileImage != "null") {
+                if (usersDetails?.profileImage != "null") {
                     Image(
-                        painter = rememberImagePainter(user.profileImage.toString()),
+                        painter = rememberImagePainter(usersDetails?.profileImage.toString()),
                         contentDescription = null,
                         modifier = Modifier
                             .size(150.dp)
                             .clip(CircleShape)
                     )
                 } else {
-                   LocalImage(modifier = Modifier.size(150.dp).clip(CircleShape))
+                    LocalImage(modifier = Modifier.size(150.dp).clip(CircleShape))
                 }
                 Spacer(modifier = Modifier.height(6.dp))
                 Column(
@@ -141,19 +159,19 @@ fun ProfileScreenContent(
                     verticalArrangement = Arrangement.Top
                 ) {
                     Text(
-                        text = user.fullName,
+                        text = usersDetails?.fullName.toString(),
                         fontSize = MaterialTheme.typography.titleLarge.fontSize,
                         color = if (isDark) Color.White else Color.Black,
                         fontWeight = FontWeight.Bold
                     )
                     Text(
-                        text = user.email,
+                        text = usersDetails?.email.toString(),
                         fontSize = MaterialTheme.typography.labelMedium.fontSize,
                         color = Color.Gray
                     )
                 }
                 Spacer(modifier = Modifier.height(12.dp))
-                ProfileDetails(user)
+                usersDetails?.let { it1 -> ProfileDetails(it1) }
             }
         }
     }
@@ -230,21 +248,4 @@ fun DetailCard(
             )
         }
     }
-}
-
-fun getUserDetails(userId: Int): Users {
-    return Users(
-        id = 1,
-        username = "Muhammad Khubaib Imtiaz",
-        email = "18.bscs.803@gmail.com",
-        password = "dummy_password",
-        fullName = "Muhammad Khubaib Imtiaz",
-        address = "123 Main Street",
-        city = "Brooklyn",
-        country = "United States",
-        postalCode = 12345,
-        phoneNumber = "+12345677",
-        userRole = "Student",
-        profileImage = "null"
-    )
 }

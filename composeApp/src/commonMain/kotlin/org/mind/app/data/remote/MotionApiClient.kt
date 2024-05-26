@@ -9,11 +9,13 @@ import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
 import io.ktor.client.request.forms.FormDataContent
+import io.ktor.client.request.get
 import io.ktor.client.request.post
 import io.ktor.http.Parameters
 import io.ktor.serialization.kotlinx.json.json
 import io.ktor.util.InternalAPI
 import kotlinx.serialization.json.Json
+import org.mind.app.domain.model.users.Users
 import org.mind.app.utils.Constant.BASE_URL
 
 object MotionApiClient {
@@ -70,5 +72,8 @@ object MotionApiClient {
         return client.post(BASE_URL + "v1/signup") {
             body = FormDataContent(formData)
         }.body()
+    }
+    suspend fun getUsersById(userId: Int):Users{
+        return client.get(BASE_URL+"v1/users/$userId").body()
     }
 }

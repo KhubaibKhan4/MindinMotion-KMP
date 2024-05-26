@@ -28,6 +28,9 @@ class MainViewModel(private val repository: Repository) : ViewModel() {
 
     private val _signupUsersServer = MutableStateFlow<ResultState<String>>(ResultState.Loading)
     val signupUsersServer = _signupUsersServer.asStateFlow()
+
+    private val _userDetail = MutableStateFlow<ResultState<Users>>(ResultState.Loading)
+    val userDetail = _userDetail.asStateFlow()
     fun login(email: String, password: String) {
         viewModelScope.launch {
             _loginUser.value = ResultState.Loading
@@ -36,6 +39,17 @@ class MainViewModel(private val repository: Repository) : ViewModel() {
                 _loginUser.value = ResultState.Success("Success")
             } catch (e: Exception) {
                 _loginUser.value = ResultState.Error(e.message.toString())
+            }
+        }
+    }
+    fun getUserDetail(userId: Int) {
+        viewModelScope.launch {
+            _userDetail.value = ResultState.Loading
+            try {
+                val response =repository.getUsersById(userId)
+                _userDetail.value = ResultState.Success(response)
+            } catch (e: Exception) {
+                _userDetail.value = ResultState.Error(e.message.toString())
             }
         }
     }
