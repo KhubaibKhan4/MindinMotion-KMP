@@ -3,9 +3,11 @@ package org.mind.app.presentation.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import org.mind.app.domain.model.gemini.Gemini
+import org.mind.app.domain.model.message.Message
 import org.mind.app.domain.model.user.User
 import org.mind.app.domain.model.users.Users
 import org.mind.app.domain.repository.Repository
@@ -42,17 +44,41 @@ class MainViewModel(private val repository: Repository) : ViewModel() {
     private val _userByEmail = MutableStateFlow<ResultState<Users>>(ResultState.Loading)
     val userByEmail = _userByEmail.asStateFlow()
 
+    private val _messages = MutableStateFlow<List<Message>>(emptyList())
+    val messages: StateFlow<List<Message>> = _messages.asStateFlow()
+
     private val _generateContent = MutableStateFlow<ResultState<Gemini>>(ResultState.Loading)
     val generateContent = _generateContent.asStateFlow()
 
-    fun generateContent(content: String) {
+    fun sendMessage(content: String) {
+        val currentMessages = _messages.value.toMutableList()
+        currentMessages.add(Message(content, isUserMessage = true))
+        currentMessages.add(Message("Loading...", isUserMessage = false, isLoading = true))
+        _messages.value = currentMessages
+
+        generateResponse(content)
+    }
+
+    private fun generateResponse(content: String) {
         viewModelScope.launch {
             _generateContent.value = ResultState.Loading
             try {
                 val response = repository.generateContent(content)
                 _generateContent.value = ResultState.Success(response)
+
+                val responseMessage = response.candidates?.firstOrNull()?.content?.parts?.joinToString(" ") { it.text }
+                    ?: "No response from server"
+
+                val currentMessages = _messages.value.toMutableList()
+                currentMessages.removeLast()
+                currentMessages.add(Message(responseMessage, isUserMessage = false))
+                _messages.value = currentMessages
             } catch (e: Exception) {
                 _generateContent.value = ResultState.Error(e.toString())
+                val currentMessages = _messages.value.toMutableList()
+                currentMessages.removeLast()
+                currentMessages.add(Message("Error: ${e.message}", isUserMessage = false))
+                _messages.value = currentMessages
             }
         }
     }

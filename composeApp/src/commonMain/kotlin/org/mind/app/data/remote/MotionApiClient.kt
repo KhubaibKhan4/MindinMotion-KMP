@@ -32,6 +32,7 @@ object MotionApiClient {
             json(
                 json = Json {
                     isLenient = true
+                    ignoreUnknownKeys = true
                 }
             )
         }
@@ -129,6 +130,10 @@ object MotionApiClient {
     suspend fun getUserByEmail(email: String): Users{
         return client.get(BASE_URL+"v1/users/email/$email").body()
     }
+    private val jsonDecoder = Json {
+        isLenient = true
+        ignoreUnknownKeys = true
+    }
     @OptIn(InternalAPI::class)
     suspend fun generateContent(content: String): Gemini {
         val url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=AIzaSyAGIbCm970chMEFc5fEiOLp0pxFvlrcN8E"
@@ -147,9 +152,8 @@ object MotionApiClient {
 
             println("API Response: $responseText")
 
-            return Json.decodeFromString(responseText)
+            return jsonDecoder.decodeFromString(responseText)
         } catch (e: Exception) {
-
             println("Error during API request: ${e.message}")
             throw e
         }
