@@ -16,23 +16,24 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.ArrowBackIosNew
-import androidx.compose.material.icons.filled.PersonOff
-import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -48,10 +49,11 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
-import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.tab.LocalTabNavigator
+import kotlinx.coroutines.delay
 import mind_in_motion.composeapp.generated.resources.Res
 import mind_in_motion.composeapp.generated.resources.avatar
+import mind_in_motion.composeapp.generated.resources.ic_cyclone
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.koinInject
 import org.mind.app.domain.model.message.Message
@@ -73,6 +75,7 @@ fun ChatScreenContent(viewModel: MainViewModel = koinInject()) {
     var userInput by remember { mutableStateOf("") }
     val isDark by LocalThemeIsDark.current
     val navigator = LocalTabNavigator.current
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -105,25 +108,32 @@ fun ChatScreenContent(viewModel: MainViewModel = koinInject()) {
             }
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
             ) {
                 TextField(
                     value = userInput,
                     onValueChange = { userInput = it },
                     modifier = Modifier.weight(1f),
-                    placeholder = { Text("Type a message...") }
+                    placeholder = { Text("Type a message...") },
+                    colors = TextFieldDefaults.colors(
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent
+                    ),
+                    trailingIcon = {
+                        Icon(
+                            Icons.AutoMirrored.Filled.Send,
+                            contentDescription = null,
+                            tint = if (isDark) Color.White else Color.Black,
+                            modifier = Modifier.clickable {
+                                if (userInput.isNotBlank()) {
+                                    viewModel.sendMessage(userInput)
+                                    userInput = ""
+                                }
+                            }
+                        )
+                    }
                 )
-                Button(
-                    onClick = {
-                        if (userInput.isNotBlank()) {
-                            viewModel.sendMessage(userInput)
-                            userInput = ""
-                        }
-                    },
-                    modifier = Modifier.padding(start = 8.dp)
-                ) {
-                    Text("Send")
-                }
             }
         }
     }
@@ -141,7 +151,7 @@ fun MessageBubble(message: Message) {
     ) {
         if (!message.isUserMessage) {
             Image(
-                imageVector = Icons.Default.PersonOff,
+                painter = painterResource(Res.drawable.ic_cyclone),
                 contentDescription = "Bot Profile",
                 modifier = Modifier
                     .size(40.dp)
@@ -166,10 +176,19 @@ fun MessageBubble(message: Message) {
                 )
             } else {
                 val styledText = parseMessageText(message.text)
-                SelectionContainer {
+                if (message.showTypewriterEffect) {
+                    TypewriterEffect(
+                        text = styledText,
+                        modifier = Modifier.padding(8.dp),
+                        typingDelay = 50L,
+                        blinkDelay = 500L
+                    )
+                } else {
                     Text(
                         text = styledText,
-                        color = Color.White
+                        modifier = Modifier.padding(8.dp),
+                        color = Color.White,
+                        fontSize = 16.sp
                     )
                 }
             }
@@ -343,4 +362,40 @@ fun parseMessageText(text: String): AnnotatedString {
             }
         }
     }
+}
+@Composable
+fun TypewriterEffect(
+    text: AnnotatedString,
+    modifier: Modifier = Modifier,
+    typingDelay: Long = 50L,
+    blinkDelay: Long = 500L
+) {
+    var visibleText by remember { mutableStateOf(AnnotatedString("")) }
+    var isTypingFinished by remember { mutableStateOf(false) }
+
+    LaunchedEffect(text) {
+        text.forEachIndexed { index, _ ->
+            visibleText = text.subSequence(0, index + 1) as AnnotatedString
+            delay(typingDelay)
+        }
+        isTypingFinished = true
+    }
+
+    LaunchedEffect(isTypingFinished) {
+        while (!isTypingFinished) {
+            delay(blinkDelay)
+            visibleText = if (visibleText.isNotEmpty() && visibleText.text.last() == '█') {
+                AnnotatedString(visibleText.text.dropLast(1), visibleText.spanStyles, visibleText.paragraphStyles)
+            } else {
+                AnnotatedString(visibleText.text + "█", visibleText.spanStyles, visibleText.paragraphStyles)
+            }
+        }
+    }
+
+    Text(
+        text = if (isTypingFinished) visibleText else AnnotatedString(visibleText.text + "█", visibleText.spanStyles, visibleText.paragraphStyles),
+        modifier = modifier,
+        color = Color.White,
+        fontSize = 16.sp
+    )
 }
