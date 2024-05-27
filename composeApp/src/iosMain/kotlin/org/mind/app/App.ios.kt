@@ -1,7 +1,10 @@
 package org.mind.app
 
 import androidx.compose.runtime.Composable
+import app.cash.sqldelight.db.SqlDriver
+import app.cash.sqldelight.driver.native.NativeSqliteDriver
 import org.koin.core.context.startKoin
+import org.mind.app.db.MyDatabase
 import platform.Foundation.NSURL
 import platform.UIKit.UIApplication
 
@@ -27,4 +30,8 @@ internal actual fun notify(message: String) {
             toastLabel.removeFromSuperview()
     })
 }
+}
+
+actual fun createDriver(): SqlDriver {
+    return NativeSqliteDriver(MyDatabase.Schema, "chat.db")
 }

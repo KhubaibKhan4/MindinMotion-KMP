@@ -6,6 +6,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.datetime.Clock
+import org.mind.app.data.local.DatabaseHelper
 import org.mind.app.domain.model.gemini.Gemini
 import org.mind.app.domain.model.message.Message
 import org.mind.app.domain.model.user.User
@@ -13,7 +15,10 @@ import org.mind.app.domain.model.users.Users
 import org.mind.app.domain.repository.Repository
 import org.mind.app.domain.usecases.ResultState
 
-class MainViewModel(private val repository: Repository) : ViewModel() {
+class MainViewModel(
+    private val repository: Repository,
+    private val databaseHelper: DatabaseHelper,
+) : ViewModel() {
     private val _loginUser = MutableStateFlow<ResultState<String>>(ResultState.Loading)
     val loginUser = _loginUser.asStateFlow()
 
@@ -45,19 +50,37 @@ class MainViewModel(private val repository: Repository) : ViewModel() {
     val userByEmail = _userByEmail.asStateFlow()
 
     private val _messages = MutableStateFlow<List<Message>>(emptyList())
-    val messages: StateFlow<List<Message>> = _messages.asStateFlow()
+    val messages: StateFlow<List<Message>> = _messages
 
     private val _generateContent = MutableStateFlow<ResultState<Gemini>>(ResultState.Loading)
-    val generateContent = _generateContent.asStateFlow()
+    val generateContent: StateFlow<ResultState<Gemini>> = _generateContent
+
+    init {
+        viewModelScope.launch {
+            databaseHelper.getAllMessages().collect { localMessages ->
+                val convertedMessages = localMessages.map { convertDbMessageToUiMessage(it) }
+                _messages.value = convertedMessages
+            }
+        }
+    }
 
     fun sendMessage(content: String) {
-        val currentMessages = _messages.value.toMutableList()
-        currentMessages.add(Message(content, isUserMessage = true))
-        currentMessages.add(Message("Loading...", isUserMessage = false, isLoading = true))
-        _messages.value = currentMessages
+        val userMessage = Message(content, isUserMessage = true)
+        viewModelScope.launch {
+            databaseHelper.insertMessage(
+                text = userMessage.text,
+                isUserMessage = true,
+                timestamp = Clock.System.now().toEpochMilliseconds()
+            )
+            val currentMessages = _messages.value.toMutableList()
+            currentMessages.add(userMessage)
+            currentMessages.add(Message("Loading...", isUserMessage = false, isLoading = true))
+            _messages.value = currentMessages
 
-        generateResponse(content)
+            generateResponse(content)
+        }
     }
+
 
     private fun generateResponse(content: String) {
         viewModelScope.launch {
@@ -66,8 +89,15 @@ class MainViewModel(private val repository: Repository) : ViewModel() {
                 val response = repository.generateContent(content)
                 _generateContent.value = ResultState.Success(response)
 
-                val responseMessage = response.candidates?.firstOrNull()?.content?.parts?.joinToString(" ") { it.text }
-                    ?: "No response from server"
+                val responseMessage =
+                    response.candidates?.firstOrNull()?.content?.parts?.joinToString(" ") { it.text }
+                        ?: "No response from server"
+
+                databaseHelper.insertMessage(
+                    text = responseMessage,
+                    isUserMessage = false,
+                    timestamp =Clock.System.now().toEpochMilliseconds()
+                )
 
                 val currentMessages = _messages.value.toMutableList()
                 currentMessages.removeLast()
@@ -75,12 +105,28 @@ class MainViewModel(private val repository: Repository) : ViewModel() {
                 _messages.value = currentMessages
             } catch (e: Exception) {
                 _generateContent.value = ResultState.Error(e.toString())
+                val errorMessage = "Error: ${e.message}"
+                databaseHelper.insertMessage(
+                    text = errorMessage,
+                    isUserMessage = false,
+                    timestamp =Clock.System.now().toEpochMilliseconds()
+                )
                 val currentMessages = _messages.value.toMutableList()
                 currentMessages.removeLast()
-                currentMessages.add(Message("Error: ${e.message}", isUserMessage = false))
+                currentMessages.add(Message(errorMessage, isUserMessage = false))
                 _messages.value = currentMessages
             }
         }
+    }
+
+
+    private fun convertDbMessageToUiMessage(dbMessage: org.mind.app.db.Message): Message {
+        return Message(
+            text = dbMessage.text,
+            isUserMessage = dbMessage.isUserMessage == 1L,
+            isLoading = false,
+            showTypewriterEffect = false
+        )
     }
 
     fun getUserByEmail(

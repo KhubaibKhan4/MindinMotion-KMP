@@ -96,7 +96,8 @@ fun ChatScreenContent(viewModel: MainViewModel = koinInject()) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp),
+                .padding(top = it.calculateTopPadding())
+                .padding(start = 16.dp, end = 16.dp),
             verticalArrangement = Arrangement.SpaceBetween
         ) {
             Box(

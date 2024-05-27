@@ -6,6 +6,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import app.cash.sqldelight.db.SqlDriver
 import cafe.adriel.voyager.navigator.Navigator
 import com.example.cmppreference.LocalPreference
 import com.example.cmppreference.LocalPreferenceProvider
@@ -37,3 +38,4 @@ internal expect fun openUrl(url: String?)
 
 @Composable
 internal expect fun notify(message: String)
+expect fun createDriver(): SqlDriver

@@ -1,0 +1,12 @@
+CREATE TABLE Message (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    text TEXT NOT NULL,
+    isUserMessage INTEGER NOT NULL,
+    timestamp INTEGER NOT NULL
+);
+
+selectAllMessages:
+SELECT * FROM Message ORDER BY timestamp ASC ;
+
+insertMessage:
+INSERT INTO Message (text, isUserMessage, timestamp) VALUES (?, ?, ?);
