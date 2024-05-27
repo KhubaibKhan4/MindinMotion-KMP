@@ -49,7 +49,7 @@ object InstructorsTab : Tab {
         get() {
             val title by remember { mutableStateOf("Instructors") }
             val icon = rememberVectorPainter(Icons.Default.IntegrationInstructions)
-            val index: UShort = 1u
+            val index: UShort = 2u
             return TabOptions(index, title, icon)
         }
 }

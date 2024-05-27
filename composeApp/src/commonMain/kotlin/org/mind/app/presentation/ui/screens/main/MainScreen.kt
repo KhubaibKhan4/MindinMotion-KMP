@@ -35,6 +35,7 @@ import org.mind.app.presentation.ui.tabs.Instructors.InstructorsTab
 import org.mind.app.presentation.ui.tabs.chat.ChatTab
 import org.mind.app.presentation.ui.tabs.home.HomeTab
 import org.mind.app.presentation.ui.tabs.profile.ProfileTab
+import org.mind.app.presentation.ui.tabs.quiz.QuizTab
 import org.mind.app.presentation.ui.tabs.shop.ShopTab
 import org.mind.app.theme.AppTheme
 import org.mind.app.theme.LocalThemeIsDark
@@ -61,6 +62,7 @@ object MainScreen: Tab {
                         tonalElevation = 16.dp
                     ) {
                         TabItem(HomeTab)
+                        TabItem(QuizTab)
                         TabItem(InstructorsTab)
                         TabItem(ShopTab)
                         TabItem(ProfileTab)

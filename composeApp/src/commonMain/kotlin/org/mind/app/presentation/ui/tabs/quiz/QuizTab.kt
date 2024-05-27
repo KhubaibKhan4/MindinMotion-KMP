@@ -1,7 +1,7 @@
-package org.mind.app.presentation.ui.tabs.shop
+package org.mind.app.presentation.ui.tabs.quiz
 
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ShoppingBag
+import androidx.compose.material.icons.filled.Quiz
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -10,20 +10,20 @@ import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.tab.Tab
 import cafe.adriel.voyager.navigator.tab.TabOptions
-import org.mind.app.presentation.ui.screens.shop.ShopScreen
+import org.mind.app.presentation.ui.screens.quiz.QuizScreen
 
-object ShopTab : Tab {
+object QuizTab : Tab {
     @Composable
     override fun Content() {
-        Navigator(ShopScreen())
+        Navigator(QuizScreen())
     }
 
     override val options: TabOptions
         @Composable
         get() {
-            val title by remember { mutableStateOf("Shop") }
-            val icon = rememberVectorPainter(Icons.Default.ShoppingBag)
-            val index: UShort = 3u
+            val title by remember { mutableStateOf("Quiz") }
+            val icon = rememberVectorPainter(Icons.Default.Quiz)
+            val index: UShort = 1u
             return TabOptions(index, title, icon)
         }
 }
