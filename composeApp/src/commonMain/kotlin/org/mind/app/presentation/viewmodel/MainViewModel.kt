@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import org.mind.app.data.local.DatabaseHelper
+import org.mind.app.domain.model.category.QuizCategoryItem
 import org.mind.app.domain.model.gemini.Gemini
 import org.mind.app.domain.model.message.Message
 import org.mind.app.domain.model.user.User
@@ -55,11 +56,27 @@ class MainViewModel(
     private val _generateContent = MutableStateFlow<ResultState<Gemini>>(ResultState.Loading)
     val generateContent: StateFlow<ResultState<Gemini>> = _generateContent
 
+    private val _quizCategories =
+        MutableStateFlow<ResultState<List<QuizCategoryItem>>>(ResultState.Loading)
+    val quizCategories = _quizCategories
+
     init {
         viewModelScope.launch {
             databaseHelper.getAllMessages().collect { localMessages ->
                 val convertedMessages = localMessages.map { convertDbMessageToUiMessage(it) }
                 _messages.value = convertedMessages
+            }
+        }
+    }
+
+    fun getAllCategories() {
+        viewModelScope.launch {
+            _quizCategories.value = ResultState.Loading
+            try {
+                val response = repository.getAllCategories()
+                _quizCategories.value = ResultState.Success(response)
+            } catch (e: Exception) {
+                _quizCategories.value = ResultState.Error(e.message.toString())
             }
         }
     }
@@ -96,7 +113,7 @@ class MainViewModel(
                 databaseHelper.insertMessage(
                     text = responseMessage,
                     isUserMessage = false,
-                    timestamp =Clock.System.now().toEpochMilliseconds()
+                    timestamp = Clock.System.now().toEpochMilliseconds()
                 )
 
                 val currentMessages = _messages.value.toMutableList()
@@ -109,7 +126,7 @@ class MainViewModel(
                 databaseHelper.insertMessage(
                     text = errorMessage,
                     isUserMessage = false,
-                    timestamp =Clock.System.now().toEpochMilliseconds()
+                    timestamp = Clock.System.now().toEpochMilliseconds()
                 )
                 val currentMessages = _messages.value.toMutableList()
                 currentMessages.removeLast()

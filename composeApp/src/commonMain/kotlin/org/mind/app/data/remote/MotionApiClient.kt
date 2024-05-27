@@ -22,6 +22,7 @@ import io.ktor.util.InternalAPI
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import org.mind.app.domain.model.category.QuizCategoryItem
 import org.mind.app.domain.model.gemini.Gemini
 import org.mind.app.domain.model.users.Users
 import org.mind.app.utils.Constant.BASE_URL
@@ -157,5 +158,8 @@ object MotionApiClient {
             println("Error during API request: ${e.message}")
             throw e
         }
+    }
+    suspend fun getAllCategories(): List<QuizCategoryItem>{
+        return client.get(BASE_URL+"v1/category").body()
     }
 }
