@@ -5,6 +5,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import org.mind.app.data.remote.MotionApiClient
 import org.mind.app.data.repository.AuthService
+import org.mind.app.domain.model.gemini.Gemini
 import org.mind.app.domain.model.user.User
 import org.mind.app.domain.model.users.Users
 
@@ -98,5 +99,9 @@ class Repository(
 
     override suspend fun getUserByEmail(email: String): Users {
         return MotionApiClient.getUserByEmail(email)
+    }
+
+    override suspend fun generateContent(content: String): Gemini {
+        return MotionApiClient.generateContent(content)
     }
 }

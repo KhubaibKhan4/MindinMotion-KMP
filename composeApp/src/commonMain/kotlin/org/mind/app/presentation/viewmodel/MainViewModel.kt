@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import org.mind.app.domain.model.gemini.Gemini
 import org.mind.app.domain.model.user.User
 import org.mind.app.domain.model.users.Users
 import org.mind.app.domain.repository.Repository
@@ -41,33 +42,50 @@ class MainViewModel(private val repository: Repository) : ViewModel() {
     private val _userByEmail = MutableStateFlow<ResultState<Users>>(ResultState.Loading)
     val userByEmail = _userByEmail.asStateFlow()
 
+    private val _generateContent = MutableStateFlow<ResultState<Gemini>>(ResultState.Loading)
+    val generateContent = _generateContent.asStateFlow()
+
+    fun generateContent(content: String) {
+        viewModelScope.launch {
+            _generateContent.value = ResultState.Loading
+            try {
+                val response = repository.generateContent(content)
+                _generateContent.value = ResultState.Success(response)
+            } catch (e: Exception) {
+                _generateContent.value = ResultState.Error(e.toString())
+            }
+        }
+    }
+
     fun getUserByEmail(
-        email: String
-    ){
+        email: String,
+    ) {
         viewModelScope.launch {
             _userByEmail.value = ResultState.Loading
             try {
-                val response =repository.getUserByEmail(email)
+                val response = repository.getUserByEmail(email)
                 _userByEmail.value = ResultState.Success(response)
             } catch (e: Exception) {
                 _userByEmail.value = ResultState.Error(e.toString())
             }
         }
     }
+
     fun loginServer(
         email: String,
-        password: String
-    ){
+        password: String,
+    ) {
         viewModelScope.launch {
             _loginServer.value = ResultState.Loading
             try {
-                val response =repository.loginServerUser(email, password)
+                val response = repository.loginServerUser(email, password)
                 _loginServer.value = ResultState.Success(response)
             } catch (e: Exception) {
                 _loginServer.value = ResultState.Error(e.toString())
             }
         }
     }
+
     fun updateUserDetails(
         userId: Int,
         email: String,
