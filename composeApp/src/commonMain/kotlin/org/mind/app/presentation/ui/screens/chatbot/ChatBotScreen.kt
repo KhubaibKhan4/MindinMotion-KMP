@@ -22,6 +22,7 @@ import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -33,7 +34,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -45,6 +45,7 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -98,12 +99,20 @@ fun ChatScreenContent(viewModel: MainViewModel = koinInject()) {
                 .padding(16.dp),
             verticalArrangement = Arrangement.SpaceBetween
         ) {
-            LazyColumn(
-                modifier = Modifier.weight(1f),
-                reverseLayout = true
+            Box(
+                modifier = Modifier.weight(1f)
             ) {
-                items(messages.reversed()) { message ->
-                    MessageBubble(message)
+                if (messages.isEmpty()) {
+                    EmptyChatPlaceholder()
+                } else {
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        reverseLayout = true
+                    ) {
+                        items(messages.reversed()) { message ->
+                            MessageBubble(message)
+                        }
+                    }
                 }
             }
             Row(
@@ -355,7 +364,7 @@ fun parseMessageText(text: String): AnnotatedString {
                         end = length
                     )
                 }
-                // Default case: append line as is
+
                 else -> {
                     append(formattedLine)
                 }
@@ -363,12 +372,13 @@ fun parseMessageText(text: String): AnnotatedString {
         }
     }
 }
+
 @Composable
 fun TypewriterEffect(
     text: AnnotatedString,
     modifier: Modifier = Modifier,
     typingDelay: Long = 50L,
-    blinkDelay: Long = 500L
+    blinkDelay: Long = 500L,
 ) {
     var visibleText by remember { mutableStateOf(AnnotatedString("")) }
     var isTypingFinished by remember { mutableStateOf(false) }
@@ -385,17 +395,55 @@ fun TypewriterEffect(
         while (!isTypingFinished) {
             delay(blinkDelay)
             visibleText = if (visibleText.isNotEmpty() && visibleText.text.last() == '█') {
-                AnnotatedString(visibleText.text.dropLast(1), visibleText.spanStyles, visibleText.paragraphStyles)
+                AnnotatedString(
+                    visibleText.text.dropLast(1),
+                    visibleText.spanStyles,
+                    visibleText.paragraphStyles
+                )
             } else {
-                AnnotatedString(visibleText.text + "█", visibleText.spanStyles, visibleText.paragraphStyles)
+                AnnotatedString(
+                    visibleText.text + "█",
+                    visibleText.spanStyles,
+                    visibleText.paragraphStyles
+                )
             }
         }
     }
 
     Text(
-        text = if (isTypingFinished) visibleText else AnnotatedString(visibleText.text + "█", visibleText.spanStyles, visibleText.paragraphStyles),
+        text = if (isTypingFinished) visibleText else AnnotatedString(
+            visibleText.text + "█",
+            visibleText.spanStyles,
+            visibleText.paragraphStyles
+        ),
         modifier = modifier,
         color = Color.White,
         fontSize = 16.sp
     )
+}
+
+@Composable
+fun EmptyChatPlaceholder() {
+    val isDark by LocalThemeIsDark.current
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Icon(
+            painter = painterResource(Res.drawable.ic_cyclone),
+            contentDescription = "Empty Chat",
+            modifier = Modifier.size(120.dp),
+            tint = if (isDark) Color.White else Color.Black
+        )
+        Text(
+            text = "No messages yet. Start the conversation!",
+            style = MaterialTheme.typography.bodyLarge,
+            textAlign = TextAlign.Center,
+            color = if (isDark) Color.White else Color.Black,
+            modifier = Modifier.padding(top = 16.dp)
+        )
+    }
 }
