@@ -32,6 +32,7 @@ import com.example.cmppreference.LocalPreferenceProvider
 import org.mind.app.presentation.ui.components.TabItem
 import org.mind.app.presentation.ui.screens.auth.login.LoginScreen
 import org.mind.app.presentation.ui.tabs.Instructors.InstructorsTab
+import org.mind.app.presentation.ui.tabs.chat.ChatTab
 import org.mind.app.presentation.ui.tabs.home.HomeTab
 import org.mind.app.presentation.ui.tabs.profile.ProfileTab
 import org.mind.app.presentation.ui.tabs.shop.ShopTab
@@ -62,6 +63,7 @@ object MainScreen: Tab {
                         TabItem(HomeTab)
                         TabItem(InstructorsTab)
                         TabItem(ShopTab)
+                        TabItem(ChatTab)
                         TabItem(ProfileTab)
                     }
                 }

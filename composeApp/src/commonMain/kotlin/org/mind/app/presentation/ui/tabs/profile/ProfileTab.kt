@@ -24,7 +24,7 @@ object ProfileTab : Tab {
         get() {
             val title by remember { mutableStateOf("Person") }
             val icon = rememberVectorPainter(Icons.Default.Person)
-            val index: UShort = 3u
+            val index: UShort = 4u
             return TabOptions(index, title, icon)
         }
 }

@@ -90,7 +90,7 @@ fun ProfileScreenContent(
             }
 
             ResultState.Loading -> {
-                // LoadingBox()
+                 LoadingBox()
             }
 
             is ResultState.Success -> {
