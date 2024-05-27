@@ -11,6 +11,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ChatBubble
 import androidx.compose.material.icons.outlined.ChatBubbleOutline
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -48,17 +49,19 @@ class HomeScreen : Screen {
                 topBar = {
                     TopAppBar(
                         title = { Text("") },
-                        actions = {
-                            Icon(
-                                imageVector = Icons.Outlined.ChatBubbleOutline,
-                                contentDescription = null,
-                                modifier = Modifier.padding(end = 16.dp)
-                                    .clickable {
-                                        tabNavigator.current= ChatTab
-                                    }
-                            )
-                        }
                     )
+                },
+                floatingActionButton = {
+                    FloatingActionButton(
+                        onClick = {
+                            tabNavigator.current = ChatTab
+                        }
+                    ){
+                        Icon(
+                            imageVector = Icons.Outlined.ChatBubble,
+                            contentDescription = null
+                        )
+                    }
                 }
             ) {
                 Column(

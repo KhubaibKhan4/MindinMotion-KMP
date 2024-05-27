@@ -19,10 +19,17 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.ArrowBackIosNew
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -75,6 +82,7 @@ class ChatBotScreen : Screen {
 fun ChatScreenContent(viewModel: MainViewModel = koinInject()) {
     val messages by viewModel.messages.collectAsState()
     var userInput by remember { mutableStateOf("") }
+    var isInfo by remember { mutableStateOf(false) }
     val isDark by LocalThemeIsDark.current
     val navigator = LocalTabNavigator.current
 
@@ -88,6 +96,15 @@ fun ChatScreenContent(viewModel: MainViewModel = koinInject()) {
                         tint = if (isDark) Color.White else Color.Black,
                         modifier = Modifier.clickable {
                             navigator.current = HomeTab
+                        }
+                    )
+                },
+                actions = {
+                    Icon(
+                        Icons.Default.Info, contentDescription = null,
+                        tint = if (isDark) Color.White else Color.Black,
+                        modifier = Modifier.clickable {
+                            isInfo = !isInfo
                         }
                     )
                 }
@@ -118,36 +135,81 @@ fun ChatScreenContent(viewModel: MainViewModel = koinInject()) {
                 }
             }
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth()
+                    .padding(4.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center
             ) {
-                TextField(
+                OutlinedTextField(
                     value = userInput,
                     onValueChange = { userInput = it },
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(end = 8.dp),
+                    textStyle = LocalTextStyle.current.copy(fontSize = 16.sp),
                     placeholder = { Text("Type a message...") },
-                    colors = TextFieldDefaults.colors(
-                        focusedIndicatorColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent
-                    ),
+                    singleLine = true,
                     trailingIcon = {
-                        Icon(
-                            Icons.AutoMirrored.Filled.Send,
-                            contentDescription = null,
-                            tint = if (isDark) Color.White else Color.Black,
-                            modifier = Modifier.clickable {
+                        IconButton(
+                            onClick = {
                                 if (userInput.isNotBlank()) {
                                     viewModel.sendMessage(userInput)
                                     userInput = ""
                                 }
                             }
-                        )
-                    }
+                        ) {
+                            Icon(
+                                Icons.AutoMirrored.Filled.Send,
+                                contentDescription = "Send",
+                                tint = if (isDark) Color.White else Color.Black
+                            )
+                        }
+                    },
+                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                        cursorColor = Color.Blue,
+                        focusedBorderColor = Color.DarkGray,
+                        unfocusedBorderColor = Color.Gray
+                    )
                 )
             }
         }
+        if (isInfo){
+            InfoDialog(
+                onCloseClicked = { isInfo = false }
+            )
+        }
     }
+}
+
+@Composable
+fun InfoDialog(
+    onCloseClicked: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = { onCloseClicked() },
+        title = {
+            Text(
+                text = "Important Information",
+                fontWeight = FontWeight.Bold
+            )
+        },
+        text = {
+            Text(
+                text = "This Chat Bot can make mistakes. Please keep this in mind while using it.",
+                textAlign = TextAlign.Center
+            )
+        },
+        confirmButton = {
+            Icon(
+                Icons.Default.Close,
+                contentDescription = null,
+                modifier = Modifier.clickable {
+                    onCloseClicked()
+                }
+            )
+        },
+        modifier = Modifier.padding(8.dp)
+    )
 }
 
 @Composable
