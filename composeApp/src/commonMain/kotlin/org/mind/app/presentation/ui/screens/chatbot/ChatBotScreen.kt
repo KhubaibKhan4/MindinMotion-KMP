@@ -43,6 +43,7 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -219,6 +220,7 @@ fun MessageBubble(message: Message) {
 fun parseMessageText(text: String): AnnotatedString {
     return buildAnnotatedString {
         val lines = text.split("\n")
+        var isCodeBlock = false
         lines.forEachIndexed { index, line ->
             var formattedLine = line.replace("**", "").replace("*", "")
             if (index != lines.lastIndex) {
@@ -365,11 +367,26 @@ fun parseMessageText(text: String): AnnotatedString {
                         end = length
                     )
                 }
+                formattedLine.startsWith("```") && formattedLine.endsWith("```") -> {
+                    val codeText = formattedLine.removeSurrounding("```")
+                    append(codeText)
+                    addStyle(
+                        style = SpanStyle(
+                            fontFamily = FontFamily.Monospace,
+                            fontSize = 14.sp,
+                            color = Color.Red,
+                        ),
+                        start = length - codeText.length,
+                        end = length
+                    )
+                }
 
                 else -> {
                     append(formattedLine)
                 }
             }
+            isCodeBlock = isCodeBlock || formattedLine.startsWith("```")
+            isCodeBlock = isCodeBlock && !formattedLine.endsWith("```")
         }
     }
 }
