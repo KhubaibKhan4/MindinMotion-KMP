@@ -49,11 +49,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
+import cafe.adriel.voyager.navigator.tab.LocalTabNavigator
 import mind_in_motion.composeapp.generated.resources.Res
 import mind_in_motion.composeapp.generated.resources.avatar
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.koinInject
 import org.mind.app.domain.model.message.Message
+import org.mind.app.presentation.ui.tabs.home.HomeTab
 import org.mind.app.presentation.viewmodel.MainViewModel
 import org.mind.app.theme.LocalThemeIsDark
 
@@ -70,7 +72,7 @@ fun ChatScreenContent(viewModel: MainViewModel = koinInject()) {
     val messages by viewModel.messages.collectAsState()
     var userInput by remember { mutableStateOf("") }
     val isDark by LocalThemeIsDark.current
-    val navigator = LocalNavigator.current
+    val navigator = LocalTabNavigator.current
     Scaffold(
         topBar = {
             TopAppBar(
@@ -80,7 +82,7 @@ fun ChatScreenContent(viewModel: MainViewModel = koinInject()) {
                         Icons.Default.ArrowBackIosNew, contentDescription = null,
                         tint = if (isDark) Color.White else Color.Black,
                         modifier = Modifier.clickable {
-                            navigator?.pop()
+                            navigator.current = HomeTab
                         }
                     )
                 }

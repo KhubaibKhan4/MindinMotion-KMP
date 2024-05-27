@@ -51,7 +51,7 @@ object MainScreen: Tab {
             tab = HomeTab,
         ) { tabNavigator ->
             Scaffold(bottomBar = {
-                if (tabNavigator.current != LoginScreen && tabNavigator.current!is ChatTab) {
+                if (tabNavigator.current != LoginScreen && tabNavigator.current!= ChatTab) {
                     NavigationBar(
                         modifier = Modifier
                             .fillMaxWidth()
