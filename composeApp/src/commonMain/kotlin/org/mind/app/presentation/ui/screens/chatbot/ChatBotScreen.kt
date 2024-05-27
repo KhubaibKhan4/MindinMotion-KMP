@@ -2,6 +2,7 @@ package org.mind.app.presentation.ui.screens.chatbot
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,11 +18,16 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.PersonOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -36,13 +42,13 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
+import cafe.adriel.voyager.navigator.LocalNavigator
 import mind_in_motion.composeapp.generated.resources.Res
 import mind_in_motion.composeapp.generated.resources.avatar
 import org.jetbrains.compose.resources.painterResource
@@ -58,45 +64,64 @@ class ChatBotScreen : Screen {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ChatScreenContent(viewModel: MainViewModel = koinInject()) {
     val messages by viewModel.messages.collectAsState()
     var userInput by remember { mutableStateOf("") }
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.SpaceBetween
-    ) {
-        LazyColumn(
-            modifier = Modifier.weight(1f),
-            reverseLayout = true
-        ) {
-            items(messages.reversed()) { message ->
-                MessageBubble(message)
-            }
-        }
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            TextField(
-                value = userInput,
-                onValueChange = { userInput = it },
-                modifier = Modifier.weight(1f),
-                placeholder = { Text("Type a message...") }
+    val isDark by LocalThemeIsDark.current
+    val navigator = LocalNavigator.current
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Chat Bot") },
+                navigationIcon = {
+                    Icon(
+                        Icons.Default.ArrowBackIosNew, contentDescription = null,
+                        tint = if (isDark) Color.White else Color.Black,
+                        modifier = Modifier.clickable {
+                            navigator?.pop()
+                        }
+                    )
+                }
             )
-            Button(
-                onClick = {
-                    if (userInput.isNotBlank()) {
-                        viewModel.sendMessage(userInput)
-                        userInput = ""
-                    }
-                },
-                modifier = Modifier.padding(start = 8.dp)
+        }
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.SpaceBetween
+        ) {
+            LazyColumn(
+                modifier = Modifier.weight(1f),
+                reverseLayout = true
             ) {
-                Text("Send")
+                items(messages.reversed()) { message ->
+                    MessageBubble(message)
+                }
+            }
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                TextField(
+                    value = userInput,
+                    onValueChange = { userInput = it },
+                    modifier = Modifier.weight(1f),
+                    placeholder = { Text("Type a message...") }
+                )
+                Button(
+                    onClick = {
+                        if (userInput.isNotBlank()) {
+                            viewModel.sendMessage(userInput)
+                            userInput = ""
+                        }
+                    },
+                    modifier = Modifier.padding(start = 8.dp)
+                ) {
+                    Text("Send")
+                }
             }
         }
     }
@@ -164,14 +189,12 @@ fun parseMessageText(text: String): AnnotatedString {
     return buildAnnotatedString {
         val lines = text.split("\n")
         lines.forEachIndexed { index, line ->
-            // Remove single and double asterisks
             var formattedLine = line.replace("**", "").replace("*", "")
             if (index != lines.lastIndex) {
                 formattedLine += "\n"
             }
 
             when {
-                // Headings
                 formattedLine.startsWith("### ") -> {
                     val heading = formattedLine.removePrefix("### ")
                     append(heading)
@@ -184,6 +207,7 @@ fun parseMessageText(text: String): AnnotatedString {
                         end = length
                     )
                 }
+
                 formattedLine.startsWith("## ") -> {
                     val heading = formattedLine.removePrefix("## ")
                     append(heading)
@@ -196,6 +220,7 @@ fun parseMessageText(text: String): AnnotatedString {
                         end = length
                     )
                 }
+
                 formattedLine.startsWith("# ") -> {
                     val heading = formattedLine.removePrefix("# ")
                     append(heading)
@@ -208,7 +233,7 @@ fun parseMessageText(text: String): AnnotatedString {
                         end = length
                     )
                 }
-                // Bold and italic combined
+
                 formattedLine.startsWith("***") && formattedLine.endsWith("***") -> {
                     val boldItalicText = formattedLine.removeSurrounding("***")
                     append(boldItalicText)
@@ -221,7 +246,7 @@ fun parseMessageText(text: String): AnnotatedString {
                         end = length
                     )
                 }
-                // Bold
+
                 formattedLine.startsWith("**") && formattedLine.endsWith("**") -> {
                     val boldText = formattedLine.removeSurrounding("**")
                     append(boldText)
@@ -233,7 +258,7 @@ fun parseMessageText(text: String): AnnotatedString {
                         end = length
                     )
                 }
-                // Italic
+
                 formattedLine.startsWith("*") && formattedLine.endsWith("*") -> {
                     val italicText = formattedLine.removeSurrounding("*")
                     append(italicText)
@@ -245,7 +270,7 @@ fun parseMessageText(text: String): AnnotatedString {
                         end = length
                     )
                 }
-                // Strikethrough
+
                 formattedLine.startsWith("~~") && formattedLine.endsWith("~~") -> {
                     val strikethroughText = formattedLine.removeSurrounding("~~")
                     append(strikethroughText)
@@ -257,11 +282,11 @@ fun parseMessageText(text: String): AnnotatedString {
                         end = length
                     )
                 }
-                // Bullet points with bold text
+
                 formattedLine.startsWith("• ") -> {
                     append(formattedLine)
                 }
-                // Bullet points
+
                 formattedLine.startsWith("* ") -> {
                     val bulletPoint = formattedLine.removePrefix("* ")
                     append("• $bulletPoint")
@@ -269,11 +294,11 @@ fun parseMessageText(text: String): AnnotatedString {
                         style = SpanStyle(
                             fontWeight = FontWeight.Normal
                         ),
-                        start = length - bulletPoint.length - 2, // include bullet symbol
+                        start = length - bulletPoint.length - 2,
                         end = length
                     )
                 }
-                // Task list (checked)
+
                 formattedLine.startsWith("- [x] ") -> {
                     val taskText = formattedLine.removePrefix("- [x] ")
                     append("☑ $taskText")
@@ -281,20 +306,20 @@ fun parseMessageText(text: String): AnnotatedString {
                         style = SpanStyle(
                             textDecoration = TextDecoration.LineThrough
                         ),
-                        start = length - taskText.length - 2, // include checkbox symbol
+                        start = length - taskText.length - 2,
                         end = length
                     )
                 }
-                // Task list (unchecked)
+
                 formattedLine.startsWith("- [ ] ") -> {
                     val taskText = formattedLine.removePrefix("- [ ] ")
                     append("☐ $taskText")
                 }
-                // Numbered list
+
                 formattedLine.matches(Regex("^\\d+\\. .*")) -> {
                     append(formattedLine)
                 }
-                // Handle bullet points with bold text
+
                 formattedLine.contains("• ") -> {
                     val parts = formattedLine.split("• ")
                     val bulletPoint = parts[0] + "• "
