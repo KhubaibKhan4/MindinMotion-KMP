@@ -10,12 +10,19 @@ import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
 import io.ktor.client.request.forms.FormDataContent
 import io.ktor.client.request.get
+import io.ktor.client.request.header
 import io.ktor.client.request.post
 import io.ktor.client.request.put
+import io.ktor.client.statement.bodyAsText
+import io.ktor.http.ContentType
+import io.ktor.http.HttpHeaders
 import io.ktor.http.Parameters
 import io.ktor.serialization.kotlinx.json.json
 import io.ktor.util.InternalAPI
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import org.mind.app.domain.model.gemini.Gemini
 import org.mind.app.domain.model.users.Users
 import org.mind.app.utils.Constant.BASE_URL
 
@@ -121,5 +128,30 @@ object MotionApiClient {
     }
     suspend fun getUserByEmail(email: String): Users{
         return client.get(BASE_URL+"v1/users/email/$email").body()
+    }
+    @OptIn(InternalAPI::class)
+    suspend fun generateContent(content: String): Gemini {
+        val url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=AIzaSyAGIbCm970chMEFc5fEiOLp0pxFvlrcN8E"
+
+        val requestBody = mapOf(
+            "contents" to listOf(
+                mapOf("parts" to listOf(mapOf("text" to content)))
+            )
+        )
+
+        try {
+            val responseText: String = client.post(url) {
+                header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                body = Json.encodeToString(requestBody)
+            }.bodyAsText()
+
+            println("API Response: $responseText")
+
+            return Json.decodeFromString(responseText)
+        } catch (e: Exception) {
+
+            println("Error during API request: ${e.message}")
+            throw e
+        }
     }
 }
