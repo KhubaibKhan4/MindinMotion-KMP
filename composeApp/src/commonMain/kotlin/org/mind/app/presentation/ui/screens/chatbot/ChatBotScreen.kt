@@ -19,24 +19,18 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.ArrowBackIosNew
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Info
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalTextStyle
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -47,25 +41,21 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontStyle
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.tab.LocalTabNavigator
-import kotlinx.coroutines.delay
 import mind_in_motion.composeapp.generated.resources.Res
 import mind_in_motion.composeapp.generated.resources.avatar
 import mind_in_motion.composeapp.generated.resources.ic_cyclone
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.koinInject
 import org.mind.app.domain.model.message.Message
+import org.mind.app.presentation.ui.components.EmptyChatPlaceholder
+import org.mind.app.presentation.ui.components.InfoDialog
+import org.mind.app.presentation.ui.components.TypewriterEffect
+import org.mind.app.presentation.ui.components.parseMessageText
 import org.mind.app.presentation.ui.tabs.home.HomeTab
 import org.mind.app.presentation.viewmodel.MainViewModel
 import org.mind.app.theme.LocalThemeIsDark
@@ -173,45 +163,13 @@ fun ChatScreenContent(viewModel: MainViewModel = koinInject()) {
                 )
             }
         }
-        if (isInfo){
+        if (isInfo) {
             InfoDialog(
                 onCloseClicked = { isInfo = false }
             )
         }
     }
 }
-
-@Composable
-fun InfoDialog(
-    onCloseClicked: () -> Unit
-) {
-    AlertDialog(
-        onDismissRequest = { onCloseClicked() },
-        title = {
-            Text(
-                text = "Important Information",
-                fontWeight = FontWeight.Bold
-            )
-        },
-        text = {
-            Text(
-                text = "This Chat Bot can make mistakes. Please keep this in mind while using it.",
-                textAlign = TextAlign.Center
-            )
-        },
-        confirmButton = {
-            Icon(
-                Icons.Default.Close,
-                contentDescription = null,
-                modifier = Modifier.clickable {
-                    onCloseClicked()
-                }
-            )
-        },
-        modifier = Modifier.padding(8.dp)
-    )
-}
-
 @Composable
 fun MessageBubble(message: Message) {
     val isDark by LocalThemeIsDark.current
@@ -271,259 +229,12 @@ fun MessageBubble(message: Message) {
                 painter = painterResource(Res.drawable.avatar),
                 contentDescription = "User Profile",
                 modifier = Modifier
-                    .size(40.dp)
                     .padding(start = 8.dp)
+                    .size(40.dp)
                     .clip(CircleShape)
+                ,
+                contentScale = ContentScale.Crop
             )
         }
-    }
-}
-
-fun parseMessageText(text: String): AnnotatedString {
-    return buildAnnotatedString {
-        val lines = text.split("\n")
-        var isCodeBlock = false
-        lines.forEachIndexed { index, line ->
-            var formattedLine = line.replace("**", "").replace("*", "")
-            if (index != lines.lastIndex) {
-                formattedLine += "\n"
-            }
-
-            when {
-                formattedLine.startsWith("### ") -> {
-                    val heading = formattedLine.removePrefix("### ")
-                    append(heading)
-                    addStyle(
-                        style = SpanStyle(
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 20.sp
-                        ),
-                        start = length - heading.length,
-                        end = length
-                    )
-                }
-
-                formattedLine.startsWith("## ") -> {
-                    val heading = formattedLine.removePrefix("## ")
-                    append(heading)
-                    addStyle(
-                        style = SpanStyle(
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 18.sp
-                        ),
-                        start = length - heading.length,
-                        end = length
-                    )
-                }
-
-                formattedLine.startsWith("# ") -> {
-                    val heading = formattedLine.removePrefix("# ")
-                    append(heading)
-                    addStyle(
-                        style = SpanStyle(
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 16.sp
-                        ),
-                        start = length - heading.length,
-                        end = length
-                    )
-                }
-
-                formattedLine.startsWith("***") && formattedLine.endsWith("***") -> {
-                    val boldItalicText = formattedLine.removeSurrounding("***")
-                    append(boldItalicText)
-                    addStyle(
-                        style = SpanStyle(
-                            fontWeight = FontWeight.Bold,
-                            fontStyle = FontStyle.Italic
-                        ),
-                        start = length - boldItalicText.length,
-                        end = length
-                    )
-                }
-
-                formattedLine.startsWith("**") && formattedLine.endsWith("**") -> {
-                    val boldText = formattedLine.removeSurrounding("**")
-                    append(boldText)
-                    addStyle(
-                        style = SpanStyle(
-                            fontWeight = FontWeight.Bold
-                        ),
-                        start = length - boldText.length,
-                        end = length
-                    )
-                }
-
-                formattedLine.startsWith("*") && formattedLine.endsWith("*") -> {
-                    val italicText = formattedLine.removeSurrounding("*")
-                    append(italicText)
-                    addStyle(
-                        style = SpanStyle(
-                            fontStyle = FontStyle.Italic
-                        ),
-                        start = length - italicText.length,
-                        end = length
-                    )
-                }
-
-                formattedLine.startsWith("~~") && formattedLine.endsWith("~~") -> {
-                    val strikethroughText = formattedLine.removeSurrounding("~~")
-                    append(strikethroughText)
-                    addStyle(
-                        style = SpanStyle(
-                            textDecoration = TextDecoration.LineThrough
-                        ),
-                        start = length - strikethroughText.length,
-                        end = length
-                    )
-                }
-
-                formattedLine.startsWith("• ") -> {
-                    append(formattedLine)
-                }
-
-                formattedLine.startsWith("* ") -> {
-                    val bulletPoint = formattedLine.removePrefix("* ")
-                    append("• $bulletPoint")
-                    addStyle(
-                        style = SpanStyle(
-                            fontWeight = FontWeight.Normal
-                        ),
-                        start = length - bulletPoint.length - 2,
-                        end = length
-                    )
-                }
-
-                formattedLine.startsWith("- [x] ") -> {
-                    val taskText = formattedLine.removePrefix("- [x] ")
-                    append("☑ $taskText")
-                    addStyle(
-                        style = SpanStyle(
-                            textDecoration = TextDecoration.LineThrough
-                        ),
-                        start = length - taskText.length - 2,
-                        end = length
-                    )
-                }
-
-                formattedLine.startsWith("- [ ] ") -> {
-                    val taskText = formattedLine.removePrefix("- [ ] ")
-                    append("☐ $taskText")
-                }
-
-                formattedLine.matches(Regex("^\\d+\\. .*")) -> {
-                    append(formattedLine)
-                }
-
-                formattedLine.contains("• ") -> {
-                    val parts = formattedLine.split("• ")
-                    val bulletPoint = parts[0] + "• "
-                    val boldText = parts[1]
-                    append(bulletPoint)
-                    append(boldText)
-                    addStyle(
-                        style = SpanStyle(
-                            fontWeight = FontWeight.Bold
-                        ),
-                        start = length - boldText.length,
-                        end = length
-                    )
-                }
-                formattedLine.startsWith("```") && formattedLine.endsWith("```") -> {
-                    val codeText = formattedLine.removeSurrounding("```")
-                    append(codeText)
-                    addStyle(
-                        style = SpanStyle(
-                            fontFamily = FontFamily.Monospace,
-                            fontSize = 14.sp,
-                            color = Color.Red,
-                        ),
-                        start = length - codeText.length,
-                        end = length
-                    )
-                }
-
-                else -> {
-                    append(formattedLine)
-                }
-            }
-            isCodeBlock = isCodeBlock || formattedLine.startsWith("```")
-            isCodeBlock = isCodeBlock && !formattedLine.endsWith("```")
-        }
-    }
-}
-
-@Composable
-fun TypewriterEffect(
-    text: AnnotatedString,
-    modifier: Modifier = Modifier,
-    typingDelay: Long = 50L,
-    blinkDelay: Long = 500L,
-) {
-    var visibleText by remember { mutableStateOf(AnnotatedString("")) }
-    var isTypingFinished by remember { mutableStateOf(false) }
-
-    LaunchedEffect(text) {
-        text.forEachIndexed { index, _ ->
-            visibleText = text.subSequence(0, index + 1) as AnnotatedString
-            delay(typingDelay)
-        }
-        isTypingFinished = true
-    }
-
-    LaunchedEffect(isTypingFinished) {
-        while (!isTypingFinished) {
-            delay(blinkDelay)
-            visibleText = if (visibleText.isNotEmpty() && visibleText.text.last() == '█') {
-                AnnotatedString(
-                    visibleText.text.dropLast(1),
-                    visibleText.spanStyles,
-                    visibleText.paragraphStyles
-                )
-            } else {
-                AnnotatedString(
-                    visibleText.text + "█",
-                    visibleText.spanStyles,
-                    visibleText.paragraphStyles
-                )
-            }
-        }
-    }
-
-    Text(
-        text = if (isTypingFinished) visibleText else AnnotatedString(
-            visibleText.text + "█",
-            visibleText.spanStyles,
-            visibleText.paragraphStyles
-        ),
-        modifier = modifier,
-        color = Color.White,
-        fontSize = 16.sp
-    )
-}
-
-@Composable
-fun EmptyChatPlaceholder() {
-    val isDark by LocalThemeIsDark.current
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Icon(
-            painter = painterResource(Res.drawable.ic_cyclone),
-            contentDescription = "Empty Chat",
-            modifier = Modifier.size(120.dp),
-            tint = if (isDark) Color.White else Color.Black
-        )
-        Text(
-            text = "No messages yet. Start the conversation!",
-            style = MaterialTheme.typography.bodyLarge,
-            textAlign = TextAlign.Center,
-            color = if (isDark) Color.White else Color.Black,
-            modifier = Modifier.padding(top = 16.dp)
-        )
     }
 }
