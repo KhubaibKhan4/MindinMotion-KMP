@@ -7,6 +7,7 @@ import org.mind.app.data.remote.MotionApiClient
 import org.mind.app.data.repository.AuthService
 import org.mind.app.domain.model.category.QuizCategoryItem
 import org.mind.app.domain.model.gemini.Gemini
+import org.mind.app.domain.model.quiz.QuizQuestionsItem
 import org.mind.app.domain.model.user.User
 import org.mind.app.domain.model.users.Users
 
@@ -108,5 +109,9 @@ class Repository(
 
     override suspend fun getAllCategories(): List<QuizCategoryItem> {
         return MotionApiClient.getAllCategories()
+    }
+
+    override suspend fun getAllQuizzes(): List<QuizQuestionsItem> {
+        return MotionApiClient.getAllQuizzes()
     }
 }

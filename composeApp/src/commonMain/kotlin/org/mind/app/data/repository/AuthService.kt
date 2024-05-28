@@ -4,6 +4,7 @@ import io.ktor.util.InternalAPI
 import kotlinx.coroutines.flow.Flow
 import org.mind.app.domain.model.category.QuizCategoryItem
 import org.mind.app.domain.model.gemini.Gemini
+import org.mind.app.domain.model.quiz.QuizQuestionsItem
 import org.mind.app.domain.model.user.User
 import org.mind.app.domain.model.users.Users
 
@@ -49,4 +50,5 @@ interface AuthService {
     suspend fun getUserByEmail(email: String): Users
     suspend fun generateContent(content: String): Gemini
     suspend fun getAllCategories(): List<QuizCategoryItem>
+    suspend fun getAllQuizzes(): List<QuizQuestionsItem>
 }
