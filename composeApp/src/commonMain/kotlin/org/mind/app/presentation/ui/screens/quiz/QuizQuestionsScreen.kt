@@ -7,8 +7,10 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyRow
@@ -19,6 +21,7 @@ import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.AttachMoney
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Error
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -29,7 +32,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -118,11 +120,15 @@ fun QuizQuestionsScreenContent(
                         }
                     )
                 },
-                title = { if (currentQuestionIndex < quizQuestionsItem.size) Text("Time Left: $timer seconds") else Text("") },
+                title = {
+                    if (currentQuestionIndex < quizQuestionsItem.size) Text("Time Left: $timer seconds") else Text(
+                        ""
+                    )
+                },
                 actions = {
                     Button(
                         onClick = {
-                            // Handle submit button click
+                            navigator.current = QuizTab
                         },
                         colors = ButtonDefaults.outlinedButtonColors()
                     ) {
@@ -204,6 +210,7 @@ fun QuizQuestionsScreenContent(
 
 
                 if (currentQuestionIndex < quizQuestionsItem.size) {
+
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -250,7 +257,9 @@ fun QuizQuestionsScreenContent(
                                         delay(1000)
                                         moveToNextQuestion(
                                             currentQuestionIndex,
-                                            setCurrentQuestionIndex = { currentQuestionIndex = it },
+                                            setCurrentQuestionIndex = {
+                                                currentQuestionIndex = it
+                                            },
                                             resetAnswerState = {
                                                 selectedAnswerIndex = -1
                                                 answeredCorrectly = null
@@ -284,13 +293,14 @@ fun QuizQuestionsScreenContent(
         }
     }
 }
+
 @Composable
 fun QuizQuestionItem(
     question: QuizQuestionsItem,
     onAnswerSelected: (Boolean) -> Unit,
     selectedAnswerIndex: Int,
     answeredCorrectly: Boolean?,
-    setSelectedAnswerIndex: (Int) -> Unit
+    setSelectedAnswerIndex: (Int) -> Unit,
 ) {
     Column(
         modifier = Modifier
@@ -323,7 +333,7 @@ fun QuizQuestionItem(
                             if (answeredCorrectly) Color.Green else Color.Red
                         } else Color.Transparent
                     } else Color.Transparent,
-                    contentColor =  if (selectedAnswerIndex == index) {
+                    contentColor = if (selectedAnswerIndex == index) {
                         if (answeredCorrectly != null) {
                             if (answeredCorrectly) Color.White else Color.White
                         } else Color.Black
@@ -352,39 +362,76 @@ fun QuizQuestionItem(
 
 @Composable
 fun showResult(correctAnswers: Int, wrongAnswers: Int, onNewQuizClick: () -> Unit) {
-    Column(
+    Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp)
+            .padding(16.dp),
+        elevation = CardDefaults.elevatedCardElevation(),
+        shape = RoundedCornerShape(16.dp)
     ) {
-        Text(
-            text = "Results",
-            style = MaterialTheme.typography.headlineLarge,
-            modifier = Modifier.padding(bottom = 16.dp)
-        )
-        Text(
-            text = "Total Correct Answers: $correctAnswers",
-            style = MaterialTheme.typography.bodyLarge,
-            modifier = Modifier.padding(bottom = 8.dp)
-        )
-        Text(
-            text = "Total Wrong Answers: $wrongAnswers",
-            style = MaterialTheme.typography.bodyLarge,
-            modifier = Modifier.padding(bottom = 8.dp)
-        )
-        Button(
-            onClick = onNewQuizClick,
-            modifier = Modifier.padding(top = 16.dp)
+        Column(
+            modifier = Modifier.padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
         ) {
-            Text("Play New Quiz")
+            Icon(
+                imageVector = if (correctAnswers >= wrongAnswers) Icons.Default.Check else Icons.Default.Error,
+                contentDescription = null,
+                tint = if (correctAnswers >= wrongAnswers) Color.Green else Color.Red,
+                modifier = Modifier.size(48.dp)
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = "Results",
+                style = MaterialTheme.typography.headlineSmall,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+            Text(
+                text = "Total Correct Answers: $correctAnswers",
+                style = MaterialTheme.typography.bodyLarge,
+                modifier = Modifier.padding(bottom = 4.dp)
+            )
+            Text(
+                text = "Total Wrong Answers: $wrongAnswers",
+                style = MaterialTheme.typography.bodyLarge,
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
+            val totalQuestions = correctAnswers + wrongAnswers
+            val percentage = if (totalQuestions > 0) {
+                (correctAnswers * 100) / totalQuestions
+            } else {
+                0
+            }
+            val message = if (percentage >= 60) {
+                "Congratulations! You passed!"
+            } else {
+                "You need to improve. Keep practicing!"
+            }
+            Text(
+                text = "Percentage: $percentage%",
+                style = MaterialTheme.typography.bodyLarge,
+                modifier = Modifier.padding(bottom = 4.dp)
+            )
+            Text(
+                text = message,
+                style = MaterialTheme.typography.bodyLarge,
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
+            Button(
+                onClick = onNewQuizClick,
+                modifier = Modifier.padding(top = 16.dp)
+            ) {
+                Text("Play New Quiz")
+            }
         }
     }
 }
 
+
 fun moveToNextQuestion(
     currentQuestionIndex: Int,
     setCurrentQuestionIndex: (Int) -> Unit,
-    resetAnswerState: () -> Unit
+    resetAnswerState: () -> Unit,
 ) {
     setCurrentQuestionIndex(currentQuestionIndex + 1)
     resetAnswerState()
@@ -393,7 +440,7 @@ fun moveToNextQuestion(
 fun resetQuiz(
     setCurrentQuestionIndex: (Int) -> Unit,
     resetAnswerState: () -> Unit,
-    resetScore: () -> Unit
+    resetScore: () -> Unit,
 ) {
     setCurrentQuestionIndex(0)
     resetAnswerState()
