@@ -20,8 +20,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.AttachMoney
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.CheckCircleOutline
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Error
+import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -55,6 +57,7 @@ import kotlinx.coroutines.launch
 import org.mind.app.domain.model.category.QuizCategoryItem
 import org.mind.app.domain.model.quiz.QuizQuestionsItem
 import org.mind.app.presentation.ui.tabs.quiz.QuizTab
+import org.mind.app.theme.LocalThemeIsDark
 
 class QuizQuestionsScreen(
     private val quizCategoryItem: QuizCategoryItem,
@@ -83,6 +86,7 @@ fun QuizQuestionsScreenContent(
     val answeredQuestions = remember { mutableStateMapOf<Int, Boolean>() }
 
     val scope = rememberCoroutineScope()
+    val isDark by LocalThemeIsDark.current
 
     LaunchedEffect(currentQuestionIndex) {
         if (currentQuestionIndex < quizQuestionsItem.size) {
@@ -132,7 +136,7 @@ fun QuizQuestionsScreenContent(
                         },
                         colors = ButtonDefaults.outlinedButtonColors()
                     ) {
-                        Text("Submit")
+                        if (currentQuestionIndex < quizQuestionsItem.size) Text("Submit") else Text("")
                     }
                 }
             )
@@ -210,7 +214,6 @@ fun QuizQuestionsScreenContent(
 
 
                 if (currentQuestionIndex < quizQuestionsItem.size) {
-
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -229,7 +232,8 @@ fun QuizQuestionsScreenContent(
                             ) {
                                 Text(
                                     text = "Question ${currentQuestionIndex + 1}",
-                                    style = MaterialTheme.typography.headlineLarge
+                                    style = MaterialTheme.typography.headlineLarge,
+                                    color = Color.Black
                                 )
                                 Row(
                                     verticalAlignment = Alignment.CenterVertically
@@ -311,7 +315,8 @@ fun QuizQuestionItem(
             text = question.title,
             fontWeight = FontWeight.Bold,
             fontSize = 16.sp,
-            modifier = Modifier.padding(bottom = 8.dp)
+            modifier = Modifier.padding(bottom = 8.dp),
+            color = Color.Black
         )
 
         val answerOptions = listOf(
@@ -370,12 +375,13 @@ fun showResult(correctAnswers: Int, wrongAnswers: Int, onNewQuizClick: () -> Uni
         shape = RoundedCornerShape(16.dp)
     ) {
         Column(
-            modifier = Modifier.padding(16.dp),
+            modifier = Modifier.fillMaxWidth()
+                .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
             Icon(
-                imageVector = if (correctAnswers >= wrongAnswers) Icons.Default.Check else Icons.Default.Error,
+                imageVector = if (correctAnswers >= wrongAnswers) Icons.Default.CheckCircleOutline else Icons.Default.ErrorOutline,
                 contentDescription = null,
                 tint = if (correctAnswers >= wrongAnswers) Color.Green else Color.Red,
                 modifier = Modifier.size(48.dp)
