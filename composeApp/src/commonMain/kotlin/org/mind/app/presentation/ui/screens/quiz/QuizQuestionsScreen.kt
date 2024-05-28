@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIosNew
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -64,23 +65,25 @@ fun QuizQuestionsScreenContent(
     val scope = rememberCoroutineScope()
 
     LaunchedEffect(currentQuestionIndex) {
-        timer = 60
-        while (timer > 0) {
-            delay(1000)
-            timer--
-        }
-        if (timer <= 0) {
-            answeredCorrectly = false
-            wrongAnswers++
-            delay(1000)
-            moveToNextQuestion(
-                currentQuestionIndex,
-                setCurrentQuestionIndex = { currentQuestionIndex = it },
-                resetAnswerState = {
-                    selectedAnswerIndex = -1
-                    answeredCorrectly = null
-                }
-            )
+        if (currentQuestionIndex < quizQuestionsItem.size) {
+            timer = 60
+            while (timer > 0) {
+                delay(1000)
+                timer--
+            }
+            if (timer <= 0) {
+                answeredCorrectly = false
+                wrongAnswers++
+                delay(1000)
+                moveToNextQuestion(
+                    currentQuestionIndex,
+                    setCurrentQuestionIndex = { currentQuestionIndex = it },
+                    resetAnswerState = {
+                        selectedAnswerIndex = -1
+                        answeredCorrectly = null
+                    }
+                )
+            }
         }
     }
 
@@ -105,10 +108,12 @@ fun QuizQuestionsScreenContent(
                 .fillMaxWidth()
                 .padding(top = it.calculateTopPadding(), start = 16.dp, end = 16.dp)
         ) {
-            Text(
-                text = "Time Left: $timer seconds",
-                modifier = Modifier.padding(bottom = 8.dp)
-            )
+            if (currentQuestionIndex < quizQuestionsItem.size) {
+                Text(
+                    text = "Time Left: $timer seconds",
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+            }
 
             if (currentQuestionIndex < quizQuestionsItem.size) {
                 QuizQuestionItem(
@@ -133,7 +138,19 @@ fun QuizQuestionsScreenContent(
                     setSelectedAnswerIndex = { selectedAnswerIndex = it }
                 )
             } else {
-                showResult(correctAnswers, wrongAnswers)
+                showResult(correctAnswers, wrongAnswers, onNewQuizClick = {
+                    resetQuiz(
+                        setCurrentQuestionIndex = { currentQuestionIndex = it },
+                        resetAnswerState = {
+                            selectedAnswerIndex = -1
+                            answeredCorrectly = null
+                        },
+                        resetScore = {
+                            correctAnswers = 0
+                            wrongAnswers = 0
+                        }
+                    )
+                })
             }
         }
     }
@@ -216,9 +233,11 @@ fun AnswerRadioButton(
 }
 
 @Composable
-fun showResult(correctAnswers: Int, wrongAnswers: Int) {
+fun showResult(correctAnswers: Int, wrongAnswers: Int, onNewQuizClick: () -> Unit) {
     Column(
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp)
     ) {
         Text(
             text = "Results",
@@ -235,6 +254,12 @@ fun showResult(correctAnswers: Int, wrongAnswers: Int) {
             style = MaterialTheme.typography.bodyLarge,
             modifier = Modifier.padding(bottom = 8.dp)
         )
+        Button(
+            onClick = onNewQuizClick,
+            modifier = Modifier.padding(top = 16.dp)
+        ) {
+            Text("Play New Quiz")
+        }
     }
 }
 
@@ -245,4 +270,14 @@ fun moveToNextQuestion(
 ) {
     setCurrentQuestionIndex(currentQuestionIndex + 1)
     resetAnswerState()
+}
+
+fun resetQuiz(
+    setCurrentQuestionIndex: (Int) -> Unit,
+    resetAnswerState: () -> Unit,
+    resetScore: () -> Unit
+) {
+    setCurrentQuestionIndex(0)
+    resetAnswerState()
+    resetScore()
 }
