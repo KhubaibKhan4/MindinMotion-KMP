@@ -11,14 +11,16 @@ import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.tab.Tab
 import cafe.adriel.voyager.navigator.tab.TabOptions
 import org.mind.app.domain.model.category.QuizCategoryItem
+import org.mind.app.domain.model.quiz.QuizQuestionsItem
 import org.mind.app.presentation.ui.screens.quiz.QuizQuestionsScreen
 
 class QuizQuestions(
-    private val quizCategoryItem: QuizCategoryItem
+    private val quizCategoryItem: QuizCategoryItem,
+    private val quizQuestionsItem: List<QuizQuestionsItem>
 ) : Tab {
     @Composable
     override fun Content() {
-        Navigator(QuizQuestionsScreen(quizCategoryItem))
+        Navigator(QuizQuestionsScreen(quizCategoryItem,quizQuestionsItem))
     }
 
     override val options: TabOptions

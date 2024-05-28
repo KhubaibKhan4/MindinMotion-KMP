@@ -45,6 +45,7 @@ import io.kamel.image.asyncPainterResource
 import mind_in_motion.composeapp.generated.resources.Res
 import org.koin.compose.koinInject
 import org.mind.app.domain.model.category.QuizCategoryItem
+import org.mind.app.domain.model.quiz.QuizQuestionsItem
 import org.mind.app.domain.usecases.ResultState
 import org.mind.app.presentation.ui.components.ErrorBox
 import org.mind.app.presentation.ui.components.LoadingBox
@@ -60,13 +61,19 @@ class QuizScreen : Screen {
 }
 
 @Composable
-fun QuizScreenContent(viewModel: MainViewModel= koinInject()) {
-    var quizCategories by remember { mutableStateOf<List<QuizCategoryItem>?>(null) }
-    LaunchedEffect(Unit){
+fun QuizScreenContent(
+    viewModel: MainViewModel = koinInject()
+) {
+    var quizQuestions by remember { mutableStateOf<List<QuizQuestionsItem>?>(null) }
+    var categories by remember { mutableStateOf<List<QuizCategoryItem>?>(null) }
+
+    LaunchedEffect(Unit) {
+        viewModel.getAllQuizQuestions()
         viewModel.getAllCategories()
     }
-    val quizState by viewModel.quizCategories.collectAsState()
-    when(quizState){
+
+    val quizState by viewModel.quizQuestions.collectAsState()
+    when (quizState) {
         is ResultState.Error -> {
             val error = (quizState as ResultState.Error).message
             ErrorBox(error)
@@ -76,46 +83,87 @@ fun QuizScreenContent(viewModel: MainViewModel= koinInject()) {
         }
         is ResultState.Success -> {
             val response = (quizState as ResultState.Success).data
-            quizCategories = response
+            quizQuestions = response
         }
     }
-   Column(
-       modifier = Modifier.fillMaxWidth()
-           .padding(6.dp),
-       horizontalAlignment = Alignment.CenterHorizontally,
-       verticalArrangement = Arrangement.Center
-   ) {
-       LazyColumn(
-           modifier = Modifier.fillMaxWidth(),
-           verticalArrangement = Arrangement.Center,
-           horizontalAlignment =Alignment.CenterHorizontally
-       ) {
-          quizCategories?.let {quizList->
-              items(quizList){quiz->
-                  QuizCategoryItemCard(quiz)
-              }
-          }
-       }
-   }
+
+    val categoryState by viewModel.quizCategories.collectAsState()
+    when (categoryState) {
+        is ResultState.Error -> {
+            val error = (categoryState as ResultState.Error).message
+            ErrorBox(error)
+        }
+        ResultState.Loading -> {
+            LoadingBox()
+        }
+        is ResultState.Success -> {
+            val response = (categoryState as ResultState.Success).data
+            categories = response
+        }
+    }
+
+    val quizItemsWithCategories = quizQuestions?.mapNotNull { quiz ->
+        val category = categories?.find { it.id == quiz.categoryId }
+        if (category != null) {
+            Pair(quiz, category)
+        } else {
+            null
+        }
+    }
+
+    Column(
+        modifier = Modifier.fillMaxWidth()
+            .padding(6.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        LazyColumn(
+            modifier = Modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            categories?.forEach { category ->
+                val quizItemsForCategory = quizItemsWithCategories
+                    ?.filter { it.second.id == category.id }
+                    ?.map { it.first }
+
+                item {
+                    if (quizItemsForCategory != null && quizItemsForCategory.isNotEmpty()) {
+                        QuizCategoryItemCard(quizItemsForCategory, category)
+                    } else {
+                        Text("No Items Found for ${category.name}")
+                    }
+                }
+            }
+        }
+    }
 }
 
 @Composable
-fun QuizCategoryItemCard(category: QuizCategoryItem) {
+fun QuizCategoryItemCard(
+    quizItems: List<QuizQuestionsItem>,
+    category: QuizCategoryItem
+) {
     val navigator = LocalTabNavigator.current
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(8.dp)
             .clickable {
-                   navigator.current = QuizQuestions(category)
+                navigator.current = QuizQuestions(category,quizItems)
             },
         elevation = CardDefaults.cardElevation(8.dp),
         shape = RoundedCornerShape(16.dp)
     ) {
         Box(
-            modifier = Modifier.background(brush = Brush.verticalGradient(
-                colors = listOf(MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.secondary)
-            ))
+            modifier = Modifier.background(
+                brush = Brush.verticalGradient(
+                    colors = listOf(
+                        MaterialTheme.colorScheme.primary,
+                        MaterialTheme.colorScheme.secondary
+                    )
+                )
+            )
         ) {
             Row(
                 modifier = Modifier.padding(16.dp),
