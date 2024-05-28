@@ -37,6 +37,8 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.Screen
+import cafe.adriel.voyager.navigator.tab.LocalTabNavigator
+import cafe.adriel.voyager.navigator.tab.TabNavigator
 import io.kamel.core.Resource
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
@@ -46,6 +48,7 @@ import org.mind.app.domain.model.category.QuizCategoryItem
 import org.mind.app.domain.usecases.ResultState
 import org.mind.app.presentation.ui.components.ErrorBox
 import org.mind.app.presentation.ui.components.LoadingBox
+import org.mind.app.presentation.ui.tabs.quiz.QuizQuestions
 import org.mind.app.presentation.viewmodel.MainViewModel
 import org.mind.app.utils.Constant.BASE_URL
 
@@ -98,11 +101,14 @@ fun QuizScreenContent(viewModel: MainViewModel= koinInject()) {
 
 @Composable
 fun QuizCategoryItemCard(category: QuizCategoryItem) {
+    val navigator = LocalTabNavigator.current
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(8.dp)
-            .clickable { },
+            .clickable {
+                   navigator.current = QuizQuestions(category)
+            },
         elevation = CardDefaults.cardElevation(8.dp),
         shape = RoundedCornerShape(16.dp)
     ) {

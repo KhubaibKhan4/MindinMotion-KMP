@@ -11,6 +11,7 @@ import org.mind.app.data.local.DatabaseHelper
 import org.mind.app.domain.model.category.QuizCategoryItem
 import org.mind.app.domain.model.gemini.Gemini
 import org.mind.app.domain.model.message.Message
+import org.mind.app.domain.model.quiz.QuizQuestionsItem
 import org.mind.app.domain.model.user.User
 import org.mind.app.domain.model.users.Users
 import org.mind.app.domain.repository.Repository
@@ -60,11 +61,27 @@ class MainViewModel(
         MutableStateFlow<ResultState<List<QuizCategoryItem>>>(ResultState.Loading)
     val quizCategories = _quizCategories
 
+    private val _quizQuestions =
+        MutableStateFlow<ResultState<List<QuizQuestionsItem>>>(ResultState.Loading)
+    val quizQuestions = _quizQuestions
+
     init {
         viewModelScope.launch {
             databaseHelper.getAllMessages().collect { localMessages ->
                 val convertedMessages = localMessages.map { convertDbMessageToUiMessage(it) }
                 _messages.value = convertedMessages
+            }
+        }
+    }
+
+    fun getAllQuizQuestions() {
+        viewModelScope.launch {
+            _quizQuestions.value = ResultState.Loading
+            try {
+                val response = repository.getAllQuizzes()
+                _quizQuestions.value = ResultState.Success(response)
+            } catch (e: Exception) {
+                _quizQuestions.value = ResultState.Error(e.message.toString())
             }
         }
     }
