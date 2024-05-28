@@ -22,7 +22,9 @@ import androidx.compose.material.icons.filled.AttachMoney
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.CheckCircleOutline
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.CurrencyBitcoin
 import androidx.compose.material.icons.filled.ErrorOutline
+import androidx.compose.material.icons.filled.Money
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -36,6 +38,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -144,11 +147,16 @@ fun QuizQuestionsScreenContent(
                         },
                         colors = ButtonDefaults.outlinedButtonColors()
                     ) {
-                        if (currentQuestionIndex < quizQuestionsItem.size) Text("Submit") else Text(
+                        if (currentQuestionIndex < quizQuestionsItem.size) Text("Submit", color = Color.White) else Text(
                             ""
                         )
                     }
-                }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = Color.Transparent,
+                    titleContentColor = Color.White,
+                    navigationIconContentColor = Color.White
+                )
             )
         }
     ) {
@@ -158,8 +166,8 @@ fun QuizQuestionsScreenContent(
                 .background(
                     brush = Brush.verticalGradient(
                         colors = listOf(
-                            Color.Blue,
-                            Color.Black
+                            Color(0xFF0000FF),
+                            Color(0xFF8A2BE2)
                         )
                     )
                 )
@@ -229,7 +237,7 @@ fun QuizQuestionsScreenContent(
                             .fillMaxWidth()
                             .padding(vertical = 16.dp),
                         elevation = CardDefaults.cardElevation(8.dp),
-                        shape = RoundedCornerShape(16.dp)
+                        shape = RoundedCornerShape(16.dp),
                     ) {
                         Column(
                             modifier = Modifier
@@ -253,7 +261,7 @@ fun QuizQuestionsScreenContent(
                                         style = MaterialTheme.typography.bodyLarge
                                     )
                                     Icon(
-                                        imageVector = Icons.Default.AttachMoney,
+                                        imageVector = Icons.Default.CurrencyBitcoin,
                                         contentDescription = null,
                                         tint = Color.Yellow,
                                         modifier = Modifier.padding(start = 4.dp)

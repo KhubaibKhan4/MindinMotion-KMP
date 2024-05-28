@@ -17,14 +17,18 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardColors
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -32,6 +36,7 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -40,12 +45,18 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.tab.LocalTabNavigator
+import kotlinx.datetime.Clock
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import mind_in_motion.composeapp.generated.resources.Res
 import mind_in_motion.composeapp.generated.resources.bitcoins
 import org.jetbrains.compose.resources.painterResource
 import org.mind.app.domain.model.category.QuizCategoryItem
 import org.mind.app.domain.model.quiz.QuizQuestionsItem
 import org.mind.app.presentation.ui.tabs.quiz.QuizQuestions
+import org.mind.app.presentation.ui.tabs.quiz.QuizTab
+import org.mind.app.theme.LocalThemeIsDark
 
 class QuizScreenPlay(
     private val quizCategoryItem: QuizCategoryItem,
@@ -62,7 +73,14 @@ fun QuizScreenPlayContent(
     quizCategoryItem: QuizCategoryItem,
     quizQuestionsItem: List<QuizQuestionsItem>,
 ) {
+    val isDark by LocalThemeIsDark.current
     val navigator = LocalTabNavigator.current
+    val currentDay = remember {
+        val currentMoment = Clock.System.now()
+        val currentDate = currentMoment.toLocalDateTime(TimeZone.currentSystemDefault()).date
+        val dayOfWeek = currentDate.dayOfWeek.name.lowercase().replaceFirstChar { it.uppercase() }
+        dayOfWeek
+    }
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -139,7 +157,6 @@ fun QuizScreenPlayContent(
                         contentDescription = null,
                         modifier = Modifier
                             .size(240.dp)
-                            .rotate(80f)
                             .weight(1f)
                     )
                 }
@@ -155,7 +172,7 @@ fun QuizScreenPlayContent(
                 verticalArrangement = Arrangement.Center
             ) {
                 Text(
-                    text = "Sunday's",
+                    text = "$currentDay's",
                     style = MaterialTheme.typography.headlineLarge,
                     fontWeight = FontWeight.Bold,
                     color = Color.White,
@@ -191,11 +208,16 @@ fun QuizScreenPlayContent(
                 modifier = Modifier
                     .fillMaxWidth(),
                 shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
-                elevation = CardDefaults.cardElevation(8.dp)
+                elevation = CardDefaults.cardElevation(8.dp),
+                colors = CardColors(
+                    containerColor = if(isDark) Color.Black else Color.White,
+                    contentColor = if (isDark) Color.White else Color.Black,
+                    disabledContainerColor = Color.Transparent,
+                    disabledContentColor = Color.Transparent
+                )
             ) {
                 Column(
                     modifier = Modifier
-                        .background(Color.White)
                         .padding(16.dp),
                     horizontalAlignment = Alignment.Start,
                     verticalArrangement = Arrangement.Top
@@ -203,7 +225,7 @@ fun QuizScreenPlayContent(
                     Text(
                         text = "Today's Quiz on",
                         style = MaterialTheme.typography.bodyLarge,
-                        color = Color.Black
+                        color =if (isDark) Color.White else Color.Black
                     )
                     Text(
                         text = quizCategoryItem.name,
@@ -215,7 +237,7 @@ fun QuizScreenPlayContent(
                     Text(
                         text = quizCategoryItem.description,
                         style = MaterialTheme.typography.bodyLarge,
-                        color = Color.Black
+                        color = if (isDark) Color.White else Color.Black
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     Box(
@@ -247,11 +269,28 @@ fun QuizScreenPlayContent(
                     Text(
                         text = "${quizQuestionsItem.size} Questions",
                         style = MaterialTheme.typography.bodyLarge,
-                        color = Color.Black
+                        color = if (isDark) Color.White else Color.Black
                     )
                     Spacer(modifier = Modifier.weight(1f))
                 }
             }
+        }
+        Box(
+            modifier = Modifier
+                .padding(start = 6.dp, top = 20.dp)
+                .size(30.dp)
+                .align(Alignment.TopStart)
+            ,
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = Icons.Default.ArrowBackIosNew,
+                contentDescription = null,
+                modifier = Modifier.clickable {
+                    navigator.current = QuizTab
+                },
+                tint = Color.White
+            )
         }
     }
 }
