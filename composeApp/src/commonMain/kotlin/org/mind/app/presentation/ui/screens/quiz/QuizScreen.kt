@@ -8,11 +8,16 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
+import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Scaffold
 import androidx.compose.material3.Card
@@ -31,7 +36,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
@@ -132,10 +139,11 @@ fun QuizScreenContent(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            LazyColumn(
+            LazyVerticalStaggeredGrid(
+                columns = StaggeredGridCells.Adaptive(150.dp),
                 modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
+                verticalItemSpacing = 16.dp,
+                horizontalArrangement = Arrangement.Center
             ) {
                 categories?.forEach { category ->
                     val quizItemsForCategory = quizItemsWithCategories
@@ -162,50 +170,55 @@ fun QuizCategoryItemCard(
 ) {
     val navigator = LocalTabNavigator.current
     val isDark by LocalThemeIsDark.current
-    Card(
+
+    Box(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp)
+            .padding(horizontal = 16.dp, vertical = 8.dp)
             .clickable {
                 navigator.current = QuizQuestions(category, quizItems)
-            },
-        border = BorderStroke(width = if(isDark) 1.dp else 2.dp, color = MaterialTheme.colorScheme.primary),
-        elevation = CardDefaults.cardElevation(8.dp),
-        shape = RoundedCornerShape(16.dp)
+            }
     ) {
-        Box(
+        Card(
             modifier = Modifier
-                .background(MaterialTheme.colorScheme.surface)
-                .padding(16.dp)
+                .fillMaxWidth()
+                .padding(top = 64.dp),
+            elevation = CardDefaults.cardElevation(16.dp),
+            shape = RoundedCornerShape(16.dp),
         ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                horizontalAlignment = Alignment.Start,
+                verticalArrangement = Arrangement.Bottom
             ) {
-                val image: Resource<Painter> = asyncPainterResource(BASE_URL + category.imageUrl)
-                KamelImage(
-                    resource = image,
-                    contentDescription = null,
-                    modifier = Modifier
-                        .size(64.dp)
-                        .clip(RoundedCornerShape(12.dp)),
-                    contentScale = ContentScale.Crop
+                Spacer(modifier = Modifier.height(64.dp))
+                Text(
+                    text = category.name,
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.padding(bottom = 4.dp)
                 )
-
-                Spacer(modifier = Modifier.width(16.dp))
-                Column {
-                    Text(
-                        text = category.name,
-                        style = MaterialTheme.typography.headlineSmall,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        modifier = Modifier.padding(bottom = 4.dp)
-                    )
-                    Text(
-                        text = category.description,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
-                    )
-                }
+                Text(
+                    text = "${quizItems.size} Questions",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
+                )
             }
         }
+        val image: Resource<Painter> = asyncPainterResource(BASE_URL + category.imageUrl)
+        KamelImage(
+            resource = image,
+            contentDescription = null,
+            modifier = Modifier
+                .size(128.dp)
+                .align(Alignment.TopCenter)
+                .offset(y = (-6).dp)
+                .aspectRatio(16f/13f)
+                .clip(RoundedCornerShape(12.dp))
+                .shadow(elevation = 8.dp),
+            contentScale = ContentScale.FillBounds
+        )
     }
 }
