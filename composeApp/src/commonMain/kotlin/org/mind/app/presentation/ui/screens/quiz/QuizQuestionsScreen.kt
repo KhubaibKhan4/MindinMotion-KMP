@@ -22,8 +22,8 @@ import androidx.compose.material.icons.filled.AttachMoney
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.CheckCircleOutline
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.ErrorOutline
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -34,6 +34,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -88,6 +89,9 @@ fun QuizQuestionsScreenContent(
     val scope = rememberCoroutineScope()
     val isDark by LocalThemeIsDark.current
 
+    val showDialog = remember { mutableStateOf(false) }
+
+
     LaunchedEffect(currentQuestionIndex) {
         if (currentQuestionIndex < quizQuestionsItem.size) {
             timer = 60
@@ -132,11 +136,17 @@ fun QuizQuestionsScreenContent(
                 actions = {
                     Button(
                         onClick = {
-                            navigator.current = QuizTab
+                            if (currentQuestionIndex < quizQuestionsItem.size && selectedAnswerIndex == -1) {
+                                showDialog.value = true
+                            } else {
+                                navigator.current = QuizTab
+                            }
                         },
                         colors = ButtonDefaults.outlinedButtonColors()
                     ) {
-                        if (currentQuestionIndex < quizQuestionsItem.size) Text("Submit") else Text("")
+                        if (currentQuestionIndex < quizQuestionsItem.size) Text("Submit") else Text(
+                            ""
+                        )
                     }
                 }
             )
@@ -294,6 +304,39 @@ fun QuizQuestionsScreenContent(
                     })
                 }
             }
+        }
+        if (currentQuestionIndex < quizQuestionsItem.size && showDialog.value) {
+            AlertDialog(
+                onDismissRequest = {
+                    showDialog.value = false
+                },
+                title = {
+                    Text(text = "Incomplete Quiz")
+                },
+                text = {
+                    Text(text = "You have not answered all the questions. Are you sure you want to submit?")
+                },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            showDialog.value = false
+                            // Handle submission action here
+                            navigator.current = QuizTab
+                        }
+                    ) {
+                        Text("Submit")
+                    }
+                },
+                dismissButton = {
+                    TextButton(
+                        onClick = {
+                            showDialog.value = false
+                        }
+                    ) {
+                        Text("Cancel")
+                    }
+                }
+            )
         }
     }
 }
