@@ -11,8 +11,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Scaffold
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Article
@@ -38,6 +42,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.Screen
@@ -48,6 +53,7 @@ import org.mind.app.domain.usecases.ResultState
 import org.mind.app.presentation.ui.components.ErrorBox
 import org.mind.app.presentation.ui.components.LoadingBox
 import org.mind.app.presentation.viewmodel.MainViewModel
+import kotlin.random.Random
 
 class NotesScreen : Screen {
     @Composable
@@ -63,6 +69,7 @@ fun NotesScreenContent(
 ) {
     var notesList by remember { mutableStateOf(emptyList<Notes>()) }
     var selectedTabIndex by remember { mutableStateOf(0) }
+    var searchText by remember { mutableStateOf(TextFieldValue()) }
 
     LaunchedEffect(Unit) {
         viewModel.getAllNotes()
@@ -74,11 +81,9 @@ fun NotesScreenContent(
             val error = (notesState as ResultState.Error).message
             ErrorBox(error)
         }
-
         ResultState.Loading -> {
             LoadingBox()
         }
-
         is ResultState.Success -> {
             val notes = (notesState as ResultState.Success).data
             notesList = notes.sortedByDescending { it.id }
@@ -125,28 +130,42 @@ fun NotesScreenContent(
                         text = { Text("Papers", fontWeight = FontWeight.Bold) }
                     )
                 }
-                when (selectedTabIndex) {
-                    0 -> {
-                        LazyColumn(
-                            contentPadding = PaddingValues(16.dp),
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            items(notesList) { note ->
-                                NoteItem(note)
+                if (selectedTabIndex == 0) {
+                    OutlinedTextField(
+                        value = searchText,
+                        onValueChange = { searchText = it },
+                        modifier = Modifier
+                            .padding(16.dp)
+                            .fillMaxWidth(),
+                        placeholder = {
+                            Text("Search Notes")
+                        }
+                    )
+                    LazyVerticalGrid(
+                        columns = GridCells.Adaptive(128.dp),
+                        contentPadding = PaddingValues(16.dp)
+                    ) {
+                        val filteredNotes = if (searchText.text.isEmpty()) {
+                            notesList
+                        } else {
+                            notesList.filter { note ->
+                                note.title.contains(searchText.text, ignoreCase = true) ||
+                                        note.description.contains(searchText.text, ignoreCase = true)
                             }
                         }
-                    }
-
-                    1 -> {
-
-                        Box(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(16.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(text = "Papers Content Goes Here")
+                        items(filteredNotes.size) { index ->
+                            val note = filteredNotes[index]
+                            NoteItem(note)
                         }
+                    }
+                } else {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(16.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(text = "Papers Content Goes Here")
                     }
                 }
             }
@@ -157,26 +176,33 @@ fun NotesScreenContent(
 @Composable
 fun NoteItem(note: Notes) {
     val navigator = LocalNavigator.current
+    val randomColor = Color(Random.nextFloat(), Random.nextFloat(), Random.nextFloat())
     Card(
-        shape = RoundedCornerShape(8.dp),
+        shape = MaterialTheme.shapes.medium,
         elevation = CardDefaults.cardElevation(4.dp),
+        colors =CardDefaults.cardColors(
+            containerColor = randomColor
+        ),
         modifier = Modifier
             .fillMaxWidth()
+            .padding(4.dp)
             .clickable { navigator?.push(NotesViewScreen(note)) }
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
                 text = note.title,
-                style = MaterialTheme.typography.headlineSmall,
+                style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold,
-                maxLines = 1,
+                color = Color.White,
+                maxLines = 2,
                 overflow = TextOverflow.Ellipsis
             )
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = note.description,
-                style = MaterialTheme.typography.bodyMedium,
-                maxLines = 2,
+                style = MaterialTheme.typography.bodyLarge,
+                color = Color.White,
+                maxLines = 3,
                 overflow = TextOverflow.Ellipsis
             )
         }
