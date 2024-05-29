@@ -105,6 +105,7 @@ kotlin {
             implementation("io.insert-koin:koin-android")
             implementation("io.insert-koin:koin-annotations:1.3.1")
             implementation("androidx.core:core-splashscreen:1.0.1")
+            implementation("io.github.grizzi91:bouquet:1.1.2")
         }
 
         iosMain.dependencies {

@@ -39,3 +39,5 @@ internal expect fun openUrl(url: String?)
 @Composable
 internal expect fun notify(message: String)
 expect fun createDriver(): SqlDriver
+@Composable
+expect fun providePDF(url: String)

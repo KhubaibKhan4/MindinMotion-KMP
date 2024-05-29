@@ -3,6 +3,7 @@ package org.mind.app
 import androidx.compose.runtime.Composable
 import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.driver.native.NativeSqliteDriver
+import kotlinx.coroutines.NonCancellable.isCompleted
 import org.koin.core.context.startKoin
 import org.mind.app.db.MyDatabase
 import platform.Foundation.NSURL
@@ -34,4 +35,7 @@ internal actual fun notify(message: String) {
 
 actual fun createDriver(): SqlDriver {
     return NativeSqliteDriver(MyDatabase.Schema, "chat.db")
+}
+@Composable
+actual fun providePDF(url: String) {
 }

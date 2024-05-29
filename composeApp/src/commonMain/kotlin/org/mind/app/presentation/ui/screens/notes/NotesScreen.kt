@@ -32,6 +32,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.Screen
+import cafe.adriel.voyager.navigator.LocalNavigator
 import org.koin.compose.koinInject
 import org.mind.app.domain.model.notes.Notes
 import org.mind.app.domain.usecases.ResultState
@@ -93,12 +94,13 @@ fun NotesScreenContent(
 }
 @Composable
 fun NoteItem(note: Notes) {
+    val navigator = LocalNavigator.current
     Card(
         shape = RoundedCornerShape(8.dp),
         elevation =CardDefaults.cardElevation( 4.dp),
         modifier = Modifier
             .fillMaxWidth()
-            .clickable {  }
+            .clickable { navigator?.push(NotesViewScreen(note)) }
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(

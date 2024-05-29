@@ -8,11 +8,27 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
 import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.driver.android.AndroidSqliteDriver
 import com.example.cmppreference.AppContext
+import com.rizzi.bouquet.ResourceType
+import com.rizzi.bouquet.VerticalPDFReader
+import com.rizzi.bouquet.rememberVerticalPdfReaderState
 import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.FirebaseOptions
 import dev.gitlive.firebase.initialize
@@ -76,4 +92,35 @@ internal actual fun notify(message: String) {
 
 actual fun createDriver(): SqlDriver {
     return AndroidSqliteDriver(MyDatabase.Schema, AndroidApp.INSTANCE.applicationContext, "chat.db")
+}
+
+@Composable
+actual fun providePDF(url: String) {
+    val pdfState = rememberVerticalPdfReaderState(
+        resource = ResourceType.Remote(url),
+        isZoomEnable = true,
+    )
+    if (!pdfState.isLoaded) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        )
+        {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center,
+            ) {
+                CircularProgressIndicator(progress = { pdfState.loadPercent / 100f })
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(text = "Please Wait, Loading...")
+            }
+        }
+    }
+
+    VerticalPDFReader(
+        state = pdfState,
+        modifier = Modifier
+            .fillMaxSize()
+            .background(color = Color.Gray)
+    )
 }
