@@ -1,5 +1,6 @@
 package org.mind.app.presentation.viewmodel
 
+import androidx.compose.runtime.collectAsState
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -11,6 +12,7 @@ import org.mind.app.data.local.DatabaseHelper
 import org.mind.app.domain.model.category.QuizCategoryItem
 import org.mind.app.domain.model.gemini.Gemini
 import org.mind.app.domain.model.message.Message
+import org.mind.app.domain.model.notes.Notes
 import org.mind.app.domain.model.quiz.QuizQuestionsItem
 import org.mind.app.domain.model.user.User
 import org.mind.app.domain.model.users.Users
@@ -65,11 +67,26 @@ class MainViewModel(
         MutableStateFlow<ResultState<List<QuizQuestionsItem>>>(ResultState.Loading)
     val quizQuestions = _quizQuestions
 
+    private val _notes =
+        MutableStateFlow<ResultState<List<Notes>>>(ResultState.Loading)
+    val notes = _notes
+
     init {
         viewModelScope.launch {
             databaseHelper.getAllMessages().collect { localMessages ->
                 val convertedMessages = localMessages.map { convertDbMessageToUiMessage(it) }
                 _messages.value = convertedMessages
+            }
+        }
+    }
+    fun getAllNotes(){
+        viewModelScope.launch {
+            _notes.value = ResultState.Loading
+            try {
+                val response = repository.getAllNotes()
+                _notes.value = ResultState.Success(response)
+            } catch (e: Exception) {
+                _notes.value = ResultState.Error(e.message.toString())
             }
         }
     }
