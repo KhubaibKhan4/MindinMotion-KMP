@@ -1,5 +1,6 @@
 package org.mind.app.presentation.ui.screens.main
 
+import NotesTab
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
@@ -14,10 +15,6 @@ import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
@@ -28,22 +25,16 @@ import cafe.adriel.voyager.navigator.tab.Tab
 import cafe.adriel.voyager.navigator.tab.TabNavigator
 import cafe.adriel.voyager.navigator.tab.TabOptions
 import com.example.cmppreference.LocalPreference
-import com.example.cmppreference.LocalPreferenceProvider
 import org.mind.app.presentation.ui.components.TabItem
 import org.mind.app.presentation.ui.screens.auth.login.LoginScreen
-import org.mind.app.presentation.ui.screens.quiz.QuizQuestionsScreen
-import org.mind.app.presentation.ui.tabs.Instructors.InstructorsTab
 import org.mind.app.presentation.ui.tabs.chat.ChatTab
 import org.mind.app.presentation.ui.tabs.home.HomeTab
 import org.mind.app.presentation.ui.tabs.profile.ProfileTab
-import org.mind.app.presentation.ui.tabs.quiz.QuizQuestions
 import org.mind.app.presentation.ui.tabs.quiz.QuizTab
 import org.mind.app.presentation.ui.tabs.shop.ShopTab
-import org.mind.app.theme.AppTheme
-import org.mind.app.theme.LocalThemeIsDark
 import kotlin.random.Random
 
-object MainScreen: Tab {
+object MainScreen : Tab {
     override val key: ScreenKey =
         super.key + "${Random.nextDouble(Double.MIN_VALUE, Double.MAX_VALUE)}"
 
@@ -54,7 +45,7 @@ object MainScreen: Tab {
             tab = HomeTab,
         ) { tabNavigator ->
             Scaffold(bottomBar = {
-                if (tabNavigator.current != LoginScreen && tabNavigator.current!= ChatTab) {
+                if (tabNavigator.current != LoginScreen && tabNavigator.current != ChatTab) {
                     NavigationBar(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -65,7 +56,7 @@ object MainScreen: Tab {
                     ) {
                         TabItem(HomeTab)
                         TabItem(QuizTab)
-                        TabItem(InstructorsTab)
+                        TabItem(NotesTab)
                         TabItem(ShopTab)
                         TabItem(ProfileTab)
                     }
