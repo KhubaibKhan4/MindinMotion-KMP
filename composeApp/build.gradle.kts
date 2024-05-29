@@ -84,6 +84,7 @@ kotlin {
             implementation("dev.gitlive:firebase-auth:1.12.0")
             implementation("dev.gitlive:firebase-database:1.12.0")
             implementation("network.chaintech:cmp-preference:1.0.0")
+            api("io.github.kevinnzou:compose-webview-multiplatform:1.9.8")
         }
 
         commonTest.dependencies {
