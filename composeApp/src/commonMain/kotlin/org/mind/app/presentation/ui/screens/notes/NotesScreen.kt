@@ -5,17 +5,18 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Scaffold
 import androidx.compose.material.icons.Icons
@@ -26,11 +27,11 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -40,19 +41,26 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
+import io.kamel.image.KamelImage
+import io.kamel.image.asyncPainterResource
 import org.koin.compose.koinInject
+import org.mind.app.domain.model.boards.Boards
 import org.mind.app.domain.model.notes.Notes
 import org.mind.app.domain.usecases.ResultState
 import org.mind.app.presentation.ui.components.ErrorBox
 import org.mind.app.presentation.ui.components.LoadingBox
 import org.mind.app.presentation.viewmodel.MainViewModel
+import org.mind.app.utils.Constant.BASE_URL
 import kotlin.random.Random
 
 class NotesScreen : Screen {
@@ -68,11 +76,13 @@ fun NotesScreenContent(
     viewModel: MainViewModel = koinInject(),
 ) {
     var notesList by remember { mutableStateOf(emptyList<Notes>()) }
+    var boardsList by remember { mutableStateOf(emptyList<Boards>()) }
     var selectedTabIndex by remember { mutableStateOf(0) }
     var searchText by remember { mutableStateOf(TextFieldValue()) }
 
     LaunchedEffect(Unit) {
         viewModel.getAllNotes()
+        viewModel.getAllBoards()
     }
 
     val notesState by viewModel.notes.collectAsState()
@@ -81,12 +91,30 @@ fun NotesScreenContent(
             val error = (notesState as ResultState.Error).message
             ErrorBox(error)
         }
+
         ResultState.Loading -> {
             LoadingBox()
         }
+
         is ResultState.Success -> {
             val notes = (notesState as ResultState.Success).data
             notesList = notes.sortedByDescending { it.id }
+        }
+    }
+    val boardState by viewModel.boards.collectAsState()
+    when (boardState) {
+        is ResultState.Error -> {
+            val error = (boardState as ResultState.Error).message
+            ErrorBox(error)
+        }
+
+        ResultState.Loading -> {
+            LoadingBox()
+        }
+
+        is ResultState.Success -> {
+            val boards = (boardState as ResultState.Success).data
+            boardsList = boards.sortedByDescending { it.id }
         }
     }
 
@@ -94,10 +122,6 @@ fun NotesScreenContent(
         topBar = {
             TopAppBar(
                 title = { Text("Notes") },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    titleContentColor = Color.White
-                )
             )
         },
         content = {
@@ -150,7 +174,10 @@ fun NotesScreenContent(
                         } else {
                             notesList.filter { note ->
                                 note.title.contains(searchText.text, ignoreCase = true) ||
-                                        note.description.contains(searchText.text, ignoreCase = true)
+                                        note.description.contains(
+                                            searchText.text,
+                                            ignoreCase = true
+                                        )
                             }
                         }
                         items(filteredNotes.size) { index ->
@@ -161,11 +188,30 @@ fun NotesScreenContent(
                 } else {
                     Box(
                         modifier = Modifier
-                            .fillMaxSize()
-                            .padding(16.dp),
+                            .fillMaxSize(),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(text = "Papers Content Goes Here")
+                        LazyColumn(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            val filteredBoards = if (searchText.text.isEmpty()) {
+                                boardsList
+                            } else {
+                                boardsList.filter { note ->
+                                    note.title.contains(searchText.text, ignoreCase = true) ||
+                                            note.description.contains(
+                                                searchText.text,
+                                                ignoreCase = true
+                                            )
+                                }
+                            }
+                            items(filteredBoards.size) { index ->
+                                val note = filteredBoards[index]
+                                BoardItem(note)
+                            }
+                        }
                     }
                 }
             }
@@ -180,7 +226,7 @@ fun NoteItem(note: Notes) {
     Card(
         shape = MaterialTheme.shapes.medium,
         elevation = CardDefaults.cardElevation(4.dp),
-        colors =CardDefaults.cardColors(
+        colors = CardDefaults.cardColors(
             containerColor = randomColor
         ),
         modifier = Modifier
@@ -205,6 +251,51 @@ fun NoteItem(note: Notes) {
                 maxLines = 3,
                 overflow = TextOverflow.Ellipsis
             )
+        }
+    }
+}
+
+@Composable
+fun BoardItem(
+    board: Boards,
+) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(8.dp),
+        tonalElevation = 4.dp
+    ) {
+        Row(
+            modifier = Modifier
+                .clickable {
+
+                }
+                .padding(16.dp)
+        ) {
+            val image: io.kamel.core.Resource<Painter> =
+                asyncPainterResource(BASE_URL + board.imageUrl)
+            KamelImage(
+                resource = image,
+                contentDescription = "Board Image",
+                modifier = Modifier.size(100.dp)
+                    .clip(RoundedCornerShape(8.dp)),
+                contentScale = ContentScale.Crop
+            )
+            Spacer(modifier = Modifier.width(16.dp))
+            Column {
+                Text(
+                    text = board.title,
+                    style = MaterialTheme.typography.headlineSmall,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = board.description,
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = Color.Gray,
+                    maxLines = 3,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
         }
     }
 }

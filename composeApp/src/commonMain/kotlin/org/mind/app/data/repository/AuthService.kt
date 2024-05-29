@@ -2,6 +2,7 @@ package org.mind.app.data.repository
 
 import io.ktor.util.InternalAPI
 import kotlinx.coroutines.flow.Flow
+import org.mind.app.domain.model.boards.Boards
 import org.mind.app.domain.model.category.QuizCategoryItem
 import org.mind.app.domain.model.gemini.Gemini
 import org.mind.app.domain.model.notes.Notes
@@ -53,4 +54,5 @@ interface AuthService {
     suspend fun getAllCategories(): List<QuizCategoryItem>
     suspend fun getAllQuizzes(): List<QuizQuestionsItem>
     suspend fun getAllNotes(): List<Notes>
+    suspend fun getAllBoards():List<Boards>
 }

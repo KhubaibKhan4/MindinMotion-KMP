@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import org.mind.app.data.local.DatabaseHelper
+import org.mind.app.domain.model.boards.Boards
 import org.mind.app.domain.model.category.QuizCategoryItem
 import org.mind.app.domain.model.gemini.Gemini
 import org.mind.app.domain.model.message.Message
@@ -71,11 +72,25 @@ class MainViewModel(
         MutableStateFlow<ResultState<List<Notes>>>(ResultState.Loading)
     val notes = _notes
 
+    private val _boards = MutableStateFlow<ResultState<List<Boards>>>(ResultState.Loading)
+    val boards = _boards.asStateFlow()
+
     init {
         viewModelScope.launch {
             databaseHelper.getAllMessages().collect { localMessages ->
                 val convertedMessages = localMessages.map { convertDbMessageToUiMessage(it) }
                 _messages.value = convertedMessages
+            }
+        }
+    }
+    fun getAllBoards(){
+        viewModelScope.launch {
+            _boards.value = ResultState.Loading
+            try {
+                val response = repository.getAllBoards()
+                _boards.value = ResultState.Success(response)
+            } catch (e: Exception) {
+                _boards.value = ResultState.Error(e.message.toString())
             }
         }
     }

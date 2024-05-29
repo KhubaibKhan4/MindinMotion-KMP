@@ -5,6 +5,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import org.mind.app.data.remote.MotionApiClient
 import org.mind.app.data.repository.AuthService
+import org.mind.app.domain.model.boards.Boards
 import org.mind.app.domain.model.category.QuizCategoryItem
 import org.mind.app.domain.model.gemini.Gemini
 import org.mind.app.domain.model.notes.Notes
@@ -118,5 +119,9 @@ class Repository(
 
     override suspend fun getAllNotes(): List<Notes> {
         return MotionApiClient.getAllNotes()
+    }
+
+    override suspend fun getAllBoards(): List<Boards> {
+        return MotionApiClient.getAllBoards()
     }
 }

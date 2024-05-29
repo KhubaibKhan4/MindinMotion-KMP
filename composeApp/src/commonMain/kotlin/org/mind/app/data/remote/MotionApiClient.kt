@@ -22,6 +22,7 @@ import io.ktor.util.InternalAPI
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import org.mind.app.domain.model.boards.Boards
 import org.mind.app.domain.model.category.QuizCategoryItem
 import org.mind.app.domain.model.gemini.Gemini
 import org.mind.app.domain.model.notes.Notes
@@ -169,5 +170,8 @@ object MotionApiClient {
     }
     suspend fun getAllNotes(): List<Notes>{
         return client.get(BASE_URL+"v1/notes").body()
+    }
+    suspend fun getAllBoards():List<Boards>{
+        return client.get(BASE_URL+"v1/boards").body()
     }
 }
