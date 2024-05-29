@@ -14,6 +14,7 @@ import org.mind.app.domain.model.category.QuizCategoryItem
 import org.mind.app.domain.model.gemini.Gemini
 import org.mind.app.domain.model.message.Message
 import org.mind.app.domain.model.notes.Notes
+import org.mind.app.domain.model.papers.Papers
 import org.mind.app.domain.model.quiz.QuizQuestionsItem
 import org.mind.app.domain.model.user.User
 import org.mind.app.domain.model.users.Users
@@ -75,11 +76,25 @@ class MainViewModel(
     private val _boards = MutableStateFlow<ResultState<List<Boards>>>(ResultState.Loading)
     val boards = _boards.asStateFlow()
 
+    private val _papers = MutableStateFlow<ResultState<Papers>>(ResultState.Loading)
+    val papers = _papers.asStateFlow()
+
     init {
         viewModelScope.launch {
             databaseHelper.getAllMessages().collect { localMessages ->
                 val convertedMessages = localMessages.map { convertDbMessageToUiMessage(it) }
                 _messages.value = convertedMessages
+            }
+        }
+    }
+    fun getAllPapers(id:Long){
+        viewModelScope.launch {
+            _papers.value = ResultState.Loading
+            try {
+                val response = repository.getAllPapersWithDetail(id = id)
+                _papers.value = ResultState.Success(response)
+            } catch (e: Exception) {
+                _papers.value = ResultState.Error(e.message.toString())
             }
         }
     }

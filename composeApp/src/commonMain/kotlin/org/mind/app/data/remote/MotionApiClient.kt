@@ -26,6 +26,7 @@ import org.mind.app.domain.model.boards.Boards
 import org.mind.app.domain.model.category.QuizCategoryItem
 import org.mind.app.domain.model.gemini.Gemini
 import org.mind.app.domain.model.notes.Notes
+import org.mind.app.domain.model.papers.Papers
 import org.mind.app.domain.model.quiz.QuizQuestionsItem
 import org.mind.app.domain.model.users.Users
 import org.mind.app.utils.Constant.BASE_URL
@@ -173,5 +174,8 @@ object MotionApiClient {
     }
     suspend fun getAllBoards():List<Boards>{
         return client.get(BASE_URL+"v1/boards").body()
+    }
+    suspend fun getAllPapersWithDetail(id:Long): Papers{
+        return client.get(BASE_URL+"v1/board-details/$id").body()
     }
 }

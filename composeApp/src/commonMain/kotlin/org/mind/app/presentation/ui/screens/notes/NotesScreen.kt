@@ -259,6 +259,7 @@ fun NoteItem(note: Notes) {
 fun BoardItem(
     board: Boards,
 ) {
+    val navigator = LocalNavigator.current
     Surface(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(8.dp),
@@ -267,7 +268,7 @@ fun BoardItem(
         Row(
             modifier = Modifier
                 .clickable {
-
+                    navigator?.push(BoardDetailScreen(board))
                 }
                 .padding(16.dp)
         ) {
