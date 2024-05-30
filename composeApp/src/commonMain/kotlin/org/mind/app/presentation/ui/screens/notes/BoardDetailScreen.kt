@@ -39,6 +39,7 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
@@ -103,9 +104,15 @@ fun BoardDetailsScreen(board: Papers) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(text = board.title.take(17)) },
+                title = {
+                    Text(
+                        text = board.title,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                },
                 navigationIcon = {
-                    IconButton(onClick = {navigator?.pop() }) {
+                    IconButton(onClick = { navigator?.pop() }) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBackIos,
                             contentDescription = "Back",

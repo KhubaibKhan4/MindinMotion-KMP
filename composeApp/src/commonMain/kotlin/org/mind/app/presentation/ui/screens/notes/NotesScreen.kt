@@ -55,6 +55,7 @@ import org.koin.compose.koinInject
 import org.mind.app.domain.model.boards.Boards
 import org.mind.app.domain.model.notes.Notes
 import org.mind.app.domain.usecases.ResultState
+import org.mind.app.notify
 import org.mind.app.presentation.ui.components.ErrorBox
 import org.mind.app.presentation.ui.components.LoadingBox
 import org.mind.app.presentation.viewmodel.MainViewModel
@@ -222,6 +223,7 @@ fun NotesScreenContent(
 @Composable
 fun NoteItem(note: Notes) {
     val navigator = LocalNavigator.current
+    var isExpanded by remember { mutableStateOf(false) }
     val randomColor = Color(Random.nextFloat(), Random.nextFloat(), Random.nextFloat())
     Card(
         shape = MaterialTheme.shapes.medium,
@@ -232,8 +234,17 @@ fun NoteItem(note: Notes) {
         modifier = Modifier
             .fillMaxWidth()
             .padding(4.dp)
-            .clickable { navigator?.push(NotesViewScreen(note)) }
+            .clickable {
+                if (note.pdfUrl.isEmpty()) {
+                    isExpanded = true
+                } else {
+                    navigator?.push(NotesViewScreen(note))
+                }
+            }
     ) {
+        if (isExpanded) {
+            notify("No PDF found")
+        }
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
                 text = note.title,
