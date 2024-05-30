@@ -13,6 +13,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -142,11 +144,11 @@ fun QuizScreenContent(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            LazyVerticalStaggeredGrid(
-                columns = StaggeredGridCells.Adaptive(150.dp),
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(2),
                 modifier = Modifier.fillMaxWidth(),
-                verticalItemSpacing = 16.dp,
-                horizontalArrangement = Arrangement.Center
+                horizontalArrangement = Arrangement.Center,
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 categories?.forEach { category ->
                     val quizItemsForCategory = quizItemsWithCategories
@@ -186,7 +188,7 @@ fun QuizCategoryItemCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = 64.dp),
-            elevation = CardDefaults.cardElevation(16.dp),
+            elevation = CardDefaults.cardElevation(8.dp),
             shape = RoundedCornerShape(16.dp),
         ) {
             Column(
