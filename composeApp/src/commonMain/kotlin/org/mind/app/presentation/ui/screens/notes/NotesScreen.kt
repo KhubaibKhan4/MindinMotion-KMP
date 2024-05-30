@@ -1,7 +1,9 @@
 package org.mind.app.presentation.ui.screens.notes
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
@@ -14,7 +16,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Scaffold
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Article
@@ -27,6 +28,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -58,6 +61,7 @@ import org.mind.app.notify
 import org.mind.app.presentation.ui.components.ErrorBox
 import org.mind.app.presentation.ui.components.LoadingBox
 import org.mind.app.presentation.viewmodel.MainViewModel
+import org.mind.app.theme.LocalThemeIsDark
 import org.mind.app.utils.Constant.BASE_URL
 import kotlin.random.Random
 
@@ -73,6 +77,7 @@ class NotesScreen : Screen {
 fun NotesScreenContent(
     viewModel: MainViewModel = koinInject(),
 ) {
+    val isDark by LocalThemeIsDark.current
     var notesList by remember { mutableStateOf(emptyList<Notes>()) }
     var boardsList by remember { mutableStateOf(emptyList<Boards>()) }
     var selectedTabIndex by remember { mutableStateOf(0) }
@@ -126,6 +131,7 @@ fun NotesScreenContent(
         content = {
             Column(
                 modifier = Modifier.fillMaxSize()
+                    .background(MaterialTheme.colorScheme.surface)
             ) {
                 TabRow(
                     selectedTabIndex = selectedTabIndex,
@@ -154,47 +160,84 @@ fun NotesScreenContent(
                     )
                 }
                 if (selectedTabIndex == 0) {
-                    OutlinedTextField(
+                    TextField(
                         value = searchText,
                         onValueChange = { searchText = it },
                         modifier = Modifier
                             .padding(16.dp)
                             .fillMaxWidth(),
                         placeholder = {
-                            Text("Search Notes")
-                        }
+                            Text("Search Notes", color = Color.Black)
+                        },
+                        shape = RoundedCornerShape(16.dp),
+                        colors = TextFieldDefaults.colors(
+                            focusedContainerColor = Color.LightGray,
+                            unfocusedContainerColor = Color.LightGray,
+                            focusedIndicatorColor = Color.Transparent,
+                            unfocusedIndicatorColor = Color.Transparent,
+                            disabledIndicatorColor = Color.Transparent,
+                            errorIndicatorColor = Color.Transparent,
+                            focusedTextColor = Color.Black,
+                            unfocusedTextColor = Color.Black,
+                        )
                     )
+                    val filteredNotes = if (searchText.text.isEmpty()) {
+                        notesList
+                    } else {
+                        notesList.filter { note ->
+                            note.title.contains(searchText.text, ignoreCase = true) ||
+                                    note.description.contains(
+                                        searchText.text,
+                                        ignoreCase = true
+                                    )
+                        }
+                    }
                     LazyVerticalGrid(
                         columns = GridCells.Adaptive(128.dp),
                         contentPadding = PaddingValues(16.dp)
                     ) {
-                        val filteredNotes = if (searchText.text.isEmpty()) {
-                            notesList
-                        } else {
-                            notesList.filter { note ->
-                                note.title.contains(searchText.text, ignoreCase = true) ||
-                                        note.description.contains(
-                                            searchText.text,
-                                            ignoreCase = true
-                                        )
-                            }
-                        }
+
                         items(filteredNotes.size) { index ->
                             val note = filteredNotes[index]
                             NoteItem(note)
                         }
                     }
+                    if (filteredNotes.isEmpty()){
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                "No Notes found",
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(top = 16.dp),
+                                textAlign = TextAlign.Center
+                            )
+                        }
+                    }
                 } else {
 
-                    OutlinedTextField(
+                    TextField(
                         value = boardText,
                         onValueChange = { boardText = it },
                         modifier = Modifier
                             .padding(16.dp)
                             .fillMaxWidth(),
                         placeholder = {
-                            Text("Search Boards")
-                        }
+                            Text("Search Boards", color = Color.Black)
+                        },
+                        shape = RoundedCornerShape(16.dp),
+                        colors = TextFieldDefaults.colors(
+                            focusedContainerColor = Color.LightGray,
+                            unfocusedContainerColor = Color.LightGray,
+                            focusedIndicatorColor = Color.Transparent,
+                            unfocusedIndicatorColor = Color.Transparent,
+                            disabledIndicatorColor = Color.Transparent,
+                            errorIndicatorColor = Color.Transparent,
+                            focusedTextColor = Color.Black,
+                            unfocusedTextColor = Color.Black,
+                        )
                     )
                     val filteredBoards = if (boardText.text.isEmpty()) {
                         boardsList
@@ -205,13 +248,18 @@ fun NotesScreenContent(
                         }
                     }
                     if (filteredBoards.isEmpty()) {
-                        Text(
-                            "No boards found",
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(top = 16.dp),
-                            textAlign = TextAlign.Center
-                        )
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                "No boards found",
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(top = 16.dp),
+                                textAlign = TextAlign.Center
+                            )
+                        }
                     } else {
                         LazyVerticalGrid(
                             columns = GridCells.Fixed(2),
