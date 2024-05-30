@@ -81,6 +81,8 @@ fun NotesScreenContent(
     var notesList by remember { mutableStateOf(emptyList<Notes>()) }
     var boardsList by remember { mutableStateOf(emptyList<Boards>()) }
     var selectedTabIndex by remember { mutableStateOf(0) }
+    var isNotesLoading by remember { mutableStateOf(false) }
+    var isBoardLoading by remember { mutableStateOf(false) }
     var searchText by remember { mutableStateOf(TextFieldValue()) }
     var boardText by remember { mutableStateOf(TextFieldValue()) }
 
@@ -94,15 +96,17 @@ fun NotesScreenContent(
         is ResultState.Error -> {
             val error = (notesState as ResultState.Error).message
             ErrorBox(error)
+            isNotesLoading = false
         }
 
         ResultState.Loading -> {
-            LoadingBox()
+            isNotesLoading = true
         }
 
         is ResultState.Success -> {
             val notes = (notesState as ResultState.Success).data
             notesList = notes.sortedByDescending { it.id }
+            isNotesLoading = false
         }
     }
     val boardState by viewModel.boards.collectAsState()
@@ -110,15 +114,17 @@ fun NotesScreenContent(
         is ResultState.Error -> {
             val error = (boardState as ResultState.Error).message
             ErrorBox(error)
+            isBoardLoading =false
         }
 
         ResultState.Loading -> {
-            LoadingBox()
+            isBoardLoading = true
         }
 
         is ResultState.Success -> {
             val boards = (boardState as ResultState.Success).data
             boardsList = boards.sortedByDescending { it.id }
+            isBoardLoading =false
         }
     }
 
@@ -160,117 +166,128 @@ fun NotesScreenContent(
                     )
                 }
                 if (selectedTabIndex == 0) {
-                    TextField(
-                        value = searchText,
-                        onValueChange = { searchText = it },
-                        modifier = Modifier
-                            .padding(16.dp)
-                            .fillMaxWidth(),
-                        placeholder = {
-                            Text("Search Notes", color = Color.Black)
-                        },
-                        shape = RoundedCornerShape(16.dp),
-                        colors = TextFieldDefaults.colors(
-                            focusedContainerColor = Color.LightGray,
-                            unfocusedContainerColor = Color.LightGray,
-                            focusedIndicatorColor = Color.Transparent,
-                            unfocusedIndicatorColor = Color.Transparent,
-                            disabledIndicatorColor = Color.Transparent,
-                            errorIndicatorColor = Color.Transparent,
-                            focusedTextColor = Color.Black,
-                            unfocusedTextColor = Color.Black,
-                        )
-                    )
-                    val filteredNotes = if (searchText.text.isEmpty()) {
-                        notesList
-                    } else {
-                        notesList.filter { note ->
-                            note.title.contains(searchText.text, ignoreCase = true) ||
-                                    note.description.contains(
-                                        searchText.text,
-                                        ignoreCase = true
-                                    )
-                        }
-                    }
-                    LazyVerticalGrid(
-                        columns = GridCells.Adaptive(128.dp),
-                        contentPadding = PaddingValues(16.dp)
-                    ) {
+                    if (isNotesLoading){
+                        LoadingBox()
+                    }else {
 
-                        items(filteredNotes.size) { index ->
-                            val note = filteredNotes[index]
-                            NoteItem(note)
-                        }
-                    }
-                    if (filteredNotes.isEmpty()){
-                        Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                "No Notes found",
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(top = 16.dp),
-                                textAlign = TextAlign.Center
+                        TextField(
+                            value = searchText,
+                            onValueChange = { searchText = it },
+                            modifier = Modifier
+                                .padding(16.dp)
+                                .fillMaxWidth(),
+                            placeholder = {
+                                Text("Search Notes", color = Color.Black)
+                            },
+                            shape = RoundedCornerShape(16.dp),
+                            colors = TextFieldDefaults.colors(
+                                focusedContainerColor = Color.LightGray,
+                                unfocusedContainerColor = Color.LightGray,
+                                focusedIndicatorColor = Color.Transparent,
+                                unfocusedIndicatorColor = Color.Transparent,
+                                disabledIndicatorColor = Color.Transparent,
+                                errorIndicatorColor = Color.Transparent,
+                                focusedTextColor = Color.Black,
+                                unfocusedTextColor = Color.Black,
                             )
+                        )
+                        val filteredNotes = if (searchText.text.isEmpty()) {
+                            notesList
+                        } else {
+                            notesList.filter { note ->
+                                note.title.contains(searchText.text, ignoreCase = true) ||
+                                        note.description.contains(
+                                            searchText.text,
+                                            ignoreCase = true
+                                        )
+                            }
+                        }
+                        LazyVerticalGrid(
+                            columns = GridCells.Adaptive(128.dp),
+                            contentPadding = PaddingValues(16.dp)
+                        ) {
+
+                            items(filteredNotes.size) { index ->
+                                val note = filteredNotes[index]
+                                NoteItem(note)
+                            }
+                        }
+                        if (filteredNotes.isEmpty()) {
+                            Box(
+                                modifier = Modifier.fillMaxSize(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    "No Notes found",
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(top = 16.dp),
+                                    textAlign = TextAlign.Center
+                                )
+                            }
                         }
                     }
                 } else {
-
-                    TextField(
-                        value = boardText,
-                        onValueChange = { boardText = it },
-                        modifier = Modifier
-                            .padding(16.dp)
-                            .fillMaxWidth(),
-                        placeholder = {
-                            Text("Search Boards", color = Color.Black)
-                        },
-                        shape = RoundedCornerShape(16.dp),
-                        colors = TextFieldDefaults.colors(
-                            focusedContainerColor = Color.LightGray,
-                            unfocusedContainerColor = Color.LightGray,
-                            focusedIndicatorColor = Color.Transparent,
-                            unfocusedIndicatorColor = Color.Transparent,
-                            disabledIndicatorColor = Color.Transparent,
-                            errorIndicatorColor = Color.Transparent,
-                            focusedTextColor = Color.Black,
-                            unfocusedTextColor = Color.Black,
-                        )
-                    )
-                    val filteredBoards = if (boardText.text.isEmpty()) {
-                        boardsList
+                    if (isBoardLoading) {
+                        LoadingBox()
                     } else {
-                        boardsList.filter { board ->
-                            board.title.contains(boardText.text, ignoreCase = true) ||
-                                    board.description.contains(boardText.text, ignoreCase = true)
-                        }
-                    }
-                    if (filteredBoards.isEmpty()) {
-                        Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                "No boards found",
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(top = 16.dp),
-                                textAlign = TextAlign.Center
+                        TextField(
+                            value = boardText,
+                            onValueChange = { boardText = it },
+                            modifier = Modifier
+                                .padding(16.dp)
+                                .fillMaxWidth(),
+                            placeholder = {
+                                Text("Search Boards", color = Color.Black)
+                            },
+                            shape = RoundedCornerShape(16.dp),
+                            colors = TextFieldDefaults.colors(
+                                focusedContainerColor = Color.LightGray,
+                                unfocusedContainerColor = Color.LightGray,
+                                focusedIndicatorColor = Color.Transparent,
+                                unfocusedIndicatorColor = Color.Transparent,
+                                disabledIndicatorColor = Color.Transparent,
+                                errorIndicatorColor = Color.Transparent,
+                                focusedTextColor = Color.Black,
+                                unfocusedTextColor = Color.Black,
                             )
+                        )
+                        val filteredBoards = if (boardText.text.isEmpty()) {
+                            boardsList
+                        } else {
+                            boardsList.filter { board ->
+                                board.title.contains(boardText.text, ignoreCase = true) ||
+                                        board.description.contains(
+                                            boardText.text,
+                                            ignoreCase = true
+                                        )
+                            }
                         }
-                    } else {
-                        LazyVerticalGrid(
-                            columns = GridCells.Fixed(2),
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(12.dp),
-                            verticalArrangement = Arrangement.spacedBy(12.dp),
-                            contentPadding = PaddingValues(12.dp)
-                        ) {
-                            items(filteredBoards.size) { index ->
-                                val board = filteredBoards[index]
-                                BoardItem(board)
+                        if (filteredBoards.isEmpty()) {
+                            Box(
+                                modifier = Modifier.fillMaxSize(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    "No boards found",
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(top = 16.dp),
+                                    textAlign = TextAlign.Center
+                                )
+                            }
+                        } else {
+                            LazyVerticalGrid(
+                                columns = GridCells.Fixed(2),
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                                verticalArrangement = Arrangement.spacedBy(12.dp),
+                                contentPadding = PaddingValues(12.dp)
+                            ) {
+                                items(filteredBoards.size) { index ->
+                                    val board = filteredBoards[index]
+                                    BoardItem(board)
+                                }
                             }
                         }
                     }

@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -81,216 +82,220 @@ fun QuizScreenPlayContent(
         val dayOfWeek = currentDate.dayOfWeek.name.lowercase().replaceFirstChar { it.uppercase() }
         dayOfWeek
     }
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(
-                brush = Brush.verticalGradient(
-                    colors = listOf(
-                        Color(0xFF0000FF),
-                        Color(0xFF8A2BE2)
-                    )
-                )
-            ),
-        contentAlignment = Alignment.Center
-    ) {
-        Column(
-            modifier = Modifier.fillMaxSize(),
-            horizontalAlignment = Alignment.Start,
-            verticalArrangement = Arrangement.Top
-        ) {
-            Spacer(modifier = Modifier.height(100.dp))
-            Row(
+    LazyColumn {
+        item {
+            Box(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(8.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                    .fillMaxSize()
+                    .background(
+                        brush = Brush.verticalGradient(
+                            colors = listOf(
+                                Color(0xFF0000FF),
+                                Color(0xFF8A2BE2)
+                            )
+                        )
+                    ),
+                contentAlignment = Alignment.Center
             ) {
                 Column(
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Star,
-                            contentDescription = null,
-                            modifier = Modifier.size(16.dp),
-                            tint = Color.Yellow
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Icon(
-                            imageVector = Icons.Default.Star,
-                            contentDescription = null,
-                            modifier = Modifier.size(24.dp),
-                            tint = Color.Yellow
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Icon(
-                            imageVector = Icons.Default.Star,
-                            contentDescription = null,
-                            modifier = Modifier.size(16.dp),
-                            tint = Color.Yellow
-                        )
-                    }
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Box(
-                        contentAlignment = Alignment.Center,
-                        modifier = Modifier
-                            .size(60.dp)
-                            .clip(CircleShape)
-                            .background(Color.Yellow)
-                    ) {
-                        Text(
-                            text = "200",
-                            color = Color.Black,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-                }
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Image(
-                        painter = painterResource(Res.drawable.bitcoins),
-                        contentDescription = null,
-                        modifier = Modifier
-                            .size(240.dp)
-                            .weight(1f)
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(8.dp),
-                horizontalAlignment = Alignment.Start,
-                verticalArrangement = Arrangement.Center
-            ) {
-                Text(
-                    text = "$currentDay's",
-                    style = MaterialTheme.typography.headlineLarge,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White,
-                    textAlign = TextAlign.Start,
-                    fontSize = 38.sp
-                )
-                Text(
-                    text = "Super Quiz",
-                    style = MaterialTheme.typography.headlineMedium,
-                    fontWeight = FontWeight.ExtraBold,
-                    color = Color.White,
-                    textAlign = TextAlign.Start,
-                    fontSize = 55.sp
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    buildAnnotatedString {
-                        append("Play Super Quiz & earn ")
-                        withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
-                            append("200")
-                        }
-                        append(" Coins")
-                    },
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = Color.White,
-                    textAlign = TextAlign.Start
-                )
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth(),
-                shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
-                elevation = CardDefaults.cardElevation(8.dp),
-                colors = CardColors(
-                    containerColor = if(isDark) Color.Black else Color.White,
-                    contentColor = if (isDark) Color.White else Color.Black,
-                    disabledContainerColor = Color.Transparent,
-                    disabledContentColor = Color.Transparent
-                )
-            ) {
-                Column(
-                    modifier = Modifier
-                        .padding(16.dp),
+                    modifier = Modifier.fillMaxSize(),
                     horizontalAlignment = Alignment.Start,
                     verticalArrangement = Arrangement.Top
                 ) {
-                    Text(
-                        text = "Today's Quiz on",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color =if (isDark) Color.White else Color.Black
-                    )
-                    Text(
-                        text = quizCategoryItem.name,
-                        style = MaterialTheme.typography.headlineSmall,
-                        color = Color.Blue,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 38.sp
-                    )
-                    Text(
-                        text = quizCategoryItem.description,
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = if (isDark) Color.White else Color.Black
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Box(
+                    Spacer(modifier = Modifier.height(100.dp))
+                    Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(50.dp)
-                            .clip(RoundedCornerShape(16.dp))
-                            .background(
-                                brush = Brush.verticalGradient(
-                                    colors = listOf(
-                                        Color(0xFF0000FF),
-                                        Color(0xFF8A2BE2)
-                                    )
+                            .padding(8.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Star,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(16.dp),
+                                    tint = Color.Yellow
                                 )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Icon(
+                                    imageVector = Icons.Default.Star,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(24.dp),
+                                    tint = Color.Yellow
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Icon(
+                                    imageVector = Icons.Default.Star,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(16.dp),
+                                    tint = Color.Yellow
+                                )
+                            }
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Box(
+                                contentAlignment = Alignment.Center,
+                                modifier = Modifier
+                                    .size(60.dp)
+                                    .clip(CircleShape)
+                                    .background(Color.Yellow)
+                            ) {
+                                Text(
+                                    text = "200",
+                                    color = Color.Black,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        }
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Image(
+                                painter = painterResource(Res.drawable.bitcoins),
+                                contentDescription = null,
+                                modifier = Modifier
+                                    .size(240.dp)
+                                    .weight(1f)
                             )
-                            .clickable {
-                                navigator.current =
-                                    QuizQuestions(quizCategoryItem, quizQuestionsItem)
-                            },
-                        contentAlignment = Alignment.Center
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(8.dp),
+                        horizontalAlignment = Alignment.Start,
+                        verticalArrangement = Arrangement.Center
                     ) {
                         Text(
-                            text = "Play QUIZ NOW",
+                            text = "$currentDay's",
+                            style = MaterialTheme.typography.headlineLarge,
+                            fontWeight = FontWeight.Bold,
                             color = Color.White,
-                            fontWeight = FontWeight.Bold
+                            textAlign = TextAlign.Start,
+                            fontSize = 38.sp
+                        )
+                        Text(
+                            text = "Super Quiz",
+                            style = MaterialTheme.typography.headlineMedium,
+                            fontWeight = FontWeight.ExtraBold,
+                            color = Color.White,
+                            textAlign = TextAlign.Start,
+                            fontSize = 55.sp
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            buildAnnotatedString {
+                                append("Play Super Quiz & earn ")
+                                withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
+                                    append("200")
+                                }
+                                append(" Coins")
+                            },
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = Color.White,
+                            textAlign = TextAlign.Start
                         )
                     }
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = "${quizQuestionsItem.size} Questions",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = if (isDark) Color.White else Color.Black
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
+                        elevation = CardDefaults.cardElevation(8.dp),
+                        colors = CardColors(
+                            containerColor = if(isDark) Color.Black else Color.White,
+                            contentColor = if (isDark) Color.White else Color.Black,
+                            disabledContainerColor = Color.Transparent,
+                            disabledContentColor = Color.Transparent
+                        )
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .padding(16.dp),
+                            horizontalAlignment = Alignment.Start,
+                            verticalArrangement = Arrangement.Top
+                        ) {
+                            Text(
+                                text = "Today's Quiz on",
+                                style = MaterialTheme.typography.bodyLarge,
+                                color =if (isDark) Color.White else Color.Black
+                            )
+                            Text(
+                                text = quizCategoryItem.name,
+                                style = MaterialTheme.typography.headlineSmall,
+                                color = Color.Blue,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 38.sp
+                            )
+                            Text(
+                                text = quizCategoryItem.description,
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = if (isDark) Color.White else Color.Black
+                            )
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(50.dp)
+                                    .clip(RoundedCornerShape(16.dp))
+                                    .background(
+                                        brush = Brush.verticalGradient(
+                                            colors = listOf(
+                                                Color(0xFF0000FF),
+                                                Color(0xFF8A2BE2)
+                                            )
+                                        )
+                                    )
+                                    .clickable {
+                                        navigator.current =
+                                            QuizQuestions(quizCategoryItem, quizQuestionsItem)
+                                    },
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = "Play QUIZ NOW",
+                                    color = Color.White,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = "${quizQuestionsItem.size} Questions",
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = if (isDark) Color.White else Color.Black
+                            )
+                            Spacer(modifier = Modifier.weight(1f))
+                        }
+                    }
+                }
+                Box(
+                    modifier = Modifier
+                        .padding(start = 6.dp, top = 20.dp)
+                        .size(30.dp)
+                        .align(Alignment.TopStart)
+                    ,
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.ArrowBackIosNew,
+                        contentDescription = null,
+                        modifier = Modifier.clickable {
+                            navigator.current = QuizTab
+                        },
+                        tint = Color.White
                     )
-                    Spacer(modifier = Modifier.weight(1f))
                 }
             }
-        }
-        Box(
-            modifier = Modifier
-                .padding(start = 6.dp, top = 20.dp)
-                .size(30.dp)
-                .align(Alignment.TopStart)
-            ,
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                imageVector = Icons.Default.ArrowBackIosNew,
-                contentDescription = null,
-                modifier = Modifier.clickable {
-                    navigator.current = QuizTab
-                },
-                tint = Color.White
-            )
         }
     }
 }

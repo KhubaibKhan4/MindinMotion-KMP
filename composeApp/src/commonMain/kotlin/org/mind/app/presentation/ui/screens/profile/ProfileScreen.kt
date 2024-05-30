@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -118,53 +119,57 @@ fun ProfileScreenContent(
                 )
             }
         ) {
-            if (usersDetails != null) {
-                Column(
-                    modifier = Modifier.fillMaxSize()
-                        .padding(top = it.calculateTopPadding()),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Top
-                ) {
-                    if (usersDetails?.profileImage != "null") {
-                        Image(
-                            painter = rememberImagePainter(usersDetails?.profileImage.toString()),
-                            contentDescription = null,
-                            modifier = Modifier
-                                .size(150.dp)
-                                .clip(CircleShape)
-                        )
+            LazyColumn {
+                item {
+                    if (usersDetails != null) {
+                        Column(
+                            modifier = Modifier.fillMaxSize()
+                                .padding(top = it.calculateTopPadding()),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Top
+                        ) {
+                            if (usersDetails?.profileImage != "null") {
+                                Image(
+                                    painter = rememberImagePainter(usersDetails?.profileImage.toString()),
+                                    contentDescription = null,
+                                    modifier = Modifier
+                                        .size(150.dp)
+                                        .clip(CircleShape)
+                                )
+                            } else {
+                                LocalImage(
+                                    modifier = Modifier.size(150.dp).clip(CircleShape)
+                                )
+                            }
+                            Spacer(modifier = Modifier.height(6.dp))
+                            Column(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.Top
+                            ) {
+                                Text(
+                                    text = usersDetails?.fullName.toString(),
+                                    fontSize = MaterialTheme.typography.titleLarge.fontSize,
+                                    color = if (isDark) Color.White else Color.Black,
+                                    fontWeight = FontWeight.Bold
+                                )
+                                Text(
+                                    text = usersDetails?.email.toString(),
+                                    fontSize = MaterialTheme.typography.labelMedium.fontSize,
+                                    color = Color.Gray
+                                )
+                            }
+                            Spacer(modifier = Modifier.height(12.dp))
+                            usersDetails?.let { it1 -> ProfileDetails(it1) }
+                        }
                     } else {
-                        LocalImage(
-                            modifier = Modifier.size(150.dp).clip(CircleShape)
-                        )
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text("No User Data is Found!")
+                        }
                     }
-                    Spacer(modifier = Modifier.height(6.dp))
-                    Column(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Top
-                    ) {
-                        Text(
-                            text = usersDetails?.fullName.toString(),
-                            fontSize = MaterialTheme.typography.titleLarge.fontSize,
-                            color = if (isDark) Color.White else Color.Black,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Text(
-                            text = usersDetails?.email.toString(),
-                            fontSize = MaterialTheme.typography.labelMedium.fontSize,
-                            color = Color.Gray
-                        )
-                    }
-                    Spacer(modifier = Modifier.height(12.dp))
-                    usersDetails?.let { it1 -> ProfileDetails(it1) }
-                }
-            } else {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text("No User Data is Found!")
                 }
             }
         }
