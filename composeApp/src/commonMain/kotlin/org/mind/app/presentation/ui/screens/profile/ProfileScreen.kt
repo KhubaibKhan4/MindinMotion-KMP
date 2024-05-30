@@ -78,10 +78,10 @@ fun ProfileScreenContent(
             isLogin = preference.getBoolean("is_login", false)
             email = preference.getString("email").toString()
         }
-        LaunchedEffect(Unit) {
+        LaunchedEffect(Unit){
             viewModel.getUserByEmail(email)
-
         }
+
         val userByEmailState by viewModel.userByEmail.collectAsState()
         when (userByEmailState) {
             is ResultState.Error -> {
@@ -90,7 +90,7 @@ fun ProfileScreenContent(
             }
 
             ResultState.Loading -> {
-                 LoadingBox()
+                LoadingBox()
             }
 
             is ResultState.Success -> {
@@ -134,7 +134,9 @@ fun ProfileScreenContent(
                                 .clip(CircleShape)
                         )
                     } else {
-                        LocalImage(modifier = Modifier.size(150.dp).clip(CircleShape))
+                        LocalImage(
+                            modifier = Modifier.size(150.dp).clip(CircleShape)
+                        )
                     }
                     Spacer(modifier = Modifier.height(6.dp))
                     Column(
@@ -165,7 +167,6 @@ fun ProfileScreenContent(
                     Text("No User Data is Found!")
                 }
             }
-
         }
     }
 }
