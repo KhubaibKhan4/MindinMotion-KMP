@@ -19,6 +19,7 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Scaffold
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -54,6 +55,7 @@ import org.koin.compose.koinInject
 import org.mind.app.domain.model.category.QuizCategoryItem
 import org.mind.app.domain.model.quiz.QuizQuestionsItem
 import org.mind.app.domain.usecases.ResultState
+import org.mind.app.notify
 import org.mind.app.presentation.ui.components.ErrorBox
 import org.mind.app.presentation.ui.components.LoadingBox
 import org.mind.app.presentation.ui.tabs.quiz.QuizPlayScreen
@@ -166,7 +168,10 @@ fun QuizScreenContent(
                 },
                 actions = {
                     IconButton(onClick = { isSearchActive = !isSearchActive }) {
-                        Icon(Icons.Default.Search, contentDescription = "Search")
+                        Icon(
+                            if (isSearchActive) Icons.Default.Close else Icons.Default.Search,
+                            contentDescription = "Search"
+                        )
                     }
                 }
             )
@@ -215,15 +220,23 @@ fun QuizCategoryItemCard(
 ) {
     val navigator = LocalTabNavigator.current
     val isDark by LocalThemeIsDark.current
+    var isEmpty by remember { mutableStateOf(false) }
 
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 8.dp)
             .clickable {
-                navigator.current = QuizPlayScreen(category, quizItems)
+                if (quizItems.isEmpty()) {
+                    isEmpty = true
+                } else {
+                    navigator.current = QuizPlayScreen(category, quizItems)
+                }
             }
     ) {
+        if (isEmpty){
+            notify("No Questions Found.")
+        }
         Card(
             modifier = Modifier
                 .fillMaxWidth()
