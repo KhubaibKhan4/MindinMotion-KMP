@@ -16,6 +16,8 @@ import org.mind.app.domain.model.message.Message
 import org.mind.app.domain.model.notes.Notes
 import org.mind.app.domain.model.papers.Papers
 import org.mind.app.domain.model.quiz.QuizQuestionsItem
+import org.mind.app.domain.model.subcategories.SubCategoriesItem
+import org.mind.app.domain.model.subquestions.SubQuestionsItem
 import org.mind.app.domain.model.user.User
 import org.mind.app.domain.model.users.Users
 import org.mind.app.domain.repository.Repository
@@ -79,11 +81,38 @@ class MainViewModel(
     private val _papers = MutableStateFlow<ResultState<Papers>>(ResultState.Loading)
     val papers = _papers.asStateFlow()
 
+    private val _subCategories = MutableStateFlow<ResultState<List<SubCategoriesItem>>>(ResultState.Loading)
+    val subCategories = _subCategories.asStateFlow()
+
+    private val _subQuestions = MutableStateFlow<ResultState<List<SubQuestionsItem>>>(ResultState.Loading)
+    val subQuestions = _subQuestions.asStateFlow()
     init {
         viewModelScope.launch {
             databaseHelper.getAllMessages().collect { localMessages ->
                 val convertedMessages = localMessages.map { convertDbMessageToUiMessage(it) }
                 _messages.value = convertedMessages
+            }
+        }
+    }
+    fun getAllSubCategories(){
+        viewModelScope.launch {
+            _subCategories.value = ResultState.Loading
+            try {
+                val response = repository.getAllSubCategories()
+                _subCategories.value = ResultState.Success(response)
+            } catch (e: Exception) {
+                _subCategories.value = ResultState.Error(e.message.toString())
+            }
+        }
+    }
+    fun getAllSubQuestions(){
+        viewModelScope.launch {
+            _subQuestions.value = ResultState.Loading
+            try {
+                val response = repository.getSubQuestions()
+                _subQuestions.value = ResultState.Success(response)
+            } catch (e: Exception) {
+                _subQuestions.value = ResultState.Error(e.message.toString())
             }
         }
     }

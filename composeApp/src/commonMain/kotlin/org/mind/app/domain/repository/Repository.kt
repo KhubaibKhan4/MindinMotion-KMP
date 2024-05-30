@@ -11,6 +11,8 @@ import org.mind.app.domain.model.gemini.Gemini
 import org.mind.app.domain.model.notes.Notes
 import org.mind.app.domain.model.papers.Papers
 import org.mind.app.domain.model.quiz.QuizQuestionsItem
+import org.mind.app.domain.model.subcategories.SubCategoriesItem
+import org.mind.app.domain.model.subquestions.SubQuestionsItem
 import org.mind.app.domain.model.user.User
 import org.mind.app.domain.model.users.Users
 
@@ -128,6 +130,14 @@ class Repository(
 
     override suspend fun getAllPapersWithDetail(id: Long): Papers {
         return MotionApiClient.getAllPapersWithDetail(id)
+    }
+
+    override suspend fun getAllSubCategories(): List<SubCategoriesItem> {
+        return MotionApiClient.getAllSubCategories()
+    }
+
+    override suspend fun getSubQuestions(): List<SubQuestionsItem> {
+       return MotionApiClient.getSubQuestions()
     }
 
 }
