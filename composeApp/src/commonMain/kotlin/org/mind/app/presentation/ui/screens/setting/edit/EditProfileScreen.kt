@@ -263,7 +263,7 @@ fun EditProfileScreenContent(
 
                     if (isValid) {
                         viewModel.updateUserDetails(
-                            userId = 1,
+                            userId = profile.id.toInt(),
                             email = email,
                             username = username,
                             fullName = fullName,
@@ -283,6 +283,7 @@ fun EditProfileScreenContent(
                 Text("Save Profile")
             }
             AnimatedVisibility (userMessage.isNotBlank()) {
+                navigator?.pop()
                 notify(userMessage)
             }
         }
