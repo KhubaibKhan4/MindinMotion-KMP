@@ -2,7 +2,6 @@ package org.mind.app.presentation.ui.screens.notes
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
@@ -78,6 +77,7 @@ fun NotesScreenContent(
     var boardsList by remember { mutableStateOf(emptyList<Boards>()) }
     var selectedTabIndex by remember { mutableStateOf(0) }
     var searchText by remember { mutableStateOf(TextFieldValue()) }
+    var boardText by remember { mutableStateOf(TextFieldValue()) }
 
     LaunchedEffect(Unit) {
         viewModel.getAllNotes()
@@ -185,11 +185,34 @@ fun NotesScreenContent(
                         }
                     }
                 } else {
-                    Box(
+
+                    OutlinedTextField(
+                        value = boardText,
+                        onValueChange = { boardText = it },
                         modifier = Modifier
-                            .fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
+                            .padding(16.dp)
+                            .fillMaxWidth(),
+                        placeholder = {
+                            Text("Search Boards")
+                        }
+                    )
+                    val filteredBoards = if (boardText.text.isEmpty()) {
+                        boardsList
+                    } else {
+                        boardsList.filter { board ->
+                            board.title.contains(boardText.text, ignoreCase = true) ||
+                                    board.description.contains(boardText.text, ignoreCase = true)
+                        }
+                    }
+                    if (filteredBoards.isEmpty()) {
+                        Text(
+                            "No boards found",
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = 16.dp),
+                            textAlign = TextAlign.Center
+                        )
+                    } else {
                         LazyVerticalGrid(
                             columns = GridCells.Fixed(2),
                             modifier = Modifier.fillMaxWidth(),
@@ -197,20 +220,9 @@ fun NotesScreenContent(
                             verticalArrangement = Arrangement.spacedBy(12.dp),
                             contentPadding = PaddingValues(12.dp)
                         ) {
-                            val filteredBoards = if (searchText.text.isEmpty()) {
-                                boardsList
-                            } else {
-                                boardsList.filter { note ->
-                                    note.title.contains(searchText.text, ignoreCase = true) ||
-                                            note.description.contains(
-                                                searchText.text,
-                                                ignoreCase = true
-                                            )
-                                }
-                            }
                             items(filteredBoards.size) { index ->
-                                val note = filteredBoards[index]
-                                BoardItem(note)
+                                val board = filteredBoards[index]
+                                BoardItem(board)
                             }
                         }
                     }

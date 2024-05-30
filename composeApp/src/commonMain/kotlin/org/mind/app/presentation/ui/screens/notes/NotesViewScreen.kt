@@ -15,6 +15,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextOverflow
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import org.mind.app.domain.model.notes.Notes
@@ -39,7 +40,7 @@ fun NotesViewContent(notes: Notes) {
         topBar = {
             TopAppBar(
                 title = {
-                    Text(notes.title)
+                    Text(notes.title, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 },
                 navigationIcon = {
                     Icon(
