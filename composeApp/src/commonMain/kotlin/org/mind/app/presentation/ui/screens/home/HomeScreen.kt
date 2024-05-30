@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -191,7 +192,8 @@ fun SubCategoryItem(
     subQuestionsItems: List<SubQuestionsItem>,
 ) {
     Column(
-        modifier = Modifier.padding(16.dp),
+        modifier = Modifier.fillMaxWidth()
+            .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Row(
@@ -215,12 +217,23 @@ fun SubCategoryItem(
                 )
             )
         }
-        LazyRow(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            items(subCategoryItems) { subCategoryItem ->
-                SubCategoryCard(subCategoryItem, subQuestionsItems)
+        if (categoryName=="Top Collections"){
+            LazyRow(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                items(subCategoryItems) { subCategoryItem ->
+                    TopCollectionCard(subCategoryItem, subQuestionsItems)
+                }
+            }
+        }else {
+            LazyRow(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                items(subCategoryItems) { subCategoryItem ->
+                    SubCategoryCard(subCategoryItem, subQuestionsItems)
+                }
             }
         }
     }
@@ -305,6 +318,75 @@ fun SubCategoryCard(subCategoryItem: SubCategoriesItem, subQuestionsItems: List<
                             color = Color.Gray,
                             fontSize = 14.sp
                         )
+                    )
+                }
+            }
+        }
+    }
+}
+@Composable
+fun TopCollectionCard(subCategoryItem: SubCategoriesItem, subQuestionsItems: List<SubQuestionsItem>) {
+    val questionsForCategory = subQuestionsItems.filter { it.categoryTitle == subCategoryItem.name }
+    val questionCount = questionsForCategory.size
+
+    Card(
+        shape = RoundedCornerShape(16.dp),
+        elevation = CardDefaults.cardElevation(4.dp),
+        modifier = Modifier.width(200.dp),
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            horizontalAlignment = Alignment.Start
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(120.dp)
+                    .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
+            ) {
+                val image: Resource<Painter> = asyncPainterResource(BASE_URL + subCategoryItem.imageUrl)
+                KamelImage(
+                    resource = image,
+                    contentDescription = null,
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop
+                )
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .padding(8.dp)
+                        .background(Color(0xFF6200EE), shape = RoundedCornerShape(8.dp))
+                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                ) {
+                    Text(
+                        text = "$questionCount Qs",
+                        style = TextStyle(
+                            color = Color.White,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    )
+                }
+                Column(
+                    modifier = Modifier.wrapContentWidth()
+                        .padding(6.dp)
+                        .background(Color(0xFF6200EE), shape = RoundedCornerShape(8.dp))
+                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                        .align(Alignment.BottomStart),
+                    horizontalAlignment = Alignment.Start,
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    Text(
+                        text = subCategoryItem.name,
+                        style = TextStyle(
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 16.sp,
+                            color = Color.White
+                        ),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
                     )
                 }
             }
