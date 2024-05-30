@@ -2,6 +2,7 @@ package org.mind.app.presentation.ui.screens.quiz
 
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -15,8 +16,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
-import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Scaffold
 import androidx.compose.material.icons.Icons
@@ -28,6 +27,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -40,6 +41,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
@@ -73,6 +75,8 @@ fun QuizScreenContent(
 ) {
     var quizQuestions by remember { mutableStateOf<List<QuizQuestionsItem>?>(null) }
     var categories by remember { mutableStateOf<List<QuizCategoryItem>?>(null) }
+    var isSearchActive by remember { mutableStateOf(false) }
+    var searchQuery by remember { mutableStateOf("") }
 
     LaunchedEffect(Unit) {
         viewModel.getAllQuizQuestions()
@@ -113,8 +117,12 @@ fun QuizScreenContent(
         }
     }
 
+    val filteredCategories = categories?.filter { category ->
+        category.name.contains(searchQuery, ignoreCase = true)
+    }
+
     val quizItemsWithCategories = quizQuestions?.mapNotNull { quiz ->
-        val category = categories?.find { it.id == quiz.categoryId }
+        val category = filteredCategories?.find { it.id == quiz.categoryId }
         if (category != null) {
             Pair(quiz, category)
         } else {
@@ -126,10 +134,38 @@ fun QuizScreenContent(
         topBar = {
             TopAppBar(
                 title = {
-                    Text("Quiz")
+                    if (isSearchActive) {
+                        TextField(
+                            value = searchQuery,
+                            onValueChange = { searchQuery = it },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .border(
+                                    width = 1.dp,
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                    shape = RoundedCornerShape(8.dp)
+                                )
+                                .background(
+                                    MaterialTheme.colorScheme.surface,
+                                    shape = RoundedCornerShape(8.dp)
+                                ),
+                            placeholder = { Text("Search categories...") },
+                            singleLine = true,
+                            colors = TextFieldDefaults.textFieldColors(
+                                focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                                containerColor = MaterialTheme.colorScheme.surface,
+                                cursorColor = MaterialTheme.colorScheme.primary,
+                                focusedIndicatorColor = Color.Transparent,
+                                unfocusedIndicatorColor = Color.Transparent
+                            ),
+                            shape = RoundedCornerShape(8.dp)
+                        )
+                    } else {
+                        Text("Quiz")
+                    }
                 },
                 actions = {
-                    IconButton(onClick = { }) {
+                    IconButton(onClick = { isSearchActive = !isSearchActive }) {
                         Icon(Icons.Default.Search, contentDescription = "Search")
                     }
                 }
@@ -144,22 +180,26 @@ fun QuizScreenContent(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(2),
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.Center,
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                categories?.forEach { category ->
-                    val quizItemsForCategory = quizItemsWithCategories
-                        ?.filter { it.second.id == category.id }
-                        ?.map { it.first }
+            if (quizQuestions == null) {
+                Text("No quizzes available")
+            } else {
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(2),
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    filteredCategories?.forEach { category ->
+                        val quizItemsForCategory = quizItemsWithCategories
+                            ?.filter { it.second.id == category.id }
+                            ?.map { it.first }
 
-                    item {
-                        if (quizItemsForCategory != null && quizItemsForCategory.isNotEmpty()) {
-                            QuizCategoryItemCard(quizItemsForCategory, category)
-                        } else {
-                            Text("No Items Found for ${category.name}")
+                        item {
+                            if (quizItemsForCategory != null && quizItemsForCategory.isNotEmpty()) {
+                                QuizCategoryItemCard(quizItemsForCategory, category)
+                            } else {
+                                Text("No Items Found for ${category.name}")
+                            }
                         }
                     }
                 }
