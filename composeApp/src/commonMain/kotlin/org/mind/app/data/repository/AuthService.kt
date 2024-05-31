@@ -7,6 +7,7 @@ import org.mind.app.domain.model.category.QuizCategoryItem
 import org.mind.app.domain.model.gemini.Gemini
 import org.mind.app.domain.model.notes.Notes
 import org.mind.app.domain.model.papers.Papers
+import org.mind.app.domain.model.promotion.Promotions
 import org.mind.app.domain.model.quiz.QuizQuestionsItem
 import org.mind.app.domain.model.subcategories.SubCategoriesItem
 import org.mind.app.domain.model.subquestions.SubQuestionsItem
@@ -61,4 +62,5 @@ interface AuthService {
     suspend fun getAllPapersWithDetail(id:Long): Papers
     suspend fun getAllSubCategories(): List<SubCategoriesItem>
     suspend fun getSubQuestions(): List<SubQuestionsItem>
+    suspend fun getAllPromotions(): List<Promotions>
 }

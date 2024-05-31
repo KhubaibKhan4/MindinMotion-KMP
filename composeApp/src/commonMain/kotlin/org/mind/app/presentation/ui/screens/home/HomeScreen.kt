@@ -1,8 +1,11 @@
 package org.mind.app.presentation.ui.screens.home
 
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -24,11 +27,13 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ChatBubble
 import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material.icons.rounded.Circle
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -38,16 +43,20 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
@@ -58,26 +67,25 @@ import com.example.cmppreference.LocalPreferenceProvider
 import io.kamel.core.Resource
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
+import kotlinx.coroutines.delay
 import mind_in_motion.composeapp.generated.resources.Res
 import mind_in_motion.composeapp.generated.resources.avatar
-import mind_in_motion.composeapp.generated.resources.quiz_banner
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.koinInject
+import org.mind.app.domain.model.promotion.Promotions
 import org.mind.app.domain.model.subcategories.SubCategoriesItem
 import org.mind.app.domain.model.subquestions.SubQuestionsItem
 import org.mind.app.domain.usecases.ResultState
 import org.mind.app.presentation.ui.components.ErrorBox
 import org.mind.app.presentation.ui.components.LoadingBox
-import org.mind.app.presentation.ui.screens.quiz.QuizQuestionsScreen
-import org.mind.app.presentation.ui.screens.quiz.subcategory.QuizPlayScreenSub
-import org.mind.app.presentation.ui.screens.quiz.subcategory.QuizQuestionsSub
+import org.mind.app.presentation.ui.components.PromotionCardWithPager
 import org.mind.app.presentation.ui.screens.quiz.subcategory.QuizScreenPlaySubScreen
 import org.mind.app.presentation.ui.tabs.chat.ChatTab
 import org.mind.app.presentation.viewmodel.MainViewModel
 import org.mind.app.utils.Constant.BASE_URL
 
 class HomeScreen : Screen {
-    @OptIn(ExperimentalMaterial3Api::class)
+    @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
     @Composable
     override fun Content() {
         LocalPreferenceProvider {
@@ -88,6 +96,7 @@ class HomeScreen : Screen {
             var isLogin by remember { mutableStateOf(false) }
             var subCategoriesItems by remember { mutableStateOf(emptyList<SubCategoriesItem>()) }
             var subQuestionsItems by remember { mutableStateOf(emptyList<SubQuestionsItem>()) }
+            var promotionsItems by remember { mutableStateOf(emptyList<Promotions>()) }
             LaunchedEffect(Unit) {
                 email = preference.getString("email").toString()
                 isLogin = preference.getBoolean("is_login", false)
@@ -95,9 +104,11 @@ class HomeScreen : Screen {
             LaunchedEffect(Unit) {
                 viewModel.getAllSubCategories()
                 viewModel.getAllSubQuestions()
+                viewModel.getAllPromotions()
             }
             val subCategories by viewModel.subCategories.collectAsState()
             val subQuestions by viewModel.subQuestions.collectAsState()
+            val promotions by viewModel.promotions.collectAsState()
             when (subCategories) {
                 is ResultState.Error -> {
                     val error = (subCategories as ResultState.Error).message
@@ -128,12 +139,42 @@ class HomeScreen : Screen {
                     subQuestionsItems = response
                 }
             }
-            val discoverSubCategories = subCategoriesItems.filter { it.categoryName.contains("Discover") }
+            when (promotions) {
+                is ResultState.Error -> {
+                    val error = (promotions as ResultState.Error).message
+                    ErrorBox(error)
+                }
+
+                ResultState.Loading -> {
+                    LoadingBox()
+                }
+
+                is ResultState.Success -> {
+                    val response = (promotions as ResultState.Success).data
+                    promotionsItems = response
+                }
+            }
+            val discoverSubCategories =
+                subCategoriesItems.filter { it.categoryName.contains("Discover") }
             val topCollectionsSubCategories =
                 subCategoriesItems.filter { it.categoryName.contains("Top Collections") }
             val trendingQuizSubCategories =
-                subCategoriesItems.filter { it.categoryName.contains("Trending Quiz")  }
-            val topPicksSubCategories = subCategoriesItems.filter { it.categoryName.contains("Top Picks")  }
+                subCategoriesItems.filter { it.categoryName.contains("Trending Quiz") }
+            val topPicksSubCategories =
+                subCategoriesItems.filter { it.categoryName.contains("Top Picks") }
+
+            val scope = rememberCoroutineScope()
+            val pageCount = promotionsItems.size
+            var currentPage by remember { mutableStateOf(0) }
+
+            if (pageCount > 0) {
+                LaunchedEffect(Unit) {
+                    while (true) {
+                        delay(3000)
+                        currentPage = (currentPage + 1) % pageCount
+                    }
+                }
+            }
 
             Scaffold(
                 topBar = {
@@ -167,16 +208,7 @@ class HomeScreen : Screen {
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Top
                 ) {
-                    Image(
-                        painter = painterResource(Res.drawable.quiz_banner),
-                        contentDescription = null,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(150.dp)
-                            .padding(start = 12.dp, end = 12.dp)
-                            .clip(RoundedCornerShape(12.dp)),
-                        contentScale = ContentScale.FillWidth
-                    )
+                    PromotionCardWithPager(promotionsItems)
                     SubCategoryItem("Discover", discoverSubCategories, subQuestionsItems)
                     SubCategoryItem(
                         "Top Collections",
@@ -244,9 +276,11 @@ fun SubCategoryCard(
     subQuestionsItems: List<SubQuestionsItem>,
 ) {
     val navigator = LocalNavigator.current
-    val questionsForCategory by remember { mutableStateOf(subQuestionsItems.filter { question ->
-        question.categoryId == subCategoryItem.id && question.categoryTitle == subCategoryItem.name
-    }) }
+    val questionsForCategory by remember {
+        mutableStateOf(subQuestionsItems.filter { question ->
+            question.categoryId == subCategoryItem.id && question.categoryTitle == subCategoryItem.name
+        })
+    }
     val questionCount by remember { mutableStateOf(questionsForCategory.size) }
     Card(
         shape = RoundedCornerShape(16.dp),
@@ -268,7 +302,8 @@ fun SubCategoryCard(
                     .height(120.dp)
                     .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
             ) {
-                val image: Resource<Painter> = asyncPainterResource(BASE_URL + subCategoryItem.imageUrl)
+                val image: Resource<Painter> =
+                    asyncPainterResource(BASE_URL + subCategoryItem.imageUrl)
                 KamelImage(
                     resource = image,
                     contentDescription = null,
@@ -333,11 +368,16 @@ fun SubCategoryCard(
 }
 
 @Composable
-fun TopCollectionCard(subCategoryItem: SubCategoriesItem, subQuestionsItems: List<SubQuestionsItem>) {
+fun TopCollectionCard(
+    subCategoryItem: SubCategoriesItem,
+    subQuestionsItems: List<SubQuestionsItem>,
+) {
     val navigator = LocalNavigator.current
-    val questionsForCategory by remember { mutableStateOf(subQuestionsItems.filter { question ->
-        question.categoryId == subCategoryItem.id && question.categoryTitle == subCategoryItem.name
-    }) }
+    val questionsForCategory by remember {
+        mutableStateOf(subQuestionsItems.filter { question ->
+            question.categoryId == subCategoryItem.id && question.categoryTitle == subCategoryItem.name
+        })
+    }
     val questionCount by remember { mutableStateOf(questionsForCategory.size) }
 
     Card(
@@ -360,7 +400,8 @@ fun TopCollectionCard(subCategoryItem: SubCategoriesItem, subQuestionsItems: Lis
                     .height(120.dp)
                     .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
             ) {
-                val image: Resource<Painter> = asyncPainterResource(BASE_URL + subCategoryItem.imageUrl)
+                val image: Resource<Painter> =
+                    asyncPainterResource(BASE_URL + subCategoryItem.imageUrl)
                 KamelImage(
                     resource = image,
                     contentDescription = null,

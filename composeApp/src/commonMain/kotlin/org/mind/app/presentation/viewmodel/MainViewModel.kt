@@ -15,6 +15,7 @@ import org.mind.app.domain.model.gemini.Gemini
 import org.mind.app.domain.model.message.Message
 import org.mind.app.domain.model.notes.Notes
 import org.mind.app.domain.model.papers.Papers
+import org.mind.app.domain.model.promotion.Promotions
 import org.mind.app.domain.model.quiz.QuizQuestionsItem
 import org.mind.app.domain.model.subcategories.SubCategoriesItem
 import org.mind.app.domain.model.subquestions.SubQuestionsItem
@@ -86,11 +87,25 @@ class MainViewModel(
 
     private val _subQuestions = MutableStateFlow<ResultState<List<SubQuestionsItem>>>(ResultState.Loading)
     val subQuestions = _subQuestions.asStateFlow()
+
+    private val _promotions = MutableStateFlow<ResultState<List<Promotions>>>(ResultState.Loading)
+    val promotions = _promotions.asStateFlow()
     init {
         viewModelScope.launch {
             databaseHelper.getAllMessages().collect { localMessages ->
                 val convertedMessages = localMessages.map { convertDbMessageToUiMessage(it) }
                 _messages.value = convertedMessages
+            }
+        }
+    }
+    fun getAllPromotions(){
+        viewModelScope.launch {
+            _promotions.value = ResultState.Loading
+            try {
+                val response = repository.getAllPromotions()
+                _promotions.value = ResultState.Success(response)
+            } catch (e: Exception) {
+                _promotions.value = ResultState.Error(e.message.toString())
             }
         }
     }

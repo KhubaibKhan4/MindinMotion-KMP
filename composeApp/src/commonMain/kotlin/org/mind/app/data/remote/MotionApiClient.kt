@@ -30,6 +30,7 @@ import org.mind.app.domain.model.category.QuizCategoryItem
 import org.mind.app.domain.model.gemini.Gemini
 import org.mind.app.domain.model.notes.Notes
 import org.mind.app.domain.model.papers.Papers
+import org.mind.app.domain.model.promotion.Promotions
 import org.mind.app.domain.model.quiz.QuizQuestionsItem
 import org.mind.app.domain.model.subcategories.SubCategoriesItem
 import org.mind.app.domain.model.subquestions.SubQuestionsItem
@@ -188,5 +189,8 @@ object MotionApiClient {
     }
     suspend fun getSubQuestions(): List<SubQuestionsItem>{
         return client.get(BASE_URL+"v1/quiz-questions-sub").body()
+    }
+    suspend fun getAllPromotions(): List<Promotions>{
+        return client.get(BASE_URL+"v1/promotions").body()
     }
 }
