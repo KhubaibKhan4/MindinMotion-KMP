@@ -2,13 +2,13 @@ package org.mind.app.presentation.ui.screens.quiz
 
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
@@ -18,9 +18,12 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Scaffold
+import androidx.compose.material.TextField
+import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -28,8 +31,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -45,6 +46,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.tab.LocalTabNavigator
@@ -75,6 +77,7 @@ class QuizScreen : Screen {
 fun QuizScreenContent(
     viewModel: MainViewModel = koinInject(),
 ) {
+    val isDark by LocalThemeIsDark.current
     var quizQuestions by remember { mutableStateOf<List<QuizQuestionsItem>?>(null) }
     var categories by remember { mutableStateOf<List<QuizCategoryItem>?>(null) }
     var isSearchActive by remember { mutableStateOf(false) }
@@ -140,38 +143,61 @@ fun QuizScreenContent(
                         TextField(
                             value = searchQuery,
                             onValueChange = { searchQuery = it },
+                            placeholder = {
+                                Text(
+                                    "Search...",
+                                    color = if (isDark) Color.LightGray else Color.Gray
+                                )
+                            },
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = Icons.Outlined.Search,
+                                    contentDescription = null
+                                )
+                            },
+                            trailingIcon = {
+                                Icon(
+                                    imageVector = Icons.Outlined.Close,
+                                    contentDescription = null,
+                                    modifier = Modifier.clickable {
+                                        searchQuery = ""
+                                        isSearchActive = !isSearchActive
+                                    }
+                                )
+                            },
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .border(
-                                    width = 1.dp,
-                                    color = MaterialTheme.colorScheme.onSurface,
+                                .background(
+                                    Color.Transparent,
                                     shape = RoundedCornerShape(8.dp)
                                 )
-                                .background(
-                                    MaterialTheme.colorScheme.surface,
-                                    shape = RoundedCornerShape(8.dp)
-                                ),
-                            placeholder = { Text("Search categories...") },
+                                .padding(4.dp),
                             singleLine = true,
+                            shape = RoundedCornerShape(16.dp),
                             colors = TextFieldDefaults.textFieldColors(
-                                focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                                containerColor = MaterialTheme.colorScheme.surface,
-                                cursorColor = MaterialTheme.colorScheme.primary,
+                                unfocusedIndicatorColor = Color.Transparent,
                                 focusedIndicatorColor = Color.Transparent,
-                                unfocusedIndicatorColor = Color.Transparent
-                            ),
-                            shape = RoundedCornerShape(8.dp)
+                                textColor = if (isDark) Color.White else Color.Black,
+                                backgroundColor = if (isDark) Color.DarkGray else Color.LightGray,
+                                trailingIconColor = if (isDark) Color.LightGray else Color.Gray,
+                                leadingIconColor = if (isDark) Color.LightGray else Color.Gray
+                            )
                         )
                     } else {
-                        Text("Quiz")
+                        Text(
+                            "Quiz",
+                            fontWeight = FontWeight.Bold
+                        )
                     }
                 },
                 actions = {
-                    IconButton(onClick = { isSearchActive = !isSearchActive }) {
-                        Icon(
-                            if (isSearchActive) Icons.Default.Close else Icons.Default.Search,
-                            contentDescription = "Search"
-                        )
+                    if (!isSearchActive) {
+                        IconButton(onClick = { isSearchActive = !isSearchActive }) {
+                            Icon(
+                                Icons.Default.Search,
+                                contentDescription = "Search"
+                            )
+                        }
                     }
                 }
             )
@@ -185,8 +211,18 @@ fun QuizScreenContent(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            if (quizQuestions == null) {
-                Text("No quizzes available")
+            if (filteredCategories.isNullOrEmpty()) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        "No items found",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.padding(16.dp)
+                    )
+                }
             } else {
                 LazyVerticalGrid(
                     columns = GridCells.Fixed(2),
@@ -194,16 +230,14 @@ fun QuizScreenContent(
                     horizontalArrangement = Arrangement.Center,
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    filteredCategories?.forEach { category ->
+                    filteredCategories.forEach { category ->
                         val quizItemsForCategory = quizItemsWithCategories
                             ?.filter { it.second.id == category.id }
                             ?.map { it.first }
 
                         item {
-                            if (quizItemsForCategory != null && quizItemsForCategory.isNotEmpty()) {
+                            if (quizItemsForCategory?.isNotEmpty() == true && quizItemsForCategory.isNotEmpty()) {
                                 QuizCategoryItemCard(quizItemsForCategory, category)
-                            } else {
-                                Text("No Items Found for ${category.name}")
                             }
                         }
                     }
@@ -212,6 +246,7 @@ fun QuizScreenContent(
         }
     }
 }
+
 
 @Composable
 fun QuizCategoryItemCard(
@@ -234,7 +269,7 @@ fun QuizCategoryItemCard(
                 }
             }
     ) {
-        if (isEmpty){
+        if (isEmpty) {
             notify("No Questions Found.")
         }
         Card(

@@ -35,6 +35,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -80,6 +81,7 @@ import org.mind.app.presentation.ui.screens.quiz.subcategory.QuizScreenPlaySubSc
 import org.mind.app.presentation.ui.screens.quiz.subcategory.ScreenAll
 import org.mind.app.presentation.ui.tabs.chat.ChatTab
 import org.mind.app.presentation.viewmodel.MainViewModel
+import org.mind.app.theme.LocalThemeIsDark
 import org.mind.app.utils.Constant.BASE_URL
 
 class HomeScreen : Screen {
@@ -90,6 +92,7 @@ class HomeScreen : Screen {
             val viewModel: MainViewModel = koinInject()
             val preference = LocalPreference.current
             val tabNavigator = LocalTabNavigator.current
+            val isDark by LocalThemeIsDark.current
             var email by remember { mutableStateOf("") }
             var isLogin by remember { mutableStateOf(false) }
             var subCategoriesItems by remember { mutableStateOf(emptyList<SubCategoriesItem>()) }
@@ -190,7 +193,12 @@ class HomeScreen : Screen {
                                 TextField(
                                     value = searchQuery,
                                     onValueChange = { searchQuery = it },
-                                    placeholder = { Text("Search...") },
+                                    placeholder = {
+                                        Text(
+                                            "Search...",
+                                            color = if (isDark) Color.LightGray else Color.Gray
+                                        )
+                                    },
                                     leadingIcon = {
                                         Icon(
                                             imageVector = Icons.Outlined.Search,
@@ -202,20 +210,27 @@ class HomeScreen : Screen {
                                             imageVector = Icons.Outlined.Close,
                                             contentDescription = null,
                                             modifier = Modifier.clickable {
-                                                searchQuery =""
+                                                searchQuery = ""
                                                 isSearchEnable = !isSearchEnable
                                             }
                                         )
                                     },
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .background(Color.White, shape = RoundedCornerShape(8.dp))
+                                        .background(
+                                            Color.Transparent,
+                                            shape = RoundedCornerShape(8.dp)
+                                        )
                                         .padding(4.dp),
                                     singleLine = true,
                                     shape = RoundedCornerShape(16.dp),
                                     colors = androidx.compose.material.TextFieldDefaults.textFieldColors(
                                         unfocusedIndicatorColor = Color.Transparent,
-                                        focusedIndicatorColor = Color.Transparent
+                                        focusedIndicatorColor = Color.Transparent,
+                                        textColor = if (isDark) Color.White else Color.Black,
+                                        backgroundColor = if (isDark) Color.DarkGray else Color.LightGray,
+                                        trailingIconColor = if (isDark) Color.LightGray else Color.Gray,
+                                        leadingIconColor = if (isDark) Color.LightGray else Color.Gray
                                     )
                                 )
                             } else {
@@ -251,16 +266,30 @@ class HomeScreen : Screen {
                     verticalArrangement = Arrangement.Top
                 ) {
                     if (searchQuery.isNotEmpty()) {
-                        LazyVerticalGrid(
-                            columns = GridCells.Fixed(2),
-                            modifier = Modifier.fillMaxWidth()
-                                .height(800.dp)
-                                .padding(8.dp),
-                            horizontalArrangement = Arrangement.spacedBy(16.dp),
-                            verticalArrangement = Arrangement.spacedBy(12.dp)
-                        ) {
-                            items(filteredSubCategoriesItems) { subCategoryItem ->
-                                SubCategoryCard(subCategoryItem, subQuestionsItems)
+                        if (filteredSubCategoriesItems.isEmpty()){
+                            Box(
+                                modifier = Modifier.fillMaxSize(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    "No items found",
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                    modifier = Modifier.padding(16.dp)
+                                )
+                            }
+                        }else{
+                            LazyVerticalGrid(
+                                columns = GridCells.Fixed(2),
+                                modifier = Modifier.fillMaxWidth()
+                                    .height(800.dp)
+                                    .padding(8.dp),
+                                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                                verticalArrangement = Arrangement.spacedBy(12.dp)
+                            ) {
+                                items(filteredSubCategoriesItems) { subCategoryItem ->
+                                    SubCategoryCard(subCategoryItem, subQuestionsItems)
+                                }
                             }
                         }
                     } else {
