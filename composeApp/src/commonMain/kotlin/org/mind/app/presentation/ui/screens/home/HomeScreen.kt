@@ -80,6 +80,7 @@ import org.mind.app.presentation.ui.components.ErrorBox
 import org.mind.app.presentation.ui.components.LoadingBox
 import org.mind.app.presentation.ui.components.PromotionCardWithPager
 import org.mind.app.presentation.ui.screens.quiz.subcategory.QuizScreenPlaySubScreen
+import org.mind.app.presentation.ui.screens.quiz.subcategory.ScreenAll
 import org.mind.app.presentation.ui.tabs.chat.ChatTab
 import org.mind.app.presentation.viewmodel.MainViewModel
 import org.mind.app.utils.Constant.BASE_URL
@@ -179,7 +180,7 @@ class HomeScreen : Screen {
             Scaffold(
                 topBar = {
                     TopAppBar(
-                        title = { Text("Mind in Motion") },
+                        title = { Text("Mind in Motion", fontWeight = FontWeight.Bold) },
                         actions = {
                             Icon(
                                 imageVector = Icons.Outlined.Search,
@@ -229,6 +230,7 @@ fun SubCategoryItem(
     subCategoryItems: List<SubCategoriesItem>,
     subQuestionsItems: List<SubQuestionsItem>,
 ) {
+    val navigator = LocalNavigator.current
     Column(
         modifier = Modifier.fillMaxWidth()
             .padding(16.dp),
@@ -248,7 +250,10 @@ fun SubCategoryItem(
             )
             Text(
                 text = "See All",
-                modifier = Modifier.padding(end = 16.dp),
+                modifier = Modifier.padding(end = 16.dp)
+                    .clickable {
+                        navigator?.push(ScreenAll(subCategoryItems,subQuestionsItems,categoryName))
+                    },
                 style = TextStyle(
                     color = Color.Blue,
                     fontSize = 16.sp
