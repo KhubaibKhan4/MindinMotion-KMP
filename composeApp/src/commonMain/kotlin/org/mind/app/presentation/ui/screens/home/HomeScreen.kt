@@ -128,12 +128,12 @@ class HomeScreen : Screen {
                     subQuestionsItems = response
                 }
             }
-            val discoverSubCategories = subCategoriesItems.filter { it.categoryName == "Discover" }
+            val discoverSubCategories = subCategoriesItems.filter { it.categoryName.contains("Discover") }
             val topCollectionsSubCategories =
-                subCategoriesItems.filter { it.categoryName == "Top Collections" }
+                subCategoriesItems.filter { it.categoryName.contains("Top Collections") }
             val trendingQuizSubCategories =
-                subCategoriesItems.filter { it.categoryName == "Trending Quiz" }
-            val topPicksSubCategories = subCategoriesItems.filter { it.categoryName == "Top Picks" }
+                subCategoriesItems.filter { it.categoryName.contains("Trending Quiz")  }
+            val topPicksSubCategories = subCategoriesItems.filter { it.categoryName.contains("Top Picks")  }
 
             Scaffold(
                 topBar = {
@@ -223,21 +223,14 @@ fun SubCategoryItem(
                 )
             )
         }
-        if (categoryName == "Top Collections") {
-            LazyRow(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                items(subCategoryItems) { subCategoryItem ->
+        LazyRow(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            items(subCategoryItems) { subCategoryItem ->
+                if (categoryName.contains("Top Collections")) {
                     TopCollectionCard(subCategoryItem, subQuestionsItems)
-                }
-            }
-        } else {
-            LazyRow(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                items(subCategoryItems) { subCategoryItem ->
+                } else {
                     SubCategoryCard(subCategoryItem, subQuestionsItems)
                 }
             }
@@ -251,8 +244,10 @@ fun SubCategoryCard(
     subQuestionsItems: List<SubQuestionsItem>,
 ) {
     val navigator = LocalNavigator.current
-    val questionsForCategory = subQuestionsItems.filter { it.categoryId == subCategoryItem.id }
-    val questionCount = questionsForCategory.size
+    val questionsForCategory by remember { mutableStateOf(subQuestionsItems.filter { question ->
+        question.categoryId == subCategoryItem.id && question.categoryTitle == subCategoryItem.name
+    }) }
+    val questionCount by remember { mutableStateOf(questionsForCategory.size) }
     Card(
         shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(4.dp),
@@ -340,8 +335,10 @@ fun SubCategoryCard(
 @Composable
 fun TopCollectionCard(subCategoryItem: SubCategoriesItem, subQuestionsItems: List<SubQuestionsItem>) {
     val navigator = LocalNavigator.current
-    val questionsForCategory = subQuestionsItems.filter { it.categoryId == subCategoryItem.id }
-    val questionCount = questionsForCategory.size
+    val questionsForCategory by remember { mutableStateOf(subQuestionsItems.filter { question ->
+        question.categoryId == subCategoryItem.id && question.categoryTitle == subCategoryItem.name
+    }) }
+    val questionCount by remember { mutableStateOf(questionsForCategory.size) }
 
     Card(
         shape = RoundedCornerShape(16.dp),

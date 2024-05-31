@@ -53,6 +53,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
+import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.tab.LocalTabNavigator
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -79,7 +80,7 @@ fun QuizQuestionsScreenContent(
     quizCategoryItem: SubCategoriesItem,
     quizQuestionsItem: List<SubQuestionsItem>,
 ) {
-    val navigator = LocalTabNavigator.current
+    val navigator = LocalNavigator.current
 
     var timer by remember { mutableStateOf(60) }
     var currentQuestionIndex by remember { mutableStateOf(0) }
@@ -127,7 +128,7 @@ fun QuizQuestionsScreenContent(
                         Icons.Default.ArrowBackIosNew,
                         contentDescription = null,
                         modifier = Modifier.clickable {
-                            navigator.current = HomeTab
+                            navigator?.pop()
                         }
                     )
                 },
@@ -142,7 +143,7 @@ fun QuizQuestionsScreenContent(
                             if (currentQuestionIndex < quizQuestionsItem.size && selectedAnswerIndex == -1) {
                                 showDialog.value = true
                             } else {
-                                navigator.current = HomeTab
+                                navigator?.pop()
                             }
                         },
                         colors = ButtonDefaults.outlinedButtonColors()
@@ -331,7 +332,7 @@ fun QuizQuestionsScreenContent(
                     TextButton(
                         onClick = {
                             showDialog.value = false
-                            navigator.current = HomeTab
+                            navigator?.pop()
                         }
                     ) {
                         Text("Submit")

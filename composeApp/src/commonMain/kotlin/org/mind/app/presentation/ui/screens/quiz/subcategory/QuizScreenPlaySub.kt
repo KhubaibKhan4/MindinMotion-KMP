@@ -269,11 +269,11 @@ fun QuizScreenPlayContentSub(
                                         if(quizQuestionsItem.isEmpty()){
                                             isNoQuizAvailable = !isNoQuizAvailable
                                         }else {
-                                            navigator.current =
-                                                QuizQuestionsSub(
-                                                    quizCategoryItem,
-                                                    quizQuestionsItem
-                                                )
+                                            localNavigator?.push(QuizQuestionsScreen(
+                                                quizCategoryItem,
+                                                quizQuestionsItem
+                                            ))
+
                                         }
                                     },
                                 contentAlignment = Alignment.Center
