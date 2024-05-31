@@ -276,12 +276,12 @@ fun SubCategoryCard(
     subQuestionsItems: List<SubQuestionsItem>,
 ) {
     val navigator = LocalNavigator.current
-    val questionsForCategory by remember {
-        mutableStateOf(subQuestionsItems.filter { question ->
+    val questionsForCategory = remember(subQuestionsItems) {
+        subQuestionsItems.filter { question ->
             question.categoryId == subCategoryItem.id && question.categoryTitle == subCategoryItem.name
-        })
+        }
     }
-    val questionCount by remember { mutableStateOf(questionsForCategory.size) }
+    val questionCount = questionsForCategory.size
     Card(
         shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(4.dp),
@@ -373,12 +373,12 @@ fun TopCollectionCard(
     subQuestionsItems: List<SubQuestionsItem>,
 ) {
     val navigator = LocalNavigator.current
-    val questionsForCategory by remember {
-        mutableStateOf(subQuestionsItems.filter { question ->
+    val questionsForCategory = remember(subQuestionsItems) {
+        subQuestionsItems.filter { question ->
             question.categoryId == subCategoryItem.id && question.categoryTitle == subCategoryItem.name
-        })
+        }
     }
-    val questionCount by remember { mutableStateOf(questionsForCategory.size) }
+    val questionCount = questionsForCategory.size
 
     Card(
         shape = RoundedCornerShape(16.dp),
