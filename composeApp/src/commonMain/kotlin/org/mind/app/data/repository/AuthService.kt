@@ -63,4 +63,5 @@ interface AuthService {
     suspend fun getAllSubCategories(): List<SubCategoriesItem>
     suspend fun getSubQuestions(): List<SubQuestionsItem>
     suspend fun getAllPromotions(): List<Promotions>
+    suspend fun getAllUsers(): List<Users>
 }

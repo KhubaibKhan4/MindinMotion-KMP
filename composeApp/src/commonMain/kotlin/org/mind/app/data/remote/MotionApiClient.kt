@@ -193,4 +193,7 @@ object MotionApiClient {
     suspend fun getAllPromotions(): List<Promotions>{
         return client.get(BASE_URL+"v1/promotions").body()
     }
+    suspend fun getAllUsers(): List<Users>{
+        return client.get(BASE_URL+"v1/users").body()
+    }
 }

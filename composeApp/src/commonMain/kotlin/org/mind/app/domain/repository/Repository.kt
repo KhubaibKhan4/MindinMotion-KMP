@@ -145,4 +145,8 @@ class Repository(
         return MotionApiClient.getAllPromotions()
     }
 
+    override suspend fun getAllUsers(): List<Users> {
+        return MotionApiClient.getAllUsers()
+    }
+
 }

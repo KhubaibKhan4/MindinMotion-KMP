@@ -90,11 +90,25 @@ class MainViewModel(
 
     private val _promotions = MutableStateFlow<ResultState<List<Promotions>>>(ResultState.Loading)
     val promotions = _promotions.asStateFlow()
+
+    private val _allUsers = MutableStateFlow<ResultState<List<Users>>>(ResultState.Loading)
+    val allUsers = _allUsers.asStateFlow()
     init {
         viewModelScope.launch {
             databaseHelper.getAllMessages().collect { localMessages ->
                 val convertedMessages = localMessages.map { convertDbMessageToUiMessage(it) }
                 _messages.value = convertedMessages
+            }
+        }
+    }
+    fun getAllUsers(){
+        viewModelScope.launch {
+            _allUsers.value = ResultState.Loading
+            try {
+                val response = repository.getAllUsers()
+                _allUsers.value = ResultState.Success(response)
+            } catch (e: Exception) {
+                _allUsers.value = ResultState.Error(e.message.toString())
             }
         }
     }

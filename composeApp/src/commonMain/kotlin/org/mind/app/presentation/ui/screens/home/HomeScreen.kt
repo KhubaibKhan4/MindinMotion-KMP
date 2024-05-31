@@ -50,10 +50,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -73,9 +75,11 @@ import org.koin.compose.koinInject
 import org.mind.app.domain.model.promotion.Promotions
 import org.mind.app.domain.model.subcategories.SubCategoriesItem
 import org.mind.app.domain.model.subquestions.SubQuestionsItem
+import org.mind.app.domain.model.users.Users
 import org.mind.app.domain.usecases.ResultState
 import org.mind.app.presentation.ui.components.ErrorBox
 import org.mind.app.presentation.ui.components.LoadingBox
+import org.mind.app.presentation.ui.components.LocalImage
 import org.mind.app.presentation.ui.components.PromotionCardWithPager
 import org.mind.app.presentation.ui.screens.quiz.subcategory.QuizScreenPlaySubScreen
 import org.mind.app.presentation.ui.screens.quiz.subcategory.ScreenAll
@@ -98,6 +102,7 @@ class HomeScreen : Screen {
             var subCategoriesItems by remember { mutableStateOf(emptyList<SubCategoriesItem>()) }
             var subQuestionsItems by remember { mutableStateOf(emptyList<SubQuestionsItem>()) }
             var promotionsItems by remember { mutableStateOf(emptyList<Promotions>()) }
+            var allUsersList by remember { mutableStateOf(emptyList<Users>()) }
             LaunchedEffect(Unit) {
                 email = preference.getString("email").toString()
                 isLogin = preference.getBoolean("is_login", false)
@@ -106,10 +111,12 @@ class HomeScreen : Screen {
                 viewModel.getAllSubCategories()
                 viewModel.getAllSubQuestions()
                 viewModel.getAllPromotions()
+                viewModel.getAllUsers()
             }
             val subCategories by viewModel.subCategories.collectAsState()
             val subQuestions by viewModel.subQuestions.collectAsState()
             val promotions by viewModel.promotions.collectAsState()
+            val allUsers by viewModel.allUsers.collectAsState()
             when (subCategories) {
                 is ResultState.Error -> {
                     val error = (subCategories as ResultState.Error).message
@@ -153,6 +160,21 @@ class HomeScreen : Screen {
                 is ResultState.Success -> {
                     val response = (promotions as ResultState.Success).data
                     promotionsItems = response
+                }
+            }
+            when (allUsers) {
+                is ResultState.Error -> {
+                    val error = (allUsers as ResultState.Error).message
+                    ErrorBox(error)
+                }
+
+                ResultState.Loading -> {
+                    LoadingBox()
+                }
+
+                is ResultState.Success -> {
+                    val response = (allUsers as ResultState.Success).data
+                    allUsersList = response
                 }
             }
             var searchQuery by remember { mutableStateOf("") }
@@ -300,6 +322,7 @@ class HomeScreen : Screen {
                             topCollectionsSubCategories,
                             subQuestionsItems
                         )
+                        AllUsersCard(allUsersList)
                         SubCategoryItem(
                             "Trending Quiz",
                             trendingQuizSubCategories,
@@ -319,6 +342,7 @@ fun SubCategoryItem(
     subCategoryItems: List<SubCategoriesItem>,
     subQuestionsItems: List<SubQuestionsItem>,
 ) {
+    val isDark by LocalThemeIsDark.current
     val navigator = LocalNavigator.current
     Column(
         modifier = Modifier.fillMaxWidth()
@@ -350,7 +374,7 @@ fun SubCategoryItem(
                         )
                     },
                 style = TextStyle(
-                    color = Color.Blue,
+                    color =if (isDark) Color.White else Color.Blue,
                     fontSize = 16.sp
                 )
             )
@@ -546,5 +570,78 @@ fun TopCollectionCard(
                 }
             }
         }
+    }
+}
+
+@Composable
+fun AllUsersCard(users: List<Users>) {
+    val isDark by LocalThemeIsDark.current
+    val navigator = LocalNavigator.current
+    Column(
+        modifier = Modifier.fillMaxWidth()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "Top Users",
+                style = TextStyle(
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 20.sp
+                )
+            )
+            Text(
+                text = "See All",
+                modifier = Modifier.padding(end = 16.dp)
+                    .clickable {
+
+                    },
+                style = TextStyle(
+                    color =if (isDark) Color.White else Color.Blue,
+                    fontSize = 16.sp
+                )
+            )
+        }
+        LazyRow(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            items(users) { usersItem ->
+               UserItem(usersItem)
+            }
+        }
+    }
+}
+
+@Composable
+fun UserItem(users: Users) {
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        if (users.profileImage?.contains("null") == true){
+            LocalImage(modifier = Modifier.size(55.dp)
+                .clip(CircleShape))
+        }else {
+            val image: Resource<Painter> = asyncPainterResource(BASE_URL + users.profileImage)
+            KamelImage(
+                resource = image,
+                contentDescription = null,
+                modifier = Modifier.size(55.dp)
+                    .clip(CircleShape)
+            )
+        }
+        Spacer(modifier = Modifier.height(3.dp))
+        Text(
+            text = users.fullName.take(8),
+            textAlign = TextAlign.Center,
+            fontWeight = FontWeight.Bold,
+            fontSize = MaterialTheme.typography.titleSmall.fontSize
+        )
     }
 }
