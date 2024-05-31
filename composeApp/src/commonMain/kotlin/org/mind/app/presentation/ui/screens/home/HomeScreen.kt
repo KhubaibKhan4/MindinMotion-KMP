@@ -2,6 +2,7 @@ package org.mind.app.presentation.ui.screens.home
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -50,6 +51,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
+import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.tab.LocalTabNavigator
 import com.example.cmppreference.LocalPreference
 import com.example.cmppreference.LocalPreferenceProvider
@@ -66,6 +68,10 @@ import org.mind.app.domain.model.subquestions.SubQuestionsItem
 import org.mind.app.domain.usecases.ResultState
 import org.mind.app.presentation.ui.components.ErrorBox
 import org.mind.app.presentation.ui.components.LoadingBox
+import org.mind.app.presentation.ui.screens.quiz.QuizQuestionsScreen
+import org.mind.app.presentation.ui.screens.quiz.subcategory.QuizPlayScreenSub
+import org.mind.app.presentation.ui.screens.quiz.subcategory.QuizQuestionsSub
+import org.mind.app.presentation.ui.screens.quiz.subcategory.QuizScreenPlaySubScreen
 import org.mind.app.presentation.ui.tabs.chat.ChatTab
 import org.mind.app.presentation.viewmodel.MainViewModel
 import org.mind.app.utils.Constant.BASE_URL
@@ -217,7 +223,7 @@ fun SubCategoryItem(
                 )
             )
         }
-        if (categoryName=="Top Collections"){
+        if (categoryName == "Top Collections") {
             LazyRow(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
@@ -226,7 +232,7 @@ fun SubCategoryItem(
                     TopCollectionCard(subCategoryItem, subQuestionsItems)
                 }
             }
-        }else {
+        } else {
             LazyRow(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
@@ -240,14 +246,20 @@ fun SubCategoryItem(
 }
 
 @Composable
-fun SubCategoryCard(subCategoryItem: SubCategoriesItem, subQuestionsItems: List<SubQuestionsItem>) {
-    val questionsForCategory = subQuestionsItems.filter { it.categoryTitle == subCategoryItem.name }
+fun SubCategoryCard(
+    subCategoryItem: SubCategoriesItem,
+    subQuestionsItems: List<SubQuestionsItem>,
+) {
+    val navigator = LocalNavigator.current
+    val questionsForCategory = subQuestionsItems.filter { it.categoryId == subCategoryItem.id }
     val questionCount = questionsForCategory.size
-
     Card(
         shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(4.dp),
-        modifier = Modifier.width(200.dp),
+        modifier = Modifier.width(200.dp)
+            .clickable {
+                navigator?.push(QuizScreenPlaySubScreen(subCategoryItem, questionsForCategory))
+            },
     ) {
         Column(
             modifier = Modifier
@@ -324,15 +336,20 @@ fun SubCategoryCard(subCategoryItem: SubCategoriesItem, subQuestionsItems: List<
         }
     }
 }
+
 @Composable
 fun TopCollectionCard(subCategoryItem: SubCategoriesItem, subQuestionsItems: List<SubQuestionsItem>) {
-    val questionsForCategory = subQuestionsItems.filter { it.categoryTitle == subCategoryItem.name }
+    val navigator = LocalNavigator.current
+    val questionsForCategory = subQuestionsItems.filter { it.categoryId == subCategoryItem.id }
     val questionCount = questionsForCategory.size
 
     Card(
         shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(4.dp),
-        modifier = Modifier.width(200.dp),
+        modifier = Modifier.width(200.dp)
+            .clickable {
+                navigator?.push(QuizScreenPlaySubScreen(subCategoryItem, questionsForCategory))
+            },
     ) {
         Column(
             modifier = Modifier
