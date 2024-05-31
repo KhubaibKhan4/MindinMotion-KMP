@@ -50,7 +50,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.TextStyle
@@ -81,6 +80,7 @@ import org.mind.app.presentation.ui.components.ErrorBox
 import org.mind.app.presentation.ui.components.LoadingBox
 import org.mind.app.presentation.ui.components.LocalImage
 import org.mind.app.presentation.ui.components.PromotionCardWithPager
+import org.mind.app.presentation.ui.screens.profile.UserProfileScreen
 import org.mind.app.presentation.ui.screens.quiz.subcategory.QuizScreenPlaySubScreen
 import org.mind.app.presentation.ui.screens.quiz.subcategory.ScreenAll
 import org.mind.app.presentation.ui.tabs.chat.ChatTab
@@ -288,7 +288,7 @@ class HomeScreen : Screen {
                     verticalArrangement = Arrangement.Top
                 ) {
                     if (searchQuery.isNotEmpty()) {
-                        if (filteredSubCategoriesItems.isEmpty()){
+                        if (filteredSubCategoriesItems.isEmpty()) {
                             Box(
                                 modifier = Modifier.fillMaxSize(),
                                 contentAlignment = Alignment.Center
@@ -300,7 +300,7 @@ class HomeScreen : Screen {
                                     modifier = Modifier.padding(16.dp)
                                 )
                             }
-                        }else{
+                        } else {
                             LazyVerticalGrid(
                                 columns = GridCells.Fixed(2),
                                 modifier = Modifier.fillMaxWidth()
@@ -374,7 +374,7 @@ fun SubCategoryItem(
                         )
                     },
                 style = TextStyle(
-                    color =if (isDark) Color.White else Color.Blue,
+                    color = if (isDark) Color.White else Color.Blue,
                     fontSize = 16.sp
                 )
             )
@@ -601,7 +601,7 @@ fun AllUsersCard(users: List<Users>) {
 
                     },
                 style = TextStyle(
-                    color =if (isDark) Color.White else Color.Blue,
+                    color = if (isDark) Color.White else Color.Blue,
                     fontSize = 16.sp
                 )
             )
@@ -611,7 +611,7 @@ fun AllUsersCard(users: List<Users>) {
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             items(users) { usersItem ->
-               UserItem(usersItem)
+                UserItem(usersItem)
             }
         }
     }
@@ -619,15 +619,21 @@ fun AllUsersCard(users: List<Users>) {
 
 @Composable
 fun UserItem(users: Users) {
+    val navigator = LocalNavigator.current
     Column(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth()
+            .clickable {
+                navigator?.push(UserProfileScreen(users))
+            },
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        if (users.profileImage?.contains("null") == true){
-            LocalImage(modifier = Modifier.size(55.dp)
-                .clip(CircleShape))
-        }else {
+        if (users.profileImage?.contains("null") == true) {
+            LocalImage(
+                modifier = Modifier.size(55.dp)
+                    .clip(CircleShape)
+            )
+        } else {
             val image: Resource<Painter> = asyncPainterResource(BASE_URL + users.profileImage)
             KamelImage(
                 resource = image,
