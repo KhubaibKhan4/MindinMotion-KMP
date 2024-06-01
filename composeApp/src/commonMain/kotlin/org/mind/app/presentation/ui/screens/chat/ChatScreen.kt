@@ -91,6 +91,42 @@ fun ChatScreenContent(users: List<Users>) {
                         containerColor = MaterialTheme.colorScheme.surface,
                         titleContentColor = if (isDark) Color.White else Color.Black
                     ),
+                    actions = {
+                        if (currentUser?.profileImage?.contains("null") != true) {
+                            KamelImage(
+                                resource = asyncPainterResource(BASE_URL + currentUser?.profileImage),
+                                contentDescription = null,
+                                modifier = Modifier
+                                    .size(30.dp)
+                                    .clip(CircleShape)
+                                    .border(
+                                        width = 1.dp,
+                                        color = if (isDark) Color.White else Color.Black
+                                    ),
+                                contentScale = ContentScale.Crop
+                            )
+                        } else {
+                            Box(
+                                modifier = Modifier
+                                    .size(30.dp)
+                                    .clip(CircleShape)
+                                    .background(MaterialTheme.colorScheme.primary)
+                                    .border(
+                                        width = 1.dp,
+                                        color = if (isDark) Color.White else Color.Black,
+                                        shape = CircleShape
+                                    )
+                            ) {
+                                Text(
+                                    text = currentUser?.fullName?.first().toString(),
+                                    modifier = Modifier.align(Alignment.Center),
+                                    color = Color.White,
+                                    fontSize = 20.sp
+                                )
+                            }
+                        }
+                        Spacer(modifier = Modifier.width(8.dp))
+                    },
                     navigationIcon = {
                         Row(
                             horizontalArrangement = Arrangement.SpaceBetween,
@@ -103,40 +139,6 @@ fun ChatScreenContent(users: List<Users>) {
                                     navigator.current = HomeTab
                                 }
                             )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            if (currentUser?.profileImage?.contains("null") != true) {
-                                KamelImage(
-                                    resource = asyncPainterResource(BASE_URL + currentUser?.profileImage),
-                                    contentDescription = null,
-                                    modifier = Modifier
-                                        .size(30.dp)
-                                        .clip(CircleShape)
-                                        .border(
-                                            width = 1.dp,
-                                            color = if (isDark) Color.White else Color.Black
-                                        ),
-                                    contentScale = ContentScale.Crop
-                                )
-                            } else {
-                                Box(
-                                    modifier = Modifier
-                                        .size(30.dp)
-                                        .clip(CircleShape)
-                                        .background(MaterialTheme.colorScheme.primary)
-                                        .border(
-                                            width = 1.dp,
-                                            color = if (isDark) Color.White else Color.Black,
-                                            shape = CircleShape
-                                        )
-                                ) {
-                                    Text(
-                                        text = currentUser?.fullName?.first().toString(),
-                                        modifier = Modifier.align(Alignment.Center),
-                                        color = Color.White,
-                                        fontSize = 20.sp
-                                    )
-                                }
-                            }
                             Spacer(modifier = Modifier.width(8.dp))
                         }
                     }
