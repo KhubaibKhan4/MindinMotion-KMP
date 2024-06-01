@@ -27,6 +27,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.TextField
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.Chat
+import androidx.compose.material.icons.outlined.Chat
 import androidx.compose.material.icons.outlined.ChatBubble
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Search
@@ -256,6 +258,14 @@ class HomeScreen : Screen {
                                     )
                                 )
                             } else {
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Outlined.Chat,
+                                    contentDescription = null,
+                                    modifier = Modifier.clickable {
+
+                                    }
+                                )
+                                Spacer(modifier = Modifier.width(2.dp))
                                 Icon(
                                     imageVector = Icons.Outlined.Search,
                                     contentDescription = null,
