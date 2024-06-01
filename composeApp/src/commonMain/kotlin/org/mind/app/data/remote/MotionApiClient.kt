@@ -8,6 +8,7 @@ import io.ktor.client.plugins.logging.DEFAULT
 import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
+import io.ktor.client.plugins.websocket.WebSockets
 import io.ktor.client.request.forms.FormDataContent
 import io.ktor.client.request.get
 import io.ktor.client.request.header
@@ -17,6 +18,7 @@ import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.Parameters
+import io.ktor.serialization.kotlinx.KotlinxWebsocketSerializationConverter
 import io.ktor.serialization.kotlinx.json.json
 import io.ktor.util.InternalAPI
 import kotlinx.serialization.encodeToString
@@ -35,12 +37,13 @@ import org.mind.app.utils.Constant.BASE_URL
 
 object MotionApiClient {
     private val client = HttpClient {
+        val json = Json {
+            isLenient = true
+            ignoreUnknownKeys = true
+        }
         install(ContentNegotiation) {
             json(
-                json = Json {
-                    isLenient = true
-                    ignoreUnknownKeys = true
-                }
+                json = json
             )
         }
         install(HttpTimeout) {
@@ -56,6 +59,10 @@ object MotionApiClient {
                     println(message)
                 }
             }
+        }
+        install(WebSockets) {
+            pingInterval = 30000
+            contentConverter = KotlinxWebsocketSerializationConverter(json)
         }
     }
 
