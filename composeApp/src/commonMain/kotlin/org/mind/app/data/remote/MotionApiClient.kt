@@ -4,36 +4,25 @@ import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
-import io.ktor.client.plugins.defaultRequest
 import io.ktor.client.plugins.logging.DEFAULT
 import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
-import io.ktor.client.plugins.websocket.WebSockets
-import io.ktor.client.plugins.websocket.webSocketSession
-import io.ktor.client.request.accept
 import io.ktor.client.request.forms.FormDataContent
 import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.request.post
 import io.ktor.client.request.put
-import io.ktor.client.request.url
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.Parameters
 import io.ktor.serialization.kotlinx.json.json
 import io.ktor.util.InternalAPI
-import io.ktor.websocket.Frame
-import io.ktor.websocket.readText
-import kotlinx.coroutines.channels.SendChannel
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.launch
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.mind.app.domain.model.boards.Boards
 import org.mind.app.domain.model.category.QuizCategoryItem
-import org.mind.app.domain.model.chat.ChatMessage
 import org.mind.app.domain.model.gemini.Gemini
 import org.mind.app.domain.model.notes.Notes
 import org.mind.app.domain.model.papers.Papers
@@ -67,47 +56,6 @@ object MotionApiClient {
                     println(message)
                 }
             }
-        }
-        install(WebSockets) {
-            pingInterval = 20_000
-        }
-
-        defaultRequest {
-            accept(ContentType.Application.Json)
-        }
-    }
-    private val json = Json { isLenient = true; ignoreUnknownKeys = true }
-
-    suspend fun openSession(
-        userEmail: String,
-        onMessageReceived: (ChatMessage) -> Unit,
-        onTextReceived: (String) -> Unit
-    ): SendChannel<Frame>? {
-        val url = "ws://192.168.10.2:8080/v1/chat"
-        try {
-            val session = client.webSocketSession {
-                url(url)
-            }
-
-            coroutineScope {
-                launch {
-                    for (frame in session.incoming) {
-                        frame as? Frame.Text ?: continue
-                        val text = frame.readText()
-                        try {
-                            val message = json.decodeFromString<ChatMessage>(text)
-                            onMessageReceived(message)
-                        } catch (e: Exception) {
-                            onTextReceived(text)
-                        }
-                    }
-                }
-            }
-
-            return session.outgoing
-        } catch (e: Exception) {
-            println("Failed to connect to $url: ${e.message}")
-            return null
         }
     }
 

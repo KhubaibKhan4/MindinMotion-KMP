@@ -36,7 +36,6 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -55,14 +54,6 @@ import com.example.cmppreference.LocalPreference
 import com.example.cmppreference.LocalPreferenceProvider
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
-import io.ktor.websocket.Frame
-import kotlinx.coroutines.channels.SendChannel
-import kotlinx.coroutines.launch
-import kotlinx.datetime.Clock
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
-import org.mind.app.data.remote.MotionApiClient
-import org.mind.app.domain.model.chat.ChatMessage
 import org.mind.app.domain.model.users.Users
 import org.mind.app.theme.LocalThemeIsDark
 import org.mind.app.utils.Constant.BASE_URL
@@ -86,6 +77,8 @@ fun ChatDetailScreenContent(users: Users) {
         val isDark by LocalThemeIsDark.current
         var searchText by remember { mutableStateOf("") }
 
+        val coroutineScope = rememberCoroutineScope()
+        var chatMessages by remember { mutableStateOf(listOf<String>()) }
 
         Scaffold(
             topBar = {
@@ -168,19 +161,7 @@ fun ChatDetailScreenContent(users: Users) {
                     .padding(start = 16.dp, end = 16.dp)
             ) {
                 Spacer(modifier = Modifier.height(16.dp))
-                val list = listOf(
-                    ChatMessage(
-                        sender = "Users1",
-                        content = "Hello",
-                        timestamp = 12
-                    ),
-                    ChatMessage(
-                        sender = "Users2",
-                        content = "Hello",
-                        timestamp = 12
-                    )
-                )
-               ChatMessageList(list, modifier = Modifier.weight(1f))
+                ChatMessageList(chatMessages, modifier = Modifier.weight(1f))
 
                 Spacer(modifier = Modifier.height(16.dp))
 
@@ -225,7 +206,6 @@ fun ChatDetailScreenContent(users: Users) {
                     ) {
                         IconButton(
                             onClick = {
-
                             },
                             modifier = Modifier
                                 .size(48.dp)
@@ -244,7 +224,7 @@ fun ChatDetailScreenContent(users: Users) {
 }
 
 @Composable
-fun ChatMessageList(messages: List<ChatMessage>, modifier: Modifier = Modifier) {
+fun ChatMessageList(messages: List<String>, modifier: Modifier = Modifier) {
     LazyColumn(
         modifier = Modifier
             .fillMaxWidth()
@@ -258,7 +238,7 @@ fun ChatMessageList(messages: List<ChatMessage>, modifier: Modifier = Modifier) 
 }
 
 @Composable
-fun ChatMessageItem(message: ChatMessage) {
+fun ChatMessageItem(message: String) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -277,7 +257,7 @@ fun ChatMessageItem(message: ChatMessage) {
                 modifier = Modifier.size(24.dp)
             )
             Spacer(modifier = Modifier.width(8.dp))
-            Text(text = message.content)
+            Text(text = message)
         }
     }
 }
