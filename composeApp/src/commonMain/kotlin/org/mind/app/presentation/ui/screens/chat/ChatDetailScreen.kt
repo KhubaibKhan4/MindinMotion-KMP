@@ -86,10 +86,6 @@ fun ChatDetailScreenContent(users: Users) {
         val isDark by LocalThemeIsDark.current
         var searchText by remember { mutableStateOf("") }
 
-        val chatMessages by remember { mutableStateOf(emptyList<ChatMessage>()) }
-        val plainTextMessages by remember { mutableStateOf(emptyList<String>()) }
-        val coroutineScope = rememberCoroutineScope()
-        var sendChannel by remember { mutableStateOf<SendChannel<Frame>?>(null) }
 
         Scaffold(
             topBar = {
@@ -172,19 +168,19 @@ fun ChatDetailScreenContent(users: Users) {
                     .padding(start = 16.dp, end = 16.dp)
             ) {
                 Spacer(modifier = Modifier.height(16.dp))
-
-                LazyColumn(
-                    modifier = Modifier.weight(1f)
-                ) {
-
-                    items(chatMessages) { message ->
-                        ChatMessageItem(message)
-                    }
-
-                    items(plainTextMessages) { text ->
-                        Text("Received text message: $text")
-                    }
-                }
+                val list = listOf(
+                    ChatMessage(
+                        sender = "Users1",
+                        content = "Hello",
+                        timestamp = 12
+                    ),
+                    ChatMessage(
+                        sender = "Users2",
+                        content = "Hello",
+                        timestamp = 12
+                    )
+                )
+               ChatMessageList(list, modifier = Modifier.weight(1f))
 
                 Spacer(modifier = Modifier.height(16.dp))
 

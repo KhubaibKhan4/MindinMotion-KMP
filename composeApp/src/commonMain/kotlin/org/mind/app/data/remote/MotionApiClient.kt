@@ -22,21 +22,12 @@ import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.Parameters
-import io.ktor.http.Url
 import io.ktor.serialization.kotlinx.json.json
 import io.ktor.util.InternalAPI
 import io.ktor.websocket.Frame
-import io.ktor.websocket.WebSocketSession
-import io.ktor.websocket.close
 import io.ktor.websocket.readText
 import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.consumeAsFlow
-import kotlinx.coroutines.flow.emitAll
-import kotlinx.coroutines.flow.filterIsInstance
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.launch
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -77,12 +68,46 @@ object MotionApiClient {
                 }
             }
         }
-        install(WebSockets){
+        install(WebSockets) {
             pingInterval = 20_000
         }
 
         defaultRequest {
             accept(ContentType.Application.Json)
+        }
+    }
+    private val json = Json { isLenient = true; ignoreUnknownKeys = true }
+
+    suspend fun openSession(
+        userEmail: String,
+        onMessageReceived: (ChatMessage) -> Unit,
+        onTextReceived: (String) -> Unit
+    ): SendChannel<Frame>? {
+        val url = "ws://192.168.10.2:8080/v1/chat"
+        try {
+            val session = client.webSocketSession {
+                url(url)
+            }
+
+            coroutineScope {
+                launch {
+                    for (frame in session.incoming) {
+                        frame as? Frame.Text ?: continue
+                        val text = frame.readText()
+                        try {
+                            val message = json.decodeFromString<ChatMessage>(text)
+                            onMessageReceived(message)
+                        } catch (e: Exception) {
+                            onTextReceived(text)
+                        }
+                    }
+                }
+            }
+
+            return session.outgoing
+        } catch (e: Exception) {
+            println("Failed to connect to $url: ${e.message}")
+            return null
         }
     }
 
