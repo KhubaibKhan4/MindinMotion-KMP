@@ -82,6 +82,7 @@ import org.mind.app.presentation.ui.components.ErrorBox
 import org.mind.app.presentation.ui.components.LoadingBox
 import org.mind.app.presentation.ui.components.PromotionCardWithPager
 import org.mind.app.presentation.ui.screens.chat.ChatScreen
+import org.mind.app.presentation.ui.screens.profile.AllUsersScreen
 import org.mind.app.presentation.ui.screens.profile.UserProfileScreen
 import org.mind.app.presentation.ui.screens.quiz.subcategory.QuizScreenPlaySubScreen
 import org.mind.app.presentation.ui.screens.quiz.subcategory.ScreenAll
@@ -609,7 +610,7 @@ fun AllUsersCard(users: List<Users>) {
                 text = "See All",
                 modifier = Modifier.padding(end = 16.dp)
                     .clickable {
-
+                        navigator?.push(AllUsersScreen(users))
                     },
                 style = TextStyle(
                     color = if (isDark) Color.White else Color.Blue,
@@ -641,10 +642,6 @@ fun UserItem(users: Users) {
         verticalArrangement = Arrangement.Center
     ) {
         if (users.profileImage?.contains("null") == true) {
-            /* LocalImage(
-                 modifier = Modifier.size(55.dp)
-                     .clip(CircleShape)
-             )*/
             Box(
                 modifier = Modifier
                     .size(48.dp)
