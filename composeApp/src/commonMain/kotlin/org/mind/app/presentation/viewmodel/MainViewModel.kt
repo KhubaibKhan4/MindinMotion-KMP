@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import org.mind.app.data.local.DatabaseHelper
+import org.mind.app.data.remote.MotionApiClient
 import org.mind.app.domain.model.boards.Boards
 import org.mind.app.domain.model.category.QuizCategoryItem
 import org.mind.app.domain.model.gemini.Gemini
@@ -93,12 +94,28 @@ class MainViewModel(
 
     private val _allUsers = MutableStateFlow<ResultState<List<Users>>>(ResultState.Loading)
     val allUsers = _allUsers.asStateFlow()
+
+    private val _messagesWeb = MutableStateFlow<List<String>>(emptyList())
+    val messagesWeb: StateFlow<List<String>> get() = _messagesWeb
+
+
     init {
         viewModelScope.launch {
             databaseHelper.getAllMessages().collect { localMessages ->
                 val convertedMessages = localMessages.map { convertDbMessageToUiMessage(it) }
                 _messages.value = convertedMessages
             }
+        }
+        MotionApiClient.connect()
+        viewModelScope.launch {
+            MotionApiClient.messages.collect { message ->
+                _messagesWeb.value = _messagesWeb.value + message
+            }
+        }
+    }
+    fun sendMessageWebSocket(message: String) {
+        viewModelScope.launch {
+            MotionApiClient.sendMessage(message)
         }
     }
     fun getAllUsers(){

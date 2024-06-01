@@ -9,22 +9,40 @@ import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
 import io.ktor.client.plugins.websocket.WebSockets
+import io.ktor.client.plugins.websocket.webSocket
+import io.ktor.client.plugins.websocket.webSocketSession
 import io.ktor.client.request.forms.FormDataContent
 import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.request.post
 import io.ktor.client.request.put
+import io.ktor.client.request.url
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
+import io.ktor.http.HttpMethod
 import io.ktor.http.Parameters
 import io.ktor.serialization.kotlinx.KotlinxWebsocketSerializationConverter
 import io.ktor.serialization.kotlinx.json.json
 import io.ktor.util.InternalAPI
+import io.ktor.websocket.CloseReason
+import io.ktor.websocket.Frame
+import io.ktor.websocket.WebSocketSession
+import io.ktor.websocket.close
+import io.ktor.websocket.readText
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.launch
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.mind.app.domain.model.boards.Boards
 import org.mind.app.domain.model.category.QuizCategoryItem
+import org.mind.app.domain.model.chat.ChatMessage
 import org.mind.app.domain.model.gemini.Gemini
 import org.mind.app.domain.model.notes.Notes
 import org.mind.app.domain.model.papers.Papers
@@ -60,9 +78,39 @@ object MotionApiClient {
                 }
             }
         }
-        install(WebSockets) {
-            pingInterval = 30000
-            contentConverter = KotlinxWebsocketSerializationConverter(json)
+        install(WebSockets)
+    }
+    private val _messages = MutableSharedFlow<String>()
+    val messages: SharedFlow<String> = _messages
+
+    private var session: WebSocketSession? = null
+
+    fun connect() {
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                client.webSocket(
+                    method = HttpMethod.Get,
+                    host = "192.168.10.2",
+                    port = 8080,
+                    path = "/v1/chat"
+                ) {
+                    session = this
+                    for (frame in incoming) {
+                        frame as? Frame.Text ?: continue
+                        val receivedText = frame.readText()
+                        _messages.emit(receivedText)
+                        println("Received Message: $receivedText")
+                    }
+                }
+            } catch (e: Exception) {
+                println("Failed to connect to WebSocket: ${e.message}")
+            }
+        }
+    }
+
+    fun sendMessage(message: String) {
+        CoroutineScope(Dispatchers.IO).launch {
+            session?.send(Frame.Text(message)) ?: println("No WebSocket session")
         }
     }
 

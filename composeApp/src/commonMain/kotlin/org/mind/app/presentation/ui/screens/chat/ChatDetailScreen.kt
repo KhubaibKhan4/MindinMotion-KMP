@@ -36,7 +36,9 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -54,7 +56,9 @@ import com.example.cmppreference.LocalPreference
 import com.example.cmppreference.LocalPreferenceProvider
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
+import org.koin.compose.koinInject
 import org.mind.app.domain.model.users.Users
+import org.mind.app.presentation.viewmodel.MainViewModel
 import org.mind.app.theme.LocalThemeIsDark
 import org.mind.app.utils.Constant.BASE_URL
 
@@ -69,7 +73,10 @@ class ChatDetailScreen(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ChatDetailScreenContent(users: Users) {
+fun ChatDetailScreenContent(
+    users: Users,
+    viewModel: MainViewModel = koinInject()
+) {
     LocalPreferenceProvider {
         val preference = LocalPreference.current
         val currentUserEmail by remember { mutableStateOf(preference.getString("email")) }
@@ -78,7 +85,7 @@ fun ChatDetailScreenContent(users: Users) {
         var searchText by remember { mutableStateOf("") }
 
         val coroutineScope = rememberCoroutineScope()
-        var chatMessages by remember { mutableStateOf(listOf<String>()) }
+        val messages by viewModel.messagesWeb.collectAsState(initial = emptyList<String>())
 
         Scaffold(
             topBar = {
@@ -161,7 +168,7 @@ fun ChatDetailScreenContent(users: Users) {
                     .padding(start = 16.dp, end = 16.dp)
             ) {
                 Spacer(modifier = Modifier.height(16.dp))
-                ChatMessageList(chatMessages, modifier = Modifier.weight(1f))
+                ChatMessageList(messages, modifier = Modifier.weight(1f))
 
                 Spacer(modifier = Modifier.height(16.dp))
 
@@ -206,6 +213,7 @@ fun ChatDetailScreenContent(users: Users) {
                     ) {
                         IconButton(
                             onClick = {
+                              viewModel.sendMessageWebSocket(searchText)
                             },
                             modifier = Modifier
                                 .size(48.dp)
