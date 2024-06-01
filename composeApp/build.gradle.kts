@@ -74,6 +74,7 @@ kotlin {
             implementation(libs.ktor.content.negociation)
             implementation(libs.ktor.serialization.json)
             implementation(libs.ktor.logging)
+            implementation(libs.ktor.client.websockets)
             implementation(libs.kotlinx.serialization.json)
             implementation(libs.kotlinx.datetime)
             implementation(project.dependencies.platform("io.insert-koin:koin-bom:3.5.4"))
