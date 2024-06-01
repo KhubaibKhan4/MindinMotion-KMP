@@ -3,6 +3,7 @@ package org.mind.app.presentation.ui.screens.home
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -28,7 +29,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.TextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Chat
-import androidx.compose.material.icons.outlined.Chat
 import androidx.compose.material.icons.outlined.ChatBubble
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Search
@@ -80,7 +80,6 @@ import org.mind.app.domain.model.users.Users
 import org.mind.app.domain.usecases.ResultState
 import org.mind.app.presentation.ui.components.ErrorBox
 import org.mind.app.presentation.ui.components.LoadingBox
-import org.mind.app.presentation.ui.components.LocalImage
 import org.mind.app.presentation.ui.components.PromotionCardWithPager
 import org.mind.app.presentation.ui.screens.chat.ChatScreen
 import org.mind.app.presentation.ui.screens.profile.UserProfileScreen
@@ -631,6 +630,7 @@ fun AllUsersCard(users: List<Users>) {
 
 @Composable
 fun UserItem(users: Users) {
+    val isDark by LocalThemeIsDark.current
     val navigator = LocalNavigator.current
     Column(
         modifier = Modifier.fillMaxWidth()
@@ -641,10 +641,24 @@ fun UserItem(users: Users) {
         verticalArrangement = Arrangement.Center
     ) {
         if (users.profileImage?.contains("null") == true) {
-            LocalImage(
-                modifier = Modifier.size(55.dp)
+            /* LocalImage(
+                 modifier = Modifier.size(55.dp)
+                     .clip(CircleShape)
+             )*/
+            Box(
+                modifier = Modifier
+                    .size(48.dp)
                     .clip(CircleShape)
-            )
+                    .background(MaterialTheme.colorScheme.surface)
+                    .border(width = 1.dp, color = Color.Gray, shape = CircleShape)
+            ) {
+                Text(
+                    text = users.fullName.first().toString(),
+                    modifier = Modifier.align(Alignment.Center),
+                    color = if (isDark) Color.White else Color.Black,
+                    fontSize = 24.sp
+                )
+            }
         } else {
             val image: Resource<Painter> = asyncPainterResource(BASE_URL + users.profileImage)
             KamelImage(
