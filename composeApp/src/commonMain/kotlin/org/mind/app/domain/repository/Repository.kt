@@ -102,7 +102,7 @@ class Repository(
     }
 
     override suspend fun loginServerUser(email: String, password: String): Users {
-        return MotionApiClient.loginServerUser(email,password)
+        return MotionApiClient.loginServerUser(email, password)
     }
 
     override suspend fun getUserByEmail(email: String): Users {
@@ -138,7 +138,7 @@ class Repository(
     }
 
     override suspend fun getSubQuestions(): List<SubQuestionsItem> {
-       return MotionApiClient.getSubQuestions()
+        return MotionApiClient.getSubQuestions()
     }
 
     override suspend fun getAllPromotions(): List<Promotions> {
@@ -148,5 +148,4 @@ class Repository(
     override suspend fun getAllUsers(): List<Users> {
         return MotionApiClient.getAllUsers()
     }
-
 }

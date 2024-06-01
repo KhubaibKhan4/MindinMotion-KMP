@@ -9,24 +9,40 @@ import io.ktor.client.plugins.logging.DEFAULT
 import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
+import io.ktor.client.plugins.websocket.WebSockets
+import io.ktor.client.plugins.websocket.webSocketSession
 import io.ktor.client.request.accept
 import io.ktor.client.request.forms.FormDataContent
 import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.request.post
 import io.ktor.client.request.put
+import io.ktor.client.request.url
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.Parameters
-import io.ktor.http.contentType
+import io.ktor.http.Url
 import io.ktor.serialization.kotlinx.json.json
 import io.ktor.util.InternalAPI
-import kotlinx.serialization.decodeFromString
+import io.ktor.websocket.Frame
+import io.ktor.websocket.WebSocketSession
+import io.ktor.websocket.close
+import io.ktor.websocket.readText
+import kotlinx.coroutines.channels.SendChannel
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.consumeAsFlow
+import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.filterIsInstance
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.coroutines.launch
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.mind.app.domain.model.boards.Boards
 import org.mind.app.domain.model.category.QuizCategoryItem
+import org.mind.app.domain.model.chat.ChatMessage
 import org.mind.app.domain.model.gemini.Gemini
 import org.mind.app.domain.model.notes.Notes
 import org.mind.app.domain.model.papers.Papers
@@ -60,6 +76,13 @@ object MotionApiClient {
                     println(message)
                 }
             }
+        }
+        install(WebSockets){
+            pingInterval = 20_000
+        }
+
+        defaultRequest {
+            accept(ContentType.Application.Json)
         }
     }
 
@@ -138,16 +161,20 @@ object MotionApiClient {
             body = FormDataContent(formData)
         }.body()
     }
-    suspend fun getUserByEmail(email: String): Users{
-        return client.get(BASE_URL+"v1/users/email/$email").body()
+
+    suspend fun getUserByEmail(email: String): Users {
+        return client.get(BASE_URL + "v1/users/email/$email").body()
     }
+
     private val jsonDecoder = Json {
         isLenient = true
         ignoreUnknownKeys = true
     }
+
     @OptIn(InternalAPI::class)
     suspend fun generateContent(content: String): Gemini {
-        val url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=AIzaSyAGIbCm970chMEFc5fEiOLp0pxFvlrcN8E"
+        val url =
+            "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=AIzaSyAGIbCm970chMEFc5fEiOLp0pxFvlrcN8E"
 
         val requestBody = mapOf(
             "contents" to listOf(
@@ -169,31 +196,40 @@ object MotionApiClient {
             throw e
         }
     }
-    suspend fun getAllCategories(): List<QuizCategoryItem>{
-        return client.get(BASE_URL+"v1/category").body()
+
+    suspend fun getAllCategories(): List<QuizCategoryItem> {
+        return client.get(BASE_URL + "v1/category").body()
     }
-    suspend fun getAllQuizzes(): List<QuizQuestionsItem>{
-        return client.get(BASE_URL+"v1/quiz-questions").body()
+
+    suspend fun getAllQuizzes(): List<QuizQuestionsItem> {
+        return client.get(BASE_URL + "v1/quiz-questions").body()
     }
-    suspend fun getAllNotes(): List<Notes>{
-        return client.get(BASE_URL+"v1/notes").body()
+
+    suspend fun getAllNotes(): List<Notes> {
+        return client.get(BASE_URL + "v1/notes").body()
     }
-    suspend fun getAllBoards():List<Boards>{
-        return client.get(BASE_URL+"v1/boards").body()
+
+    suspend fun getAllBoards(): List<Boards> {
+        return client.get(BASE_URL + "v1/boards").body()
     }
-    suspend fun getAllPapersWithDetail(id:Long): Papers{
-        return client.get(BASE_URL+"v1/board-details/$id").body()
+
+    suspend fun getAllPapersWithDetail(id: Long): Papers {
+        return client.get(BASE_URL + "v1/board-details/$id").body()
     }
-    suspend fun getAllSubCategories(): List<SubCategoriesItem>{
-        return client.get(BASE_URL+"v1/subcategory").body()
+
+    suspend fun getAllSubCategories(): List<SubCategoriesItem> {
+        return client.get(BASE_URL + "v1/subcategory").body()
     }
-    suspend fun getSubQuestions(): List<SubQuestionsItem>{
-        return client.get(BASE_URL+"v1/quiz-questions-sub").body()
+
+    suspend fun getSubQuestions(): List<SubQuestionsItem> {
+        return client.get(BASE_URL + "v1/quiz-questions-sub").body()
     }
-    suspend fun getAllPromotions(): List<Promotions>{
-        return client.get(BASE_URL+"v1/promotions").body()
+
+    suspend fun getAllPromotions(): List<Promotions> {
+        return client.get(BASE_URL + "v1/promotions").body()
     }
-    suspend fun getAllUsers(): List<Users>{
-        return client.get(BASE_URL+"v1/users").body()
+
+    suspend fun getAllUsers(): List<Users> {
+        return client.get(BASE_URL + "v1/users").body()
     }
 }

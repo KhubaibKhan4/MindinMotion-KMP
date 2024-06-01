@@ -36,9 +36,11 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -53,6 +55,14 @@ import com.example.cmppreference.LocalPreference
 import com.example.cmppreference.LocalPreferenceProvider
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
+import io.ktor.websocket.Frame
+import kotlinx.coroutines.channels.SendChannel
+import kotlinx.coroutines.launch
+import kotlinx.datetime.Clock
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
+import org.mind.app.data.remote.MotionApiClient
+import org.mind.app.domain.model.chat.ChatMessage
 import org.mind.app.domain.model.users.Users
 import org.mind.app.theme.LocalThemeIsDark
 import org.mind.app.utils.Constant.BASE_URL
@@ -75,6 +85,11 @@ fun ChatDetailScreenContent(users: Users) {
         val navigator = LocalNavigator.current
         val isDark by LocalThemeIsDark.current
         var searchText by remember { mutableStateOf("") }
+
+        val chatMessages by remember { mutableStateOf(emptyList<ChatMessage>()) }
+        val plainTextMessages by remember { mutableStateOf(emptyList<String>()) }
+        val coroutineScope = rememberCoroutineScope()
+        var sendChannel by remember { mutableStateOf<SendChannel<Frame>?>(null) }
 
         Scaffold(
             topBar = {
@@ -158,17 +173,18 @@ fun ChatDetailScreenContent(users: Users) {
             ) {
                 Spacer(modifier = Modifier.height(16.dp))
 
-                val messages = listOf(
-                    "Hello!",
-                    "Hi there!",
-                    "How are you doing?",
-                    "I'm fine, thank you!",
-                    "Great! Shall we meet tomorrow?",
-                    "Sure, let's meet at 10 AM.",
-                    "Perfect! See you then."
-                )
+                LazyColumn(
+                    modifier = Modifier.weight(1f)
+                ) {
 
-                ChatMessageList(messages = messages, modifier = Modifier.weight(1f))
+                    items(chatMessages) { message ->
+                        ChatMessageItem(message)
+                    }
+
+                    items(plainTextMessages) { text ->
+                        Text("Received text message: $text")
+                    }
+                }
 
                 Spacer(modifier = Modifier.height(16.dp))
 
@@ -212,7 +228,9 @@ fun ChatDetailScreenContent(users: Users) {
                         contentAlignment = Alignment.Center
                     ) {
                         IconButton(
-                            onClick = { },
+                            onClick = {
+
+                            },
                             modifier = Modifier
                                 .size(48.dp)
                         ) {
@@ -230,11 +248,12 @@ fun ChatDetailScreenContent(users: Users) {
 }
 
 @Composable
-fun ChatMessageList(messages: List<String>, modifier: Modifier = Modifier) {
+fun ChatMessageList(messages: List<ChatMessage>, modifier: Modifier = Modifier) {
     LazyColumn(
         modifier = Modifier
             .fillMaxWidth()
-            .then(modifier)
+            .then(modifier),
+        reverseLayout = true
     ) {
         items(messages) { message ->
             ChatMessageItem(message)
@@ -243,7 +262,7 @@ fun ChatMessageList(messages: List<String>, modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun ChatMessageItem(message: String) {
+fun ChatMessageItem(message: ChatMessage) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -262,7 +281,7 @@ fun ChatMessageItem(message: String) {
                 modifier = Modifier.size(24.dp)
             )
             Spacer(modifier = Modifier.width(8.dp))
-            Text(text = message)
+            Text(text = message.content)
         }
     }
 }

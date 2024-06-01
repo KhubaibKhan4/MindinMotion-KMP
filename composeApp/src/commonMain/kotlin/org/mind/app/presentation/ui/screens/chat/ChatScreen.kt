@@ -51,7 +51,6 @@ import com.example.cmppreference.LocalPreferenceProvider
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
 import org.mind.app.domain.model.users.Users
-import org.mind.app.presentation.ui.screens.home.HomeScreen
 import org.mind.app.presentation.ui.tabs.home.HomeTab
 import org.mind.app.theme.LocalThemeIsDark
 import org.mind.app.utils.Constant.BASE_URL
@@ -82,7 +81,6 @@ fun ChatScreenContent(users: List<Users>) {
         val currentUser by remember { mutableStateOf(users.find { it.email == currentUserEmail }) }
         val navigator = LocalTabNavigator.current
         val isDark by LocalThemeIsDark.current
-
         Scaffold(
             topBar = {
                 androidx.compose.material3.TopAppBar(
