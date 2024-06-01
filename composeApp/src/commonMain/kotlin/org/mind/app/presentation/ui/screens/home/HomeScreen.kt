@@ -86,6 +86,7 @@ import org.mind.app.presentation.ui.screens.profile.AllUsersScreen
 import org.mind.app.presentation.ui.screens.profile.UserProfileScreen
 import org.mind.app.presentation.ui.screens.quiz.subcategory.QuizScreenPlaySubScreen
 import org.mind.app.presentation.ui.screens.quiz.subcategory.ScreenAll
+import org.mind.app.presentation.ui.tabs.chat.ChatDetailTab
 import org.mind.app.presentation.ui.tabs.chat.ChatTab
 import org.mind.app.presentation.viewmodel.MainViewModel
 import org.mind.app.theme.LocalThemeIsDark
@@ -264,7 +265,8 @@ class HomeScreen : Screen {
                                     imageVector = Icons.AutoMirrored.Outlined.Chat,
                                     contentDescription = null,
                                     modifier = Modifier.clickable {
-                                        navigator?.push(ChatScreen(allUsersList))
+                                       // navigator?.push(ChatScreen(allUsersList))
+                                        tabNavigator.current = ChatDetailTab
                                     }
                                 )
                                 Spacer(modifier = Modifier.width(2.dp))

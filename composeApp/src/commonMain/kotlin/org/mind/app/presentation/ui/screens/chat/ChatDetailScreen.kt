@@ -1,6 +1,5 @@
 package org.mind.app.presentation.ui.screens.chat
 
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -20,15 +19,21 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.ArrowBackIosNew
-import androidx.compose.material.icons.outlined.Close
-import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material.icons.filled.Attachment
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -40,53 +45,46 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
-import cafe.adriel.voyager.navigator.tab.LocalTabNavigator
 import com.example.cmppreference.LocalPreference
 import com.example.cmppreference.LocalPreferenceProvider
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
 import org.mind.app.domain.model.users.Users
-import org.mind.app.presentation.ui.screens.home.HomeScreen
-import org.mind.app.presentation.ui.tabs.home.HomeTab
 import org.mind.app.theme.LocalThemeIsDark
 import org.mind.app.utils.Constant.BASE_URL
 
-class ChatScreen(
-    private val users: List<Users>,
+class ChatDetailScreen(
+    private val users: Users,
 ) : Screen {
     @Composable
     override fun Content() {
-        ChatScreenContent(users)
+        ChatDetailScreenContent(users)
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ChatScreenContent(users: List<Users>) {
+fun ChatDetailScreenContent(users: Users) {
     LocalPreferenceProvider {
         val preference = LocalPreference.current
         val currentUserEmail by remember { mutableStateOf(preference.getString("email")) }
-        var searchText by remember { mutableStateOf(TextFieldValue("")) }
-
-        val filteredUsers = users.filter { user ->
-            user.fullName.contains(
-                searchText.text,
-                ignoreCase = true
-            ) && user.email != currentUserEmail
-        }
-        val currentUser by remember { mutableStateOf(users.find { it.email == currentUserEmail }) }
-        val navigator = LocalTabNavigator.current
+        val navigator = LocalNavigator.current
         val isDark by LocalThemeIsDark.current
+        var searchText by remember { mutableStateOf("") }
 
         Scaffold(
             topBar = {
                 androidx.compose.material3.TopAppBar(
-                    title = { Text("Inbox", color = if (isDark) Color.White else Color.Black) },
+                    title = {
+                        Text(
+                            users.fullName.take(15),
+                            color = if (isDark) Color.White else Color.Black
+                        )
+                    },
                     colors = TopAppBarDefaults.topAppBarColors(
                         containerColor = MaterialTheme.colorScheme.surface,
                         titleContentColor = if (isDark) Color.White else Color.Black
@@ -100,13 +98,13 @@ fun ChatScreenContent(users: List<Users>) {
                                 imageVector = Icons.Default.ArrowBackIosNew,
                                 contentDescription = null,
                                 modifier = Modifier.clickable {
-                                    navigator.current = HomeTab
+                                    navigator?.pop()
                                 }
                             )
                             Spacer(modifier = Modifier.width(8.dp))
-                            if (currentUser?.profileImage?.contains("null") != true) {
+                            if (users.profileImage?.contains("null") != true) {
                                 KamelImage(
-                                    resource = asyncPainterResource(BASE_URL + currentUser?.profileImage),
+                                    resource = asyncPainterResource(BASE_URL + users.profileImage),
                                     contentDescription = null,
                                     modifier = Modifier
                                         .size(30.dp)
@@ -130,7 +128,7 @@ fun ChatScreenContent(users: List<Users>) {
                                         )
                                 ) {
                                     Text(
-                                        text = currentUser?.fullName?.first().toString(),
+                                        text = users.fullName.first().toString(),
                                         modifier = Modifier.align(Alignment.Center),
                                         color = Color.White,
                                         fontSize = 20.sp
@@ -139,65 +137,91 @@ fun ChatScreenContent(users: List<Users>) {
                             }
                             Spacer(modifier = Modifier.width(8.dp))
                         }
+                    },
+                    actions = {
+                        Icon(
+                            imageVector = Icons.Default.MoreVert,
+                            contentDescription = null,
+                            modifier = Modifier.clickable {
+
+                            }
+                        )
                     }
                 )
             }
-        ) {
+        ) { padding ->
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(top = it.calculateTopPadding())
+                    .padding(top = padding.calculateTopPadding())
                     .padding(start = 16.dp, end = 16.dp)
             ) {
-                Spacer(modifier = Modifier.height(6.dp))
-                androidx.compose.material.TextField(
-                    value = searchText,
-                    onValueChange = { searchText = it },
-                    placeholder = {
-                        Text(
-                            "Search...",
-                            color = if (isDark) Color.LightGray else Color.Gray
-                        )
-                    },
-                    leadingIcon = {
-                        Icon(
-                            imageVector = Icons.Outlined.Search,
-                            contentDescription = null
-                        )
-                    },
-                    trailingIcon = {
-                        AnimatedVisibility(searchText.text.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(16.dp))
+
+                val messages = listOf(
+                    "Hello!",
+                    "Hi there!",
+                    "How are you doing?",
+                    "I'm fine, thank you!",
+                    "Great! Shall we meet tomorrow?",
+                    "Sure, let's meet at 10 AM.",
+                    "Perfect! See you then."
+                )
+
+                ChatMessageList(messages = messages, modifier = Modifier.weight(1f))
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    TextField(
+                        value = searchText,
+                        onValueChange = { searchText = it },
+                        placeholder = {
+                            Text(text = "Type your message...")
+                        },
+                        leadingIcon = {
                             Icon(
-                                imageVector = Icons.Outlined.Close,
+                                imageVector = Icons.Default.Attachment,
                                 contentDescription = null,
-                                modifier = Modifier.clickable {
-                                    searchText = TextFieldValue("")
-                                }
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        },
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(end = 8.dp)
+                            .border(
+                                width = 1.dp,
+                                color = if (isDark) Color.White else Color.Black,
+                                shape = RoundedCornerShape(16.dp)
+                            ),
+                        colors = TextFieldDefaults.colors(
+                            focusedTextColor = if (isDark) Color.White else Color.Black,
+                            unfocusedTextColor = if (isDark) Color.White else Color.Black,
+                            focusedIndicatorColor = Color.Transparent,
+                            unfocusedIndicatorColor = Color.Transparent
+                        ),
+                        shape = RoundedCornerShape(16.dp)
+                    )
+
+                    Box(
+                        modifier = Modifier.size(48.dp)
+                            .background(MaterialTheme.colorScheme.primary, shape = CircleShape),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        IconButton(
+                            onClick = { },
+                            modifier = Modifier
+                                .size(48.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.Send,
+                                contentDescription = null,
+                                tint = Color.White
                             )
                         }
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(
-                            Color.Transparent,
-                            shape = RoundedCornerShape(8.dp)
-                        )
-                        .padding(4.dp),
-                    singleLine = true,
-                    shape = RoundedCornerShape(16.dp),
-                    colors = androidx.compose.material.TextFieldDefaults.textFieldColors(
-                        unfocusedIndicatorColor = Color.Transparent,
-                        focusedIndicatorColor = Color.Transparent,
-                        textColor = if (isDark) Color.White else Color.Black,
-                        backgroundColor = if (isDark) Color.DarkGray else Color.LightGray,
-                        trailingIconColor = if (isDark) Color.LightGray else Color.Gray,
-                        leadingIconColor = if (isDark) Color.LightGray else Color.Gray
-                    )
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-                LazyColumn {
-                    items(filteredUsers) { user ->
-                        ChatUIItem(user)
                     }
                 }
             }
@@ -206,59 +230,39 @@ fun ChatScreenContent(users: List<Users>) {
 }
 
 @Composable
-fun ChatUIItem(user: Users) {
-    val navigator = LocalNavigator.current
-    Column(
-        modifier = Modifier.fillMaxWidth()
-            .clickable {
-                navigator?.push(ChatDetailScreen(user))
-            },
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+fun ChatMessageList(messages: List<String>, modifier: Modifier = Modifier) {
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxWidth()
+            .then(modifier)
+    ) {
+        items(messages) { message ->
+            ChatMessageItem(message)
+        }
+    }
+}
+
+@Composable
+fun ChatMessageItem(message: String) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+        shape = RoundedCornerShape(8.dp),
+        elevation = CardDefaults.cardElevation(2.dp)
     ) {
         Row(
             modifier = Modifier
-                .padding(8.dp)
-                .fillMaxWidth(),
+                .padding(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            if (user.profileImage?.contains("null") != true) {
-                KamelImage(
-                    resource = asyncPainterResource(BASE_URL + user.profileImage),
-                    contentDescription = null,
-                    modifier = Modifier
-                        .size(48.dp)
-                        .clip(CircleShape),
-                    contentScale = ContentScale.Crop
-                )
-            } else {
-                Box(
-                    modifier = Modifier
-                        .size(48.dp)
-                        .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.primary)
-                ) {
-                    Text(
-                        text = user.fullName.first().toString(),
-                        modifier = Modifier.align(Alignment.Center),
-                        color = Color.White,
-                        fontSize = 24.sp
-                    )
-                }
-            }
-
+            Icon(
+                imageVector = Icons.Default.Person,
+                contentDescription = null,
+                modifier = Modifier.size(24.dp)
+            )
             Spacer(modifier = Modifier.width(8.dp))
-
-            Column {
-                Text(text = user.fullName.take(16), style = MaterialTheme.typography.titleMedium)
-                Text(
-                    text = "How are you?", style = MaterialTheme.typography.bodyMedium,
-                    color = Color.LightGray
-                )
-            }
-            Spacer(modifier = Modifier.weight(1f))
-            Text(text = "12:00", style = MaterialTheme.typography.titleMedium)
+            Text(text = message)
         }
-        HorizontalDivider(modifier = Modifier.fillMaxWidth())
     }
 }
