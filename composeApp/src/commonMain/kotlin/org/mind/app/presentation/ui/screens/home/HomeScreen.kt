@@ -82,6 +82,7 @@ import org.mind.app.presentation.ui.components.ErrorBox
 import org.mind.app.presentation.ui.components.LoadingBox
 import org.mind.app.presentation.ui.components.LocalImage
 import org.mind.app.presentation.ui.components.PromotionCardWithPager
+import org.mind.app.presentation.ui.screens.chat.ChatScreen
 import org.mind.app.presentation.ui.screens.profile.UserProfileScreen
 import org.mind.app.presentation.ui.screens.quiz.subcategory.QuizScreenPlaySubScreen
 import org.mind.app.presentation.ui.screens.quiz.subcategory.ScreenAll
@@ -98,6 +99,7 @@ class HomeScreen : Screen {
             val viewModel: MainViewModel = koinInject()
             val preference = LocalPreference.current
             val tabNavigator = LocalTabNavigator.current
+            val navigator = LocalNavigator.current
             val isDark by LocalThemeIsDark.current
             var email by remember { mutableStateOf("") }
             var isLogin by remember { mutableStateOf(false) }
@@ -262,7 +264,7 @@ class HomeScreen : Screen {
                                     imageVector = Icons.AutoMirrored.Outlined.Chat,
                                     contentDescription = null,
                                     modifier = Modifier.clickable {
-
+                                        navigator?.push(ChatScreen(allUsersList))
                                     }
                                 )
                                 Spacer(modifier = Modifier.width(2.dp))
