@@ -112,17 +112,7 @@ fun AllChatUsersContent(
             latestMessage?.timestamp ?: Long.MIN_VALUE
         }
 
-        val mergedList = users.sortedByDescending { user ->
-            latestMessages[user.email]?.timestamp ?: Long.MIN_VALUE
-        }.partition { user ->
-            latestMessages.containsKey(user.email)
-        }.let { (chattedUsers, newUsers) ->
-            chattedUsers + newUsers
-        }
-
-        LaunchedEffect(Unit) {
-            viewModel.observeChatMessages()
-        }
+        val mergedList = sortedUsers
 
 
         Scaffold(

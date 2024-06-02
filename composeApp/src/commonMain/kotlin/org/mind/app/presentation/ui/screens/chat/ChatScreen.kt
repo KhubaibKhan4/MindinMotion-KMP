@@ -118,7 +118,12 @@ fun ChatScreenContent(
         }.partition { user ->
             latestMessages.containsKey(user.email)
         }.let { (chattedUsers, _) ->
-            chattedUsers
+            chattedUsers.filter { user ->
+                user.fullName.contains(
+                    searchText.text,
+                    ignoreCase = true
+                )
+            }
         }
 
         LaunchedEffect(Unit) {
