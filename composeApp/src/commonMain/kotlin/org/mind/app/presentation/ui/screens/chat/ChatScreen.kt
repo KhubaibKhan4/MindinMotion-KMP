@@ -31,6 +31,8 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -41,6 +43,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
@@ -50,10 +53,14 @@ import com.example.cmppreference.LocalPreference
 import com.example.cmppreference.LocalPreferenceProvider
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
+import org.koin.compose.koinInject
+import org.mind.app.domain.model.chat.ChatMessage
 import org.mind.app.domain.model.users.Users
 import org.mind.app.presentation.ui.tabs.home.HomeTab
+import org.mind.app.presentation.viewmodel.MainViewModel
 import org.mind.app.theme.LocalThemeIsDark
 import org.mind.app.utils.Constant.BASE_URL
+import org.mind.app.utils.formatTimestampToHumanReadable
 
 class ChatScreen(
     private val users: List<Users>,
@@ -66,11 +73,29 @@ class ChatScreen(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ChatScreenContent(users: List<Users>) {
+fun ChatScreenContent(
+    users: List<Users>,
+    viewModel: MainViewModel = koinInject()
+) {
     LocalPreferenceProvider {
         val preference = LocalPreference.current
         val currentUserEmail by remember { mutableStateOf(preference.getString("email")) }
         var searchText by remember { mutableStateOf(TextFieldValue("")) }
+
+        val currentUser by remember { mutableStateOf(users.find { it.email == currentUserEmail }) }
+        val navigator = LocalTabNavigator.current
+        val isDark by LocalThemeIsDark.current
+
+        val latestMessages = viewModel.chatMessages.collectAsState(initial = emptyList()).value
+            .filter { message ->
+                (message.senderEmail == currentUserEmail || message.receiverEmail == currentUserEmail)
+            }
+            .groupBy { message ->
+                if (message.senderEmail == currentUserEmail) message.receiverEmail
+                else message.senderEmail
+            }
+            .mapValues { entry -> entry.value.maxByOrNull { it.timestamp } }
+
 
         val filteredUsers = users.filter { user ->
             user.fullName.contains(
@@ -78,9 +103,25 @@ fun ChatScreenContent(users: List<Users>) {
                 ignoreCase = true
             ) && user.email != currentUserEmail
         }
-        val currentUser by remember { mutableStateOf(users.find { it.email == currentUserEmail }) }
-        val navigator = LocalTabNavigator.current
-        val isDark by LocalThemeIsDark.current
+
+        val sortedUsers = filteredUsers.sortedByDescending { user ->
+            val latestMessage = latestMessages[user.email]
+            latestMessage?.timestamp ?: Long.MIN_VALUE
+        }
+
+        val mergedList = users.sortedByDescending { user ->
+            latestMessages[user.email]?.timestamp ?: Long.MIN_VALUE
+        }.partition { user ->
+            latestMessages.containsKey(user.email)
+        }.let { (chattedUsers, newUsers) ->
+            chattedUsers + newUsers
+        }
+
+        LaunchedEffect(Unit) {
+            viewModel.observeChatMessages()
+        }
+
+
         Scaffold(
             topBar = {
                 androidx.compose.material3.TopAppBar(
@@ -196,8 +237,11 @@ fun ChatScreenContent(users: List<Users>) {
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 LazyColumn {
-                    items(filteredUsers) { user ->
-                        ChatUIItem(user)
+                    items(mergedList) { user ->
+                        val latestMessage = latestMessages[user.email]
+                        AnimatedVisibility(visible = latestMessage != null || user in filteredUsers) {
+                            ChatUIItem(user, latestMessage)
+                        }
                     }
                 }
             }
@@ -206,10 +250,11 @@ fun ChatScreenContent(users: List<Users>) {
 }
 
 @Composable
-fun ChatUIItem(user: Users) {
+fun ChatUIItem(user: Users, latestMessage: ChatMessage?) {
     val navigator = LocalNavigator.current
     Column(
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier
+            .fillMaxWidth()
             .clickable {
                 navigator?.push(ChatDetailScreen(user))
             },
@@ -252,12 +297,18 @@ fun ChatUIItem(user: Users) {
             Column {
                 Text(text = user.fullName.take(16), style = MaterialTheme.typography.titleMedium)
                 Text(
-                    text = "How are you?", style = MaterialTheme.typography.bodyMedium,
-                    color = Color.LightGray
+                    text = latestMessage?.message ?: "Chat Now...",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Color.LightGray,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
             }
             Spacer(modifier = Modifier.weight(1f))
-            Text(text = "12:00", style = MaterialTheme.typography.titleMedium)
+            Text(
+                text = latestMessage?.let { formatTimestampToHumanReadable(it.timestamp) } ?: "",
+                style = MaterialTheme.typography.titleMedium
+            )
         }
         HorizontalDivider(modifier = Modifier.fillMaxWidth())
     }

@@ -99,6 +99,9 @@ class MainViewModel(
     private val _chatMessages = MutableStateFlow<List<ChatMessage>>(emptyList())
     val chatMessages: StateFlow<List<ChatMessage>> = _chatMessages
 
+    private val _newMessages = MutableStateFlow<Set<String>>(emptySet())
+    val newMessages: StateFlow<Set<String>> = _newMessages
+
     init {
         viewModelScope.launch {
             databaseHelper.getAllMessages().collect { localMessages ->
@@ -116,6 +119,25 @@ class MainViewModel(
         viewModelScope.launch {
             repository.sendMessagesBySocket(senderEmail, receiverEmail, message)
         }
+    }
+    fun updateNewMessages(newMessage: ChatMessage) {
+        _newMessages.value += newMessage.senderEmail
+    }
+    fun observeChatMessages() {
+        viewModelScope.launch {
+            repository.getMessages().collect { messageList ->
+                _chatMessages.value = messageList
+            }
+        }
+    }
+
+    fun getLatestMessageForUser(currentUserEmail: String, otherUserEmail: String): ChatMessage? {
+        return _chatMessages.value
+            .filter {
+                (it.senderEmail == currentUserEmail && it.receiverEmail == otherUserEmail) ||
+                        (it.senderEmail == otherUserEmail && it.receiverEmail == currentUserEmail)
+            }
+            .maxByOrNull { it.timestamp }
     }
     fun getAllUsers() {
         viewModelScope.launch {
