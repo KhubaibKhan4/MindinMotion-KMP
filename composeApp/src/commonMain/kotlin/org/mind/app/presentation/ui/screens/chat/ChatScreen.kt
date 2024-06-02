@@ -319,7 +319,7 @@ fun ChatUIItem(
                         color = Color.LightGray,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.widthIn(max = 200.dp)
+                        modifier = Modifier.widthIn(max = 170.dp)
                     )
                     if (isNewMessage) {
                         Icon(
