@@ -16,3 +16,9 @@ data class CommunityMessage(
     val senderEmail: String,
     val communityId: String
 )
+@Serializable
+data class UserProfile(
+    val email: String = "",
+    val name: String = "",
+    val profilePictureUrl: String = ""
+)

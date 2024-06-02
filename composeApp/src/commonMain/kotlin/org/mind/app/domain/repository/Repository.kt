@@ -7,6 +7,8 @@ import dev.gitlive.firebase.storage.File
 import dev.gitlive.firebase.storage.FirebaseStorage
 import io.ktor.client.statement.HttpResponse
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.datetime.Clock
@@ -19,6 +21,7 @@ import org.mind.app.domain.model.chat.ChatMessage
 import org.mind.app.domain.model.chat.MessageType
 import org.mind.app.domain.model.community.Community
 import org.mind.app.domain.model.community.CommunityMessage
+import org.mind.app.domain.model.community.UserProfile
 import org.mind.app.domain.model.gemini.Gemini
 import org.mind.app.domain.model.notes.Notes
 import org.mind.app.domain.model.papers.Papers
@@ -61,6 +64,13 @@ class Repository(
         }
     }
 
+    fun getUserProfiles(): Flow<List<UserProfile>> = flow {
+        val profilesRef = database.reference("userProfiles")
+        profilesRef.valueEvents.collect { dataSnapshot ->
+            val profiles = dataSnapshot.children.mapNotNull { it.value<UserProfile>() }
+            emit(profiles)
+        }
+    }
     override suspend fun sendMessagesBySocket(
         senderEmail: String,
         receiverEmail: String,

@@ -274,7 +274,7 @@ fun ChatScreenContent(
                             CommunityItem(
                                 community = community,
                                 onClick = {
-                                  //  localNavigator?.push(CommunityChatScreen(communityId = community.id))
+                                   localNavigator?.push(CommunityChatScreen(communityId = community.id))
                                 }
                             )
                         }
