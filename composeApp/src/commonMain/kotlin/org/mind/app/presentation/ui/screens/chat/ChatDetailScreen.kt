@@ -156,7 +156,7 @@ fun ChatDetailScreenContent(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding)
+                .padding(top = padding.calculateTopPadding(), start = 8.dp, end = 8.dp)
         ) {
             LazyColumn(
                 modifier = Modifier
@@ -165,7 +165,7 @@ fun ChatDetailScreenContent(
             ) {
                 var lastDateHeader: String? = null
                 items(messages) { message ->
-                    val dateHeader = formatDateToGroup(message.timestamp)
+                    val dateHeader by remember { mutableStateOf(formatDateToGroup(message.timestamp)) }
                     if (lastDateHeader != dateHeader) {
                         lastDateHeader = dateHeader
                         DateHeader(dateHeader)

@@ -15,12 +15,14 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIosNew
+import androidx.compose.material.icons.filled.Circle
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -75,8 +77,9 @@ class ChatScreen(
 @Composable
 fun ChatScreenContent(
     users: List<Users>,
-    viewModel: MainViewModel = koinInject()
+    viewModel: MainViewModel = koinInject(),
 ) {
+    var clickedChatUser by remember { mutableStateOf<Users?>(null) }
     LocalPreferenceProvider {
         val preference = LocalPreference.current
         val currentUserEmail by remember { mutableStateOf(preference.getString("email")) }
@@ -95,7 +98,6 @@ fun ChatScreenContent(
                 else message.senderEmail
             }
             .mapValues { entry -> entry.value.maxByOrNull { it.timestamp } }
-
 
         val filteredUsers = users.filter { user ->
             user.fullName.contains(
@@ -239,9 +241,17 @@ fun ChatScreenContent(
                 LazyColumn {
                     items(mergedList) { user ->
                         val latestMessage = latestMessages[user.email]
-                        AnimatedVisibility(visible = latestMessage != null || user in filteredUsers) {
-                            ChatUIItem(user, latestMessage)
-                        }
+                        val isNewMessage = latestMessage != null && latestMessage.receiverEmail == currentUserEmail
+                        val isClicked = clickedChatUser?.email == user.email
+
+                        ChatUIItem(
+                            user = user,
+                            latestMessage = latestMessage,
+                            isNewMessage = isNewMessage && (!isClicked || latestMessage?.senderEmail == clickedChatUser?.email),
+                            onClick = {
+                                clickedChatUser = user
+                            }
+                        )
                     }
                 }
             }
@@ -250,13 +260,19 @@ fun ChatScreenContent(
 }
 
 @Composable
-fun ChatUIItem(user: Users, latestMessage: ChatMessage?) {
+fun ChatUIItem(
+    user: Users,
+    latestMessage: ChatMessage?,
+    isNewMessage: Boolean,
+    onClick: () -> Unit,
+) {
     val navigator = LocalNavigator.current
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .clickable {
                 navigator?.push(ChatDetailScreen(user))
+                onClick()
             },
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
@@ -296,13 +312,24 @@ fun ChatUIItem(user: Users, latestMessage: ChatMessage?) {
 
             Column {
                 Text(text = user.fullName.take(16), style = MaterialTheme.typography.titleMedium)
-                Text(
-                    text = latestMessage?.message ?: "Chat Now...",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = Color.LightGray,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = latestMessage?.message ?: "Chat Now...",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = Color.LightGray,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.widthIn(max = 200.dp)
+                    )
+                    if (isNewMessage) {
+                        Icon(
+                            imageVector = Icons.Default.Circle,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(10.dp)
+                        )
+                    }
+                }
             }
             Spacer(modifier = Modifier.weight(1f))
             Text(
