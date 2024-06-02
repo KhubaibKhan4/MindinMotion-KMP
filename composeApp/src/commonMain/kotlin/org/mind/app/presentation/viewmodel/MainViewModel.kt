@@ -10,6 +10,7 @@ import kotlinx.datetime.Clock
 import org.mind.app.data.local.DatabaseHelper
 import org.mind.app.domain.model.boards.Boards
 import org.mind.app.domain.model.category.QuizCategoryItem
+import org.mind.app.domain.model.chat.ChatMessage
 import org.mind.app.domain.model.gemini.Gemini
 import org.mind.app.domain.model.message.Message
 import org.mind.app.domain.model.notes.Notes
@@ -95,6 +96,8 @@ class MainViewModel(
     private val _allUsers = MutableStateFlow<ResultState<List<Users>>>(ResultState.Loading)
     val allUsers = _allUsers.asStateFlow()
 
+    private val _chatMessages = MutableStateFlow<List<ChatMessage>>(emptyList())
+    val chatMessages: StateFlow<List<ChatMessage>> = _chatMessages
 
     init {
         viewModelScope.launch {
@@ -102,6 +105,16 @@ class MainViewModel(
                 val convertedMessages = localMessages.map { convertDbMessageToUiMessage(it) }
                 _messages.value = convertedMessages
             }
+        }
+        viewModelScope.launch {
+            repository.getMessages().collect { messageList ->
+                _chatMessages.value = messageList
+            }
+        }
+    }
+    fun sendMessageChat(senderEmail: String, receiverEmail: String, message: String) {
+        viewModelScope.launch {
+            repository.sendMessagesBySocket(senderEmail, receiverEmail, message)
         }
     }
     fun getAllUsers() {

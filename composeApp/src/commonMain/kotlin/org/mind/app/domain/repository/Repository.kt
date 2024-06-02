@@ -1,12 +1,17 @@
 package org.mind.app.domain.repository
 
 import dev.gitlive.firebase.auth.FirebaseAuth
+import dev.gitlive.firebase.database.FirebaseDatabase
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
+import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
 import org.mind.app.data.remote.MotionApiClient
 import org.mind.app.data.repository.AuthService
 import org.mind.app.domain.model.boards.Boards
 import org.mind.app.domain.model.category.QuizCategoryItem
+import org.mind.app.domain.model.chat.ChatMessage
 import org.mind.app.domain.model.gemini.Gemini
 import org.mind.app.domain.model.notes.Notes
 import org.mind.app.domain.model.papers.Papers
@@ -19,6 +24,7 @@ import org.mind.app.domain.model.users.Users
 
 class Repository(
     private val auth: FirebaseAuth,
+    private val database: FirebaseDatabase,
 ) : AuthService {
     override val currentUserId: String
         get() = auth.currentUser?.uid.toString()
@@ -44,6 +50,32 @@ class Repository(
     override suspend fun signOut() {
         if (auth.currentUser?.isAnonymous == true) {
             auth.currentUser?.delete()
+        }
+    }
+
+    override suspend fun sendMessagesBySocket(
+        senderEmail: String,
+        receiverEmail: String,
+        message: String,
+    ) {
+        val chatMessage = ChatMessage(
+            message = message,
+            timestamp = Clock.System.now().toEpochMilliseconds(),
+            senderEmail = senderEmail,
+            receiverEmail = receiverEmail
+        )
+
+        database.reference()
+            .child("messages")
+            .push()
+            .setValue(chatMessage)
+    }
+
+    fun getMessages(): Flow<List<ChatMessage>> = flow {
+        val messagesRef = database.reference("messages")
+        messagesRef.valueEvents.collect { dataSnapshot ->
+            val messages = dataSnapshot.children.mapNotNull { it.value<ChatMessage>() }
+            emit(messages)
         }
     }
 
