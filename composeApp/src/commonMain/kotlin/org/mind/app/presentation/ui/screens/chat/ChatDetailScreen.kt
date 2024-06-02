@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -24,6 +23,7 @@ import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.Attachment
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -36,9 +36,9 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -57,6 +57,7 @@ import com.example.cmppreference.LocalPreferenceProvider
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
 import org.koin.compose.koinInject
+import org.mind.app.domain.model.chat.ChatMessage
 import org.mind.app.domain.model.users.Users
 import org.mind.app.presentation.viewmodel.MainViewModel
 import org.mind.app.theme.LocalThemeIsDark
@@ -70,12 +71,11 @@ class ChatDetailScreen(
         ChatDetailScreenContent(users)
     }
 }
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ChatDetailScreenContent(
     users: Users,
-    viewModel: MainViewModel = koinInject()
+    viewModel: MainViewModel = koinInject(),
 ) {
     LocalPreferenceProvider {
         val preference = LocalPreference.current
@@ -85,7 +85,8 @@ fun ChatDetailScreenContent(
         var searchText by remember { mutableStateOf("") }
 
         val coroutineScope = rememberCoroutineScope()
-        val messages by viewModel.messagesWeb.collectAsState(initial = emptyList<String>())
+        val messages  by remember { mutableStateOf(emptyList<String>()) }
+
 
         Scaffold(
             topBar = {
@@ -164,13 +165,17 @@ fun ChatDetailScreenContent(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(top = padding.calculateTopPadding())
-                    .padding(start = 16.dp, end = 16.dp)
+                    .padding(padding)
             ) {
-                Spacer(modifier = Modifier.height(16.dp))
-                ChatMessageList(messages, modifier = Modifier.weight(1f))
-
-                Spacer(modifier = Modifier.height(16.dp))
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
+                ) {
+                    items(messages) { message ->
+                        ChatMessageItem(message)
+                    }
+                }
 
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -179,51 +184,32 @@ fun ChatDetailScreenContent(
                     TextField(
                         value = searchText,
                         onValueChange = { searchText = it },
-                        placeholder = {
-                            Text(text = "Type your message...")
-                        },
-                        leadingIcon = {
-                            Icon(
-                                imageVector = Icons.Default.Attachment,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.primary
-                            )
-                        },
+                        placeholder = { Text("Type your message...") },
+                        leadingIcon = { Icon(Icons.Default.Attachment, contentDescription = null) },
                         modifier = Modifier
                             .weight(1f)
-                            .padding(end = 8.dp)
+                            .padding(8.dp)
                             .border(
-                                width = 1.dp,
-                                color = if (isDark) Color.White else Color.Black,
-                                shape = RoundedCornerShape(16.dp)
+                                1.dp,
+                                if (isDark) Color.White else Color.Black,
+                                RoundedCornerShape(16.dp)
                             ),
-                        colors = TextFieldDefaults.colors(
-                            focusedTextColor = if (isDark) Color.White else Color.Black,
-                            unfocusedTextColor = if (isDark) Color.White else Color.Black,
+                        colors = TextFieldDefaults.textFieldColors(
                             focusedIndicatorColor = Color.Transparent,
                             unfocusedIndicatorColor = Color.Transparent
                         ),
                         shape = RoundedCornerShape(16.dp)
                     )
 
-                    Box(
-                        modifier = Modifier.size(48.dp)
-                            .background(MaterialTheme.colorScheme.primary, shape = CircleShape),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        IconButton(
-                            onClick = {
-                              viewModel.sendMessageWebSocket(searchText)
-                            },
-                            modifier = Modifier
-                                .size(48.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Filled.Send,
-                                contentDescription = null,
-                                tint = Color.White
-                            )
-                        }
+                    IconButton(onClick = {
+                        viewModel.sendMessage(searchText)
+                        searchText = ""
+                    }) {
+                        Icon(
+                            Icons.Default.Send,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary
+                        )
                     }
                 }
             }
@@ -234,9 +220,7 @@ fun ChatDetailScreenContent(
 @Composable
 fun ChatMessageList(messages: List<String>, modifier: Modifier = Modifier) {
     LazyColumn(
-        modifier = Modifier
-            .fillMaxWidth()
-            .then(modifier),
+        modifier = modifier.fillMaxWidth(),
         reverseLayout = true
     ) {
         items(messages) { message ->
@@ -247,25 +231,9 @@ fun ChatMessageList(messages: List<String>, modifier: Modifier = Modifier) {
 
 @Composable
 fun ChatMessageItem(message: String) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 4.dp),
-        shape = RoundedCornerShape(8.dp),
-        elevation = CardDefaults.cardElevation(2.dp)
-    ) {
-        Row(
-            modifier = Modifier
-                .padding(8.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(
-                imageVector = Icons.Default.Person,
-                contentDescription = null,
-                modifier = Modifier.size(24.dp)
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(text = message)
-        }
-    }
+    Text(
+        text = message,
+        style = MaterialTheme.typography.bodyLarge,
+        modifier = Modifier.padding(4.dp)
+    )
 }

@@ -1,6 +1,5 @@
 package org.mind.app.presentation.viewmodel
 
-import androidx.compose.runtime.collectAsState
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -9,7 +8,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import org.mind.app.data.local.DatabaseHelper
-import org.mind.app.data.remote.MotionApiClient
 import org.mind.app.domain.model.boards.Boards
 import org.mind.app.domain.model.category.QuizCategoryItem
 import org.mind.app.domain.model.gemini.Gemini
@@ -83,10 +81,12 @@ class MainViewModel(
     private val _papers = MutableStateFlow<ResultState<Papers>>(ResultState.Loading)
     val papers = _papers.asStateFlow()
 
-    private val _subCategories = MutableStateFlow<ResultState<List<SubCategoriesItem>>>(ResultState.Loading)
+    private val _subCategories =
+        MutableStateFlow<ResultState<List<SubCategoriesItem>>>(ResultState.Loading)
     val subCategories = _subCategories.asStateFlow()
 
-    private val _subQuestions = MutableStateFlow<ResultState<List<SubQuestionsItem>>>(ResultState.Loading)
+    private val _subQuestions =
+        MutableStateFlow<ResultState<List<SubQuestionsItem>>>(ResultState.Loading)
     val subQuestions = _subQuestions.asStateFlow()
 
     private val _promotions = MutableStateFlow<ResultState<List<Promotions>>>(ResultState.Loading)
@@ -94,9 +94,6 @@ class MainViewModel(
 
     private val _allUsers = MutableStateFlow<ResultState<List<Users>>>(ResultState.Loading)
     val allUsers = _allUsers.asStateFlow()
-
-    private val _messagesWeb = MutableStateFlow<List<String>>(emptyList())
-    val messagesWeb: StateFlow<List<String>> get() = _messagesWeb
 
 
     init {
@@ -106,19 +103,8 @@ class MainViewModel(
                 _messages.value = convertedMessages
             }
         }
-        MotionApiClient.connect()
-        viewModelScope.launch {
-            MotionApiClient.messages.collect { message ->
-                _messagesWeb.value = _messagesWeb.value + message
-            }
-        }
     }
-    fun sendMessageWebSocket(message: String) {
-        viewModelScope.launch {
-            MotionApiClient.sendMessage(message)
-        }
-    }
-    fun getAllUsers(){
+    fun getAllUsers() {
         viewModelScope.launch {
             _allUsers.value = ResultState.Loading
             try {
@@ -129,7 +115,7 @@ class MainViewModel(
             }
         }
     }
-    fun getAllPromotions(){
+    fun getAllPromotions() {
         viewModelScope.launch {
             _promotions.value = ResultState.Loading
             try {
@@ -140,7 +126,8 @@ class MainViewModel(
             }
         }
     }
-    fun getAllSubCategories(){
+
+    fun getAllSubCategories() {
         viewModelScope.launch {
             _subCategories.value = ResultState.Loading
             try {
@@ -151,7 +138,8 @@ class MainViewModel(
             }
         }
     }
-    fun getAllSubQuestions(){
+
+    fun getAllSubQuestions() {
         viewModelScope.launch {
             _subQuestions.value = ResultState.Loading
             try {
@@ -162,7 +150,8 @@ class MainViewModel(
             }
         }
     }
-    fun getAllPapers(id:Long){
+
+    fun getAllPapers(id: Long) {
         viewModelScope.launch {
             _papers.value = ResultState.Loading
             try {
@@ -173,7 +162,8 @@ class MainViewModel(
             }
         }
     }
-    fun getAllBoards(){
+
+    fun getAllBoards() {
         viewModelScope.launch {
             _boards.value = ResultState.Loading
             try {
@@ -184,7 +174,8 @@ class MainViewModel(
             }
         }
     }
-    fun getAllNotes(){
+
+    fun getAllNotes() {
         viewModelScope.launch {
             _notes.value = ResultState.Loading
             try {
