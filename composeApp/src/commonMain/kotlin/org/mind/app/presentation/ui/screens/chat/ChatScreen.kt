@@ -328,45 +328,6 @@ fun ChatScreenContent(
                         }
                     }
                 }
-                Spacer(modifier = Modifier.height(16.dp))
-                if (mergedList.isEmpty()) {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = if (searchText.text.isEmpty()) {
-                                "No chats available"
-                            } else {
-                                "No results found"
-                            },
-                            color = if (isDark) Color.White else Color.Black,
-                            style = MaterialTheme.typography.headlineSmall
-                        )
-                    }
-                } else {
-                    LazyColumn {
-                        items(mergedList.filter { user ->
-                            user.fullName.contains(searchText.text, ignoreCase = true)
-                        }) { user ->
-                            val latestMessage = latestMessages[user.email]
-                            val isNewMessage =
-                                latestMessage != null && latestMessage.receiverEmail == currentUserEmail
-                            val isClicked = lastClickedChatUserTimestamp?.first == user.email
-                                    && lastClickedChatUserTimestamp?.second == latestMessage?.timestamp
-
-                            ChatUIItem(
-                                user = user,
-                                latestMessage = latestMessage,
-                                isNewMessage = isNewMessage && !isClicked,
-                                onClick = {
-                                    lastClickedChatUserTimestamp =
-                                        user.email to (latestMessage?.timestamp ?: 0L)
-                                }
-                            )
-                        }
-                    }
-                }
             }
         }
     }

@@ -131,6 +131,30 @@ class Repository(
             emit(messages)
         }
     }
+    suspend fun removeUserFromCommunity(communityId: String, userEmail: String) {
+        database.reference("communities")
+            .child(communityId)
+            .child("members")
+            .child(userEmail)
+            .removeValue()
+    }
+
+    suspend fun addUserToCommunity(communityId: String, userEmail: String) {
+        database.reference("communities")
+            .child(communityId)
+            .child("members")
+            .child(userEmail)
+            .setValue(true)
+    }
+    fun getCommunityUsers(communityId: String): Flow<List<UserProfile>> {
+        return flow {
+            val communityUsersRef = database.reference("communityUsers").child(communityId)
+            communityUsersRef.valueEvents.collect { dataSnapshot ->
+                val communityUsers = dataSnapshot.children.mapNotNull { it.value<UserProfile>() }
+                emit(communityUsers)
+            }
+        }
+    }
 
     override suspend fun signUpUser(
         email: String,

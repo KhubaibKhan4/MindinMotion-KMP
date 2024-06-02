@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -17,13 +16,17 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.Attachment
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -54,6 +57,7 @@ import com.example.cmppreference.LocalPreference
 import com.example.cmppreference.LocalPreferenceProvider
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
+import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 import org.mind.app.domain.model.community.CommunityMessage
 import org.mind.app.domain.model.users.Users
@@ -65,13 +69,14 @@ import org.mind.app.utils.Constant.BASE_URL
 import org.mind.app.utils.formatTimestampToHumanReadable
 
 class CommunityChatScreen(
-    private val communityId: String
-):Screen {
+    private val communityId: String,
+) : Screen {
     @Composable
     override fun Content() {
         CommunityChatScreenContent(communityId)
     }
 }
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CommunityChatScreenContent(
@@ -86,6 +91,7 @@ fun CommunityChatScreenContent(
     val scope = rememberCoroutineScope()
     val isDark by LocalThemeIsDark.current
     val navigator = LocalNavigator.current
+    var expanded by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         viewModel.observeCommunityMessages(communityId)
@@ -105,12 +111,47 @@ fun CommunityChatScreenContent(
                     titleContentColor = if (isDark) Color.White else Color.Black
                 ),
                 navigationIcon = {
-                    Icon(
-                        imageVector = Icons.Default.ArrowBackIosNew,
-                        contentDescription = null,
-                        modifier = Modifier.clickable { navigator?.pop() }
-                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.ArrowBackIosNew,
+                            contentDescription = null,
+                            modifier = Modifier.clickable { navigator?.pop() }
+                        )
+                        Box(
+                            modifier = Modifier
+                                .size(30.dp)
+                                .clip(CircleShape)
+                                .background(MaterialTheme.colorScheme.primary)
+                        ) {
+                            Text(
+                                text = community?.name?.first().toString(),
+                                modifier = Modifier.align(Alignment.Center),
+                                color = Color.White,
+                                fontSize = 24.sp
+                            )
+                        }
+                    }
                 },
+                actions = {
+                    IconButton(onClick = { expanded = true }) {
+                        Icon(Icons.Default.MoreVert, contentDescription = "More Options")
+                    }
+                    DropdownMenu(
+                        expanded = expanded,
+                        onDismissRequest = { expanded = false }
+                    ) {
+                        DropdownMenuItem(onClick = {
+                            expanded = false
+                            navigator?.push(CommunityDetailScreen(communityId = communityId))
+
+                        }) {
+                            Text("Community Details")
+                        }
+                    }
+                }
             )
         },
         content = { padding ->
@@ -175,6 +216,114 @@ fun CommunityChatScreenContent(
         }
     )
 }
+class CommunityDetailScreen(
+  private val communityId: String,
+) : Screen{
+    @Composable
+    override fun Content() {
+        CommunityDetailContent(communityId)
+    }
+
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun CommunityDetailContent(
+    communityId: String,
+    viewModel: MainViewModel = koinInject(),
+) {
+    val community by viewModel.getCommunity(communityId).collectAsState(initial = null)
+    val communityUsers by viewModel.getCommunityUsers(communityId)
+        .collectAsState(initial = emptyList())
+    val currentUserEmail = LocalPreference.current.getString("email") ?: ""
+    val isAdmin = community?.admin == currentUserEmail
+    val navigator = LocalNavigator.current
+    val scope = rememberCoroutineScope()
+
+    Scaffold(
+        topBar = {
+            androidx.compose.material3.TopAppBar(
+                title = {
+                    Text("Community Details")
+                },
+                navigationIcon = {
+                    Icon(
+                        imageVector = Icons.Default.ArrowBackIosNew,
+                        contentDescription = null,
+                        modifier = Modifier.clickable { navigator?.pop() }
+                    )
+                }
+            )
+        },
+        content = { padding ->
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding)
+            ) {
+                Text(
+                    text = community?.name ?: "Community",
+                    style = MaterialTheme.typography.headlineSmall,
+                    modifier = Modifier.padding(16.dp)
+                )
+
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
+                ) {
+                    items(communityUsers) { user ->
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(8.dp)
+                        ) {
+                            Text(
+                                text = user.name,
+                                style = MaterialTheme.typography.bodyLarge,
+                                modifier = Modifier.weight(1f)
+                            )
+                            if (isAdmin && user.email != currentUserEmail) {
+                                IconButton(onClick = {
+                                    scope.launch {
+                                        viewModel.removeUserFromCommunity(communityId, user.email)
+                                    }
+                                }) {
+                                    Icon(Icons.Default.Delete, contentDescription = "Remove User")
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if (isAdmin) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp)
+                    ) {
+                        var emailToAdd by remember { mutableStateOf("") }
+                        TextField(
+                            value = emailToAdd,
+                            onValueChange = { emailToAdd = it },
+                            placeholder = { Text("User email") },
+                            modifier = Modifier.weight(1f)
+                        )
+                        IconButton(onClick = {
+                            scope.launch {
+                                viewModel.addUserToCommunity(communityId, emailToAdd)
+                            }
+                            emailToAdd = ""
+                        }) {
+                            Icon(Icons.Default.Add, contentDescription = "Add User")
+                        }
+                    }
+                }
+            }
+        }
+    )
+}
 
 @Composable
 fun CommunityMessageItem(message: CommunityMessage, viewModel: MainViewModel = koinInject()) {
@@ -198,14 +347,16 @@ fun CommunityMessageItem(message: CommunityMessage, viewModel: MainViewModel = k
         val senderProfileState by viewModel.userByEmail.collectAsState()
         val currentUserProfileState by viewModel.userByEmail.collectAsState()
 
-        when(senderProfileState){
+        when (senderProfileState) {
             is ResultState.Error -> {
                 val error = (senderProfileState as ResultState.Error).message
                 ErrorBox(error)
             }
+
             ResultState.Loading -> {
                 // Do nothing
             }
+
             is ResultState.Success -> {
                 val response = (senderProfileState as ResultState.Success).data
                 if (response.email == message.senderEmail) {
@@ -214,14 +365,16 @@ fun CommunityMessageItem(message: CommunityMessage, viewModel: MainViewModel = k
             }
         }
 
-        when(currentUserProfileState){
+        when (currentUserProfileState) {
             is ResultState.Error -> {
                 val error = (currentUserProfileState as ResultState.Error).message
                 ErrorBox(error)
             }
+
             ResultState.Loading -> {
                 // Do nothing
             }
+
             is ResultState.Success -> {
                 val response = (currentUserProfileState as ResultState.Success).data
                 if (response.email == currentUserEmail) {
@@ -303,7 +456,6 @@ fun CommunityMessageItem(message: CommunityMessage, viewModel: MainViewModel = k
                 }
             }
 
-            // Display current user's profile
             if (isSentByCurrentUser) {
                 if (currentUserData?.profileImage?.contains("null") != true) {
                     KamelImage(

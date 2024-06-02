@@ -206,6 +206,16 @@ class MainViewModel(
             repository.createCommunity(name, members, admin)
         }
     }
+    suspend fun removeUserFromCommunity(communityId: String, userEmail: String) {
+        repository.removeUserFromCommunity(communityId, userEmail)
+    }
+
+    suspend fun addUserToCommunity(communityId: String, userEmail: String) {
+        repository.addUserToCommunity(communityId, userEmail)
+    }
+    fun getCommunityUsers(communityId: String): Flow<List<UserProfile>> {
+        return repository.getCommunityUsers(communityId)
+    }
 
 
     fun getAllUsers() {
