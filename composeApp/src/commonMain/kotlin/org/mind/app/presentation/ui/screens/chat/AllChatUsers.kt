@@ -15,23 +15,24 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.TextField
+import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBackIosNew
-import androidx.compose.material.icons.filled.Circle
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -46,7 +47,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
@@ -57,26 +57,25 @@ import com.example.cmppreference.LocalPreferenceProvider
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
 import org.koin.compose.koinInject
-import org.mind.app.domain.model.chat.ChatMessage
 import org.mind.app.domain.model.users.Users
+import org.mind.app.presentation.ui.tabs.chat.ChatDetailTab
+import org.mind.app.presentation.ui.tabs.chat.ChatTab
 import org.mind.app.presentation.ui.tabs.home.HomeTab
 import org.mind.app.presentation.viewmodel.MainViewModel
 import org.mind.app.theme.LocalThemeIsDark
-import org.mind.app.utils.Constant.BASE_URL
-import org.mind.app.utils.formatTimestampToHumanReadable
+import org.mind.app.utils.Constant
 
-class ChatScreen(
-    private val users: List<Users>,
-) : Screen {
+class AllChatUsers(
+    private val allUsers: List<Users>
+): Screen {
     @Composable
     override fun Content() {
-        ChatScreenContent(users)
+        AllChatUsersContent(allUsers)
     }
 }
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ChatScreenContent(
+fun AllChatUsersContent(
     users: List<Users>,
     viewModel: MainViewModel = koinInject(),
 ) {
@@ -117,8 +116,8 @@ fun ChatScreenContent(
             latestMessages[user.email]?.timestamp ?: Long.MIN_VALUE
         }.partition { user ->
             latestMessages.containsKey(user.email)
-        }.let { (chattedUsers, _) ->
-            chattedUsers
+        }.let { (chattedUsers, newUsers) ->
+            chattedUsers + newUsers
         }
 
         LaunchedEffect(Unit) {
@@ -128,48 +127,12 @@ fun ChatScreenContent(
 
         Scaffold(
             topBar = {
-                androidx.compose.material3.TopAppBar(
-                    title = { Text("Inbox", color = if (isDark) Color.White else Color.Black) },
+                TopAppBar(
+                    title = { Text("All Users", color = if (isDark) Color.White else Color.Black) },
                     colors = TopAppBarDefaults.topAppBarColors(
                         containerColor = MaterialTheme.colorScheme.surface,
                         titleContentColor = if (isDark) Color.White else Color.Black
                     ),
-                    actions = {
-                        if (currentUser?.profileImage?.contains("null") != true) {
-                            KamelImage(
-                                resource = asyncPainterResource(BASE_URL + currentUser?.profileImage),
-                                contentDescription = null,
-                                modifier = Modifier
-                                    .size(30.dp)
-                                    .clip(CircleShape)
-                                    .border(
-                                        width = 1.dp,
-                                        color = if (isDark) Color.White else Color.Black
-                                    ),
-                                contentScale = ContentScale.Crop
-                            )
-                        } else {
-                            Box(
-                                modifier = Modifier
-                                    .size(30.dp)
-                                    .clip(CircleShape)
-                                    .background(MaterialTheme.colorScheme.primary)
-                                    .border(
-                                        width = 1.dp,
-                                        color = if (isDark) Color.White else Color.Black,
-                                        shape = CircleShape
-                                    )
-                            ) {
-                                Text(
-                                    text = currentUser?.fullName?.first().toString(),
-                                    modifier = Modifier.align(Alignment.Center),
-                                    color = Color.White,
-                                    fontSize = 20.sp
-                                )
-                            }
-                        }
-                        Spacer(modifier = Modifier.width(8.dp))
-                    },
                     navigationIcon = {
                         Row(
                             horizontalArrangement = Arrangement.SpaceBetween,
@@ -179,25 +142,13 @@ fun ChatScreenContent(
                                 imageVector = Icons.Default.ArrowBackIosNew,
                                 contentDescription = null,
                                 modifier = Modifier.clickable {
-                                    navigator.current = HomeTab
+                                    localNavigator?.pop()
                                 }
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                         }
                     }
                 )
-            },
-            floatingActionButton = {
-                androidx.compose.material3.FloatingActionButton(
-                    onClick = {
-                        localNavigator?.push(AllChatUsers(allUsers = sortedUsers))
-                    }
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Add,
-                        contentDescription = null
-                    )
-                }
             }
         ) {
             Column(
@@ -207,7 +158,7 @@ fun ChatScreenContent(
                     .padding(start = 16.dp, end = 16.dp)
             ) {
                 Spacer(modifier = Modifier.height(6.dp))
-                androidx.compose.material.TextField(
+                TextField(
                     value = searchText,
                     onValueChange = { searchText = it },
                     placeholder = {
@@ -242,7 +193,7 @@ fun ChatScreenContent(
                         .padding(4.dp),
                     singleLine = true,
                     shape = RoundedCornerShape(16.dp),
-                    colors = androidx.compose.material.TextFieldDefaults.textFieldColors(
+                    colors = TextFieldDefaults.textFieldColors(
                         unfocusedIndicatorColor = Color.Transparent,
                         focusedIndicatorColor = Color.Transparent,
                         textColor = if (isDark) Color.White else Color.Black,
@@ -252,7 +203,7 @@ fun ChatScreenContent(
                     )
                 )
                 Spacer(modifier = Modifier.height(16.dp))
-                LazyColumn{
+                LazyColumn {
                     items(mergedList) { user ->
                         val latestMessage = latestMessages[user.email]
                         val isNewMessage = latestMessage != null && latestMessage.receiverEmail == currentUserEmail
@@ -271,87 +222,5 @@ fun ChatScreenContent(
                 }
             }
         }
-    }
-}
-
-@Composable
-fun ChatUIItem(
-    user: Users,
-    latestMessage: ChatMessage?,
-    isNewMessage: Boolean,
-    onClick: () -> Unit,
-) {
-    val navigator = LocalNavigator.current
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable {
-                navigator?.push(ChatDetailScreen(user))
-                onClick()
-            },
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Row(
-            modifier = Modifier
-                .padding(8.dp)
-                .fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            if (user.profileImage?.contains("null") != true) {
-                KamelImage(
-                    resource = asyncPainterResource(BASE_URL + user.profileImage),
-                    contentDescription = null,
-                    modifier = Modifier
-                        .size(48.dp)
-                        .clip(CircleShape),
-                    contentScale = ContentScale.Crop
-                )
-            } else {
-                Box(
-                    modifier = Modifier
-                        .size(48.dp)
-                        .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.primary)
-                ) {
-                    Text(
-                        text = user.fullName.first().toString(),
-                        modifier = Modifier.align(Alignment.Center),
-                        color = Color.White,
-                        fontSize = 24.sp
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.width(8.dp))
-
-            Column {
-                Text(text = user.fullName.take(16), style = MaterialTheme.typography.titleMedium)
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        text = latestMessage?.message ?: "Chat Now...",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = Color.LightGray,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.widthIn(max = 170.dp)
-                    )
-                    if (isNewMessage) {
-                        Icon(
-                            imageVector = Icons.Default.Circle,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(10.dp)
-                        )
-                    }
-                }
-            }
-            Spacer(modifier = Modifier.weight(1f))
-            Text(
-                text = latestMessage?.let { formatTimestampToHumanReadable(it.timestamp) } ?: "",
-                style = MaterialTheme.typography.titleMedium
-            )
-        }
-        HorizontalDivider(modifier = Modifier.fillMaxWidth())
     }
 }
