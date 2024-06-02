@@ -1,7 +1,9 @@
 package org.mind.app.domain.repository
 
+import com.eygraber.uri.Uri
 import dev.gitlive.firebase.auth.FirebaseAuth
 import dev.gitlive.firebase.database.FirebaseDatabase
+import dev.gitlive.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
@@ -12,6 +14,7 @@ import org.mind.app.data.repository.AuthService
 import org.mind.app.domain.model.boards.Boards
 import org.mind.app.domain.model.category.QuizCategoryItem
 import org.mind.app.domain.model.chat.ChatMessage
+import org.mind.app.domain.model.chat.MessageType
 import org.mind.app.domain.model.gemini.Gemini
 import org.mind.app.domain.model.notes.Notes
 import org.mind.app.domain.model.papers.Papers
@@ -25,6 +28,7 @@ import org.mind.app.domain.model.users.Users
 class Repository(
     private val auth: FirebaseAuth,
     private val database: FirebaseDatabase,
+    private val storage: FirebaseStorage
 ) : AuthService {
     override val currentUserId: String
         get() = auth.currentUser?.uid.toString()
@@ -69,6 +73,10 @@ class Repository(
             .child("messages")
             .push()
             .setValue(chatMessage)
+    }
+
+    override suspend fun uploadMedia(fileUri: Uri, messageType: MessageType): String {
+        TODO("Not yet implemented")
     }
 
     fun getMessages(): Flow<List<ChatMessage>> = flow {

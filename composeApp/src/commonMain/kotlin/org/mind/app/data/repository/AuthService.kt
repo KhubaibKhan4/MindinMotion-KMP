@@ -1,12 +1,10 @@
 package org.mind.app.data.repository
 
-import io.ktor.util.InternalAPI
-import io.ktor.websocket.Frame
-import kotlinx.coroutines.channels.SendChannel
+import com.eygraber.uri.Uri
 import kotlinx.coroutines.flow.Flow
 import org.mind.app.domain.model.boards.Boards
 import org.mind.app.domain.model.category.QuizCategoryItem
-import org.mind.app.domain.model.chat.ChatMessage
+import org.mind.app.domain.model.chat.MessageType
 import org.mind.app.domain.model.gemini.Gemini
 import org.mind.app.domain.model.notes.Notes
 import org.mind.app.domain.model.papers.Papers
@@ -26,7 +24,12 @@ interface AuthService {
     suspend fun authenticate(email: String, password: String)
     suspend fun createUser(email: String, password: String)
     suspend fun resetPassword(email: String)
-    suspend fun sendMessagesBySocket(senderEmail: String, receiverEmail: String, message: String)
+    suspend fun sendMessagesBySocket(
+        senderEmail: String,
+        receiverEmail: String,
+        message: String
+    )
+    suspend fun uploadMedia(fileUri: Uri, messageType: MessageType): String
 
     suspend fun signOut()
     suspend fun signUpUser(
@@ -41,6 +44,7 @@ interface AuthService {
         phoneNumber: String,
         userRole: String,
     ): String
+
     suspend fun getUsersById(userId: Int): Users
     suspend fun updateUserDetails(
         userId: Int,
@@ -53,17 +57,19 @@ interface AuthService {
         postalCode: String,
         phoneNumber: String,
     )
+
     suspend fun loginServerUser(
         email: String,
         password: String,
     ): Users
+
     suspend fun getUserByEmail(email: String): Users
     suspend fun generateContent(content: String): Gemini
     suspend fun getAllCategories(): List<QuizCategoryItem>
     suspend fun getAllQuizzes(): List<QuizQuestionsItem>
     suspend fun getAllNotes(): List<Notes>
-    suspend fun getAllBoards():List<Boards>
-    suspend fun getAllPapersWithDetail(id:Long): Papers
+    suspend fun getAllBoards(): List<Boards>
+    suspend fun getAllPapersWithDetail(id: Long): Papers
     suspend fun getAllSubCategories(): List<SubCategoriesItem>
     suspend fun getSubQuestions(): List<SubQuestionsItem>
     suspend fun getAllPromotions(): List<Promotions>

@@ -648,7 +648,7 @@ fun UserItem(users: Users) {
                 modifier = Modifier
                     .size(48.dp)
                     .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.surface)
+                    .background(MaterialTheme.colorScheme.surfaceContainer)
                     .border(width = 1.dp, color = Color.Gray, shape = CircleShape)
             ) {
                 Text(

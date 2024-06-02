@@ -15,6 +15,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.compose.material.SnackbarDefaults.backgroundColor
+import dev.gitlive.firebase.storage.File
 import platform.WebKit.*
 import platform.UIKit.UIColor
 

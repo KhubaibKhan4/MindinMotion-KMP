@@ -84,7 +84,10 @@ kotlin {
             implementation("org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose:2.8.0-beta02")
             implementation("dev.gitlive:firebase-auth:1.12.0")
             implementation("dev.gitlive:firebase-database:1.12.0")
+            implementation("dev.gitlive:firebase-storage:1.12.0")
             implementation("network.chaintech:cmp-preference:1.0.0")
+            implementation(libs.peekaboo.ui)
+            implementation(libs.peekaboo.image.picker)
         }
 
         commonTest.dependencies {

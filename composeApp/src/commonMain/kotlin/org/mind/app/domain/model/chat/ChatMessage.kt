@@ -9,3 +9,9 @@ data class ChatMessage(
     val senderEmail: String,
     val receiverEmail: String,
 )
+enum class MessageType {
+    TEXT,
+    IMAGE,
+    VIDEO,
+    DOCUMENT
+}
