@@ -17,6 +17,8 @@ import org.mind.app.domain.model.boards.Boards
 import org.mind.app.domain.model.category.QuizCategoryItem
 import org.mind.app.domain.model.chat.ChatMessage
 import org.mind.app.domain.model.chat.MessageType
+import org.mind.app.domain.model.community.Community
+import org.mind.app.domain.model.community.CommunityMessage
 import org.mind.app.domain.model.gemini.Gemini
 import org.mind.app.domain.model.notes.Notes
 import org.mind.app.domain.model.papers.Papers
@@ -81,6 +83,41 @@ class Repository(
         val messagesRef = database.reference("messages")
         messagesRef.valueEvents.collect { dataSnapshot ->
             val messages = dataSnapshot.children.mapNotNull { it.value<ChatMessage>() }
+            emit(messages)
+        }
+    }
+    suspend fun createCommunity(name: String, members: List<String>, admin: String) {
+        val communityId = database.reference().child("communities").push().key ?: return
+        val community = Community(id = communityId, name = name, members = members, admin = admin)
+        database.reference().child("communities").child(communityId).setValue(community)
+    }
+
+    fun getCommunities(): Flow<List<Community>> = flow {
+        val communitiesRef = database.reference("communities")
+        communitiesRef.valueEvents.collect { dataSnapshot ->
+            val communities = dataSnapshot.children.mapNotNull { it.value<Community>() }
+            emit(communities)
+        }
+    }
+
+    suspend fun sendCommunityMessage(communityId: String, senderEmail: String, message: String) {
+        val communityMessage = CommunityMessage(
+            message = message,
+            timestamp = Clock.System.now().toEpochMilliseconds(),
+            senderEmail = senderEmail,
+            communityId = communityId
+        )
+        database.reference()
+            .child("communityMessages")
+            .child(communityId)
+            .push()
+            .setValue(communityMessage)
+    }
+
+    fun getCommunityMessages(communityId: String): Flow<List<CommunityMessage>> = flow {
+        val messagesRef = database.reference("communityMessages").child(communityId)
+        messagesRef.valueEvents.collect { dataSnapshot ->
+            val messages = dataSnapshot.children.mapNotNull { it.value<CommunityMessage>() }
             emit(messages)
         }
     }

@@ -12,6 +12,8 @@ import org.mind.app.data.local.DatabaseHelper
 import org.mind.app.domain.model.boards.Boards
 import org.mind.app.domain.model.category.QuizCategoryItem
 import org.mind.app.domain.model.chat.ChatMessage
+import org.mind.app.domain.model.community.Community
+import org.mind.app.domain.model.community.CommunityMessage
 import org.mind.app.domain.model.gemini.Gemini
 import org.mind.app.domain.model.message.Message
 import org.mind.app.domain.model.notes.Notes
@@ -103,6 +105,12 @@ class MainViewModel(
     private val _newMessages = MutableStateFlow<Set<String>>(emptySet())
     val newMessages: StateFlow<Set<String>> = _newMessages
 
+    private val _communities = MutableStateFlow<List<Community>>(emptyList())
+    val communities: StateFlow<List<Community>> = _communities
+
+    private val _communityMessages = MutableStateFlow<List<CommunityMessage>>(emptyList())
+    val communityMessages: StateFlow<List<CommunityMessage>> = _communityMessages
+
     init {
         viewModelScope.launch {
             databaseHelper.getAllMessages().collect { localMessages ->
@@ -113,6 +121,11 @@ class MainViewModel(
         viewModelScope.launch {
             repository.getMessages().collect { messageList ->
                 _chatMessages.value = messageList
+            }
+        }
+        viewModelScope.launch {
+            repository.getCommunities().collect { communityList ->
+                _communities.value = communityList
             }
         }
     }
@@ -139,6 +152,25 @@ class MainViewModel(
                         (it.senderEmail == otherUserEmail && it.receiverEmail == currentUserEmail)
             }
             .maxByOrNull { it.timestamp }
+    }
+    fun createCommunity(name: String, members: List<String>, admin: String) {
+        viewModelScope.launch {
+            repository.createCommunity(name, members, admin)
+        }
+    }
+
+    fun sendCommunityMessage(communityId: String, senderEmail: String, message: String) {
+        viewModelScope.launch {
+            repository.sendCommunityMessage(communityId, senderEmail, message)
+        }
+    }
+
+    fun observeCommunityMessages(communityId: String) {
+        viewModelScope.launch {
+            repository.getCommunityMessages(communityId).collect { messageList ->
+                _communityMessages.value = messageList
+            }
+        }
     }
 
     fun getAllUsers() {

@@ -58,6 +58,7 @@ import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
 import org.koin.compose.koinInject
 import org.mind.app.domain.model.chat.ChatMessage
+import org.mind.app.domain.model.community.Community
 import org.mind.app.domain.model.users.Users
 import org.mind.app.presentation.ui.tabs.home.HomeTab
 import org.mind.app.presentation.viewmodel.MainViewModel
@@ -120,6 +121,8 @@ fun ChatScreenContent(
         }.let { (chattedUsers, newUsers) ->
             chattedUsers
         }
+        val communities = viewModel.communities.collectAsState(initial = emptyList()).value
+
 
         LaunchedEffect(Unit) {
             viewModel.observeChatMessages()
@@ -190,7 +193,7 @@ fun ChatScreenContent(
             floatingActionButton = {
                 androidx.compose.material3.FloatingActionButton(
                     onClick = {
-                        localNavigator?.push(AllChatUsers(allUsers = sortedUsers))
+                        localNavigator?.push(AllChatUsers(allUsers = users))
                     }
                 ) {
                     Icon(
@@ -251,6 +254,80 @@ fun ChatScreenContent(
                         leadingIconColor = if (isDark) Color.LightGray else Color.Gray
                     )
                 )
+                Text(
+                    text = "Communities",
+                    style = MaterialTheme.typography.headlineSmall,
+                    color = if (isDark) Color.White else Color.Black,
+                    modifier = Modifier.padding(vertical = 8.dp)
+                )
+
+                if (communities.isEmpty()) {
+                    Text(
+                        text = "No communities available",
+                        color = if (isDark) Color.White else Color.Black
+                    )
+                } else {
+                    LazyColumn {
+                        items(communities.filter { community ->
+                            community.name.contains(searchText.text, ignoreCase = true)
+                        }) { community ->
+                            CommunityItem(
+                                community = community,
+                                onClick = {
+                                  //  localNavigator?.push(CommunityChatScreen(communityId = community.id))
+                                }
+                            )
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Text(
+                    text = "Chats",
+                    style = MaterialTheme.typography.headlineSmall,
+                    color = if (isDark) Color.White else Color.Black,
+                    modifier = Modifier.padding(vertical = 8.dp)
+                )
+
+                if (mergedList.isEmpty()) {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = if (searchText.text.isEmpty()) {
+                                "No chats available"
+                            } else {
+                                "No results found"
+                            },
+                            color = if (isDark) Color.White else Color.Black,
+                            style = MaterialTheme.typography.headlineSmall
+                        )
+                    }
+                } else {
+                    LazyColumn {
+                        items(mergedList.filter { user ->
+                            user.fullName.contains(searchText.text, ignoreCase = true)
+                        }) { user ->
+                            val latestMessage = latestMessages[user.email]
+                            val isNewMessage =
+                                latestMessage != null && latestMessage.receiverEmail == currentUserEmail
+                            val isClicked = lastClickedChatUserTimestamp?.first == user.email
+                                    && lastClickedChatUserTimestamp?.second == latestMessage?.timestamp
+
+                            ChatUIItem(
+                                user = user,
+                                latestMessage = latestMessage,
+                                isNewMessage = isNewMessage && !isClicked,
+                                onClick = {
+                                    lastClickedChatUserTimestamp =
+                                        user.email to (latestMessage?.timestamp ?: 0L)
+                                }
+                            )
+                        }
+                    }
+                }
                 Spacer(modifier = Modifier.height(16.dp))
                 if (mergedList.isEmpty()) {
                     Box(
@@ -374,5 +451,33 @@ fun ChatUIItem(
             )
         }
         HorizontalDivider(modifier = Modifier.fillMaxWidth())
+    }
+}
+@Composable
+fun CommunityItem(community: Community, onClick: () -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(
+            modifier = Modifier
+                .size(40.dp)
+                .clip(CircleShape)
+                .background(MaterialTheme.colorScheme.primary)
+        ) {
+            Text(
+                text = community.name.first().toString(),
+                color = Color.White,
+                modifier = Modifier.align(Alignment.Center)
+            )
+        }
+        Spacer(modifier = Modifier.width(16.dp))
+        Text(
+            text = community.name,
+            style = MaterialTheme.typography.bodyLarge
+        )
     }
 }
