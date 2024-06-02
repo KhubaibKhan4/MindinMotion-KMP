@@ -30,11 +30,14 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -44,6 +47,9 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.tab.LocalTabNavigator
 import com.example.cmppreference.LocalPreference
 import com.example.cmppreference.LocalPreferenceProvider
+import com.preat.peekaboo.image.picker.SelectionMode
+import com.preat.peekaboo.image.picker.rememberImagePickerLauncher
+import com.preat.peekaboo.image.picker.toImageBitmap
 import com.seiko.imageloader.rememberImagePainter
 import org.koin.compose.koinInject
 import org.mind.app.domain.model.users.Users
@@ -79,7 +85,7 @@ fun ProfileScreenContent(
             isLogin = preference.getBoolean("is_login", false)
             email = preference.getString("email").toString()
         }
-        LaunchedEffect(Unit){
+        LaunchedEffect(Unit) {
             viewModel.getUserByEmail(email)
         }
 
@@ -99,6 +105,18 @@ fun ProfileScreenContent(
                 usersDetails = response
             }
         }
+        val scope = rememberCoroutineScope()
+        var images by remember { mutableStateOf<ImageBitmap?>(null) }
+        val singleImagePicker =
+            rememberImagePickerLauncher(
+                selectionMode = SelectionMode.Single,
+                scope = scope,
+                onResult = { byteArrays ->
+                    byteArrays.firstOrNull()?.let {
+                        images = it.toImageBitmap()
+                    }
+                },
+            )
 
 
         Scaffold(
@@ -137,9 +155,20 @@ fun ProfileScreenContent(
                                         .clip(CircleShape)
                                 )
                             } else {
-                                LocalImage(
-                                    modifier = Modifier.size(150.dp).clip(CircleShape)
-                                )
+                                if (images!=null){
+                                    Image(
+                                        bitmap = images!!,
+                                        contentDescription = "frame",
+                                        contentScale = ContentScale.Crop,
+                                        modifier = Modifier.size(150.dp).clip(CircleShape)
+                                            .clickable { singleImagePicker.launch() },
+                                    )
+                                }else {
+                                    LocalImage(
+                                        modifier = Modifier.size(150.dp).clip(CircleShape)
+                                            .clickable { singleImagePicker.launch() }
+                                    )
+                                }
                             }
                             Spacer(modifier = Modifier.height(6.dp))
                             Column(

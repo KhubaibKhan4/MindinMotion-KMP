@@ -3,7 +3,9 @@ package org.mind.app.domain.repository
 import com.eygraber.uri.Uri
 import dev.gitlive.firebase.auth.FirebaseAuth
 import dev.gitlive.firebase.database.FirebaseDatabase
+import dev.gitlive.firebase.storage.File
 import dev.gitlive.firebase.storage.FirebaseStorage
+import io.ktor.client.statement.HttpResponse
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
@@ -73,10 +75,6 @@ class Repository(
             .child("messages")
             .push()
             .setValue(chatMessage)
-    }
-
-    override suspend fun uploadMedia(fileUri: Uri, messageType: MessageType): String {
-        TODO("Not yet implemented")
     }
 
     fun getMessages(): Flow<List<ChatMessage>> = flow {

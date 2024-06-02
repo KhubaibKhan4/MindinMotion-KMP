@@ -16,6 +16,7 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.compose.material.SnackbarDefaults.backgroundColor
 import dev.gitlive.firebase.storage.File
+import org.jetbrains.skia.Bitmap
 import platform.WebKit.*
 import platform.UIKit.UIColor
 

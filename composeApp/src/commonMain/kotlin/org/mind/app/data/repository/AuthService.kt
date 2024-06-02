@@ -1,10 +1,8 @@
 package org.mind.app.data.repository
 
-import com.eygraber.uri.Uri
 import kotlinx.coroutines.flow.Flow
 import org.mind.app.domain.model.boards.Boards
 import org.mind.app.domain.model.category.QuizCategoryItem
-import org.mind.app.domain.model.chat.MessageType
 import org.mind.app.domain.model.gemini.Gemini
 import org.mind.app.domain.model.notes.Notes
 import org.mind.app.domain.model.papers.Papers
@@ -27,10 +25,8 @@ interface AuthService {
     suspend fun sendMessagesBySocket(
         senderEmail: String,
         receiverEmail: String,
-        message: String
+        message: String,
     )
-    suspend fun uploadMedia(fileUri: Uri, messageType: MessageType): String
-
     suspend fun signOut()
     suspend fun signUpUser(
         email: String,

@@ -117,13 +117,8 @@ fun ChatScreenContent(
             latestMessages[user.email]?.timestamp ?: Long.MIN_VALUE
         }.partition { user ->
             latestMessages.containsKey(user.email)
-        }.let { (chattedUsers, _) ->
-            chattedUsers.filter { user ->
-                user.fullName.contains(
-                    searchText.text,
-                    ignoreCase = true
-                )
-            }
+        }.let { (chattedUsers, newUsers) ->
+            chattedUsers
         }
 
         LaunchedEffect(Unit) {
@@ -274,9 +269,12 @@ fun ChatScreenContent(
                     }
                 } else {
                     LazyColumn {
-                        items(mergedList) { user ->
+                        items(mergedList.filter { user ->
+                            user.fullName.contains(searchText.text, ignoreCase = true)
+                        }) { user ->
                             val latestMessage = latestMessages[user.email]
-                            val isNewMessage = latestMessage != null && latestMessage.receiverEmail == currentUserEmail
+                            val isNewMessage =
+                                latestMessage != null && latestMessage.receiverEmail == currentUserEmail
                             val isClicked = lastClickedChatUserTimestamp?.first == user.email
                                     && lastClickedChatUserTimestamp?.second == latestMessage?.timestamp
 
@@ -285,7 +283,8 @@ fun ChatScreenContent(
                                 latestMessage = latestMessage,
                                 isNewMessage = isNewMessage && !isClicked,
                                 onClick = {
-                                    lastClickedChatUserTimestamp = user.email to (latestMessage?.timestamp ?: 0L)
+                                    lastClickedChatUserTimestamp =
+                                        user.email to (latestMessage?.timestamp ?: 0L)
                                 }
                             )
                         }

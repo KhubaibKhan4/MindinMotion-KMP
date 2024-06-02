@@ -2,6 +2,7 @@ package org.mind.app.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import io.ktor.client.statement.HttpResponse
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -139,6 +140,7 @@ class MainViewModel(
             }
             .maxByOrNull { it.timestamp }
     }
+
     fun getAllUsers() {
         viewModelScope.launch {
             _allUsers.value = ResultState.Loading
@@ -150,6 +152,7 @@ class MainViewModel(
             }
         }
     }
+
     fun getAllPromotions() {
         viewModelScope.launch {
             _promotions.value = ResultState.Loading

@@ -39,6 +39,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -50,6 +51,8 @@ import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import com.example.cmppreference.LocalPreference
+import com.preat.peekaboo.image.picker.SelectionMode
+import com.preat.peekaboo.image.picker.rememberImagePickerLauncher
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
 import org.koin.compose.koinInject
@@ -82,10 +85,20 @@ fun ChatDetailScreenContent(
         (it.senderEmail == currentUserEmail && it.receiverEmail == users.email) ||
                 (it.senderEmail == users.email && it.receiverEmail == currentUserEmail)
     }
+    val scope = rememberCoroutineScope()
     val isDark by LocalThemeIsDark.current
     val navigator = LocalNavigator.current
     var messageText by remember { mutableStateOf("") }
 
+    val singleImagePicker = rememberImagePickerLauncher(
+        selectionMode = SelectionMode.Single,
+        scope = scope,
+        onResult = { byteArrays ->
+            byteArrays.firstOrNull()?.let {
+                println(it)
+            }
+        }
+    )
     Scaffold(
         topBar = {
             androidx.compose.material3.TopAppBar(
@@ -161,15 +174,10 @@ fun ChatDetailScreenContent(
             LazyColumn(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .weight(1f)
+                    .weight(1f),
+                reverseLayout = true
             ) {
-                var lastDateHeader: String? = null
-                items(messages) { message ->
-                    val dateHeader by remember { mutableStateOf(formatDateToGroup(message.timestamp)) }
-                    if (lastDateHeader != dateHeader) {
-                        lastDateHeader = dateHeader
-                        DateHeader(dateHeader)
-                    }
+                items(messages.reversed()) { message ->
                     ChatMessageItem(message, users)
                 }
             }
@@ -182,7 +190,15 @@ fun ChatDetailScreenContent(
                     value = messageText,
                     onValueChange = { messageText = it },
                     placeholder = { Text("Type your message...") },
-                    leadingIcon = { Icon(Icons.Default.Attachment, contentDescription = null) },
+                    leadingIcon = {
+                        Icon(
+                            Icons.Default.Attachment,
+                            contentDescription = null,
+                            modifier = Modifier.clickable {
+                                singleImagePicker.launch()
+                            }
+                        )
+                    },
                     modifier = Modifier
                         .weight(1f)
                         .padding(8.dp)
