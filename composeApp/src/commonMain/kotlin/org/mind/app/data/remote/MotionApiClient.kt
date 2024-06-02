@@ -52,6 +52,7 @@ import org.mind.app.domain.model.subcategories.SubCategoriesItem
 import org.mind.app.domain.model.subquestions.SubQuestionsItem
 import org.mind.app.domain.model.users.Users
 import org.mind.app.utils.Constant.BASE_URL
+import org.mind.app.utils.Constant.HOST_URL
 
 object MotionApiClient {
     private val client = HttpClient {
@@ -90,7 +91,7 @@ object MotionApiClient {
             try {
                 client.webSocket(
                     method = HttpMethod.Get,
-                    host = "192.168.10.2",
+                    host = HOST_URL,
                     port = 8080,
                     path = "/v1/chat"
                 ) {
