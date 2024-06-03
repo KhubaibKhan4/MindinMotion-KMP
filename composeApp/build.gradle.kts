@@ -88,6 +88,8 @@ kotlin {
             implementation("network.chaintech:cmp-preference:1.0.0")
             implementation(libs.peekaboo.ui)
             implementation(libs.peekaboo.image.picker)
+            implementation("io.github.vinceglb:filekit-core:0.4.1")
+            implementation("io.github.vinceglb:filekit-compose:0.4.1")
         }
 
         commonTest.dependencies {

@@ -8,7 +8,8 @@ data class ChatMessage(
     val timestamp: Long,
     val senderEmail: String,
     val receiverEmail: String,
-    val imageUrl: String? = null
+    val imageUrl: String? = null,
+    val pdfUrl : String? = null
 )
 enum class MessageType {
     TEXT,

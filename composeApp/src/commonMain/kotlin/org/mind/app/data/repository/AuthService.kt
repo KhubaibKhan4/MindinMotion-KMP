@@ -26,7 +26,8 @@ interface AuthService {
         senderEmail: String,
         receiverEmail: String,
         message: String,
-        imageUrl: String? = null
+        imageUrl: String? = null,
+        pdfUrl: String?= null
     )
     suspend fun signOut()
     suspend fun signUpUser(

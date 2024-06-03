@@ -26,6 +26,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.Circle
 import androidx.compose.material.icons.filled.Image
+import androidx.compose.material.icons.filled.PictureAsPdf
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -417,7 +418,26 @@ fun ChatUIItem(
                                 modifier = Modifier.widthIn(max = 170.dp)
                             )
                         }
-                    }else{
+                    }else if (latestMessage?.pdfUrl?.isNotEmpty()==true){
+                        Row(
+                            horizontalArrangement = Arrangement.Start,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Image(
+                                imageVector = Icons.Default.PictureAsPdf,
+                                contentDescription = null,
+                                modifier = Modifier.size(15.dp)
+                            )
+                            Text(
+                                text = "File",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = Color.LightGray,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                modifier = Modifier.widthIn(max = 170.dp)
+                            )
+                        }
+                    } else{
                         Text(
                             text = latestMessage?.message ?: "Chat Now...",
                             style = MaterialTheme.typography.bodyMedium,
