@@ -29,6 +29,7 @@ import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -67,6 +68,7 @@ import org.mind.app.domain.model.community.CommunityMessage
 import org.mind.app.domain.model.users.Users
 import org.mind.app.domain.usecases.ResultState
 import org.mind.app.presentation.ui.components.ErrorBox
+import org.mind.app.presentation.ui.components.LoadingBox
 import org.mind.app.presentation.viewmodel.MainViewModel
 import org.mind.app.theme.LocalThemeIsDark
 import org.mind.app.utils.Constant.BASE_URL
@@ -414,160 +416,151 @@ private fun NonMemberItem(
 
 
 @Composable
-fun CommunityMessageItem(message: CommunityMessage, viewModel: MainViewModel = koinInject()) {
-    LocalPreferenceProvider {
-        val isDark by LocalThemeIsDark.current
-        val currentUserEmail = LocalPreference.current.getString("email")
-        val isSentByCurrentUser = message.senderEmail == currentUserEmail
-        val alignment = if (isSentByCurrentUser) Alignment.End else Alignment.Start
-        val formattedTime = formatTimestampToHumanReadable(message.timestamp)
-        var senderData by remember { mutableStateOf<Users?>(null) }
-        var currentUserData by remember { mutableStateOf<Users?>(null) }
+fun CommunityMessageItem(
+    message: CommunityMessage,
+    viewModel: MainViewModel = koinInject(),
+) {
+    val isDark by LocalThemeIsDark.current
+    val currentUserEmail = LocalPreference.current.getString("email")
+    val isSentByCurrentUser = message.senderEmail == currentUserEmail
+    val alignment = if (isSentByCurrentUser) Alignment.End else Alignment.Start
+    val formattedTime = formatTimestampToHumanReadable(message.timestamp)
+    var senderData by remember { mutableStateOf<Users?>(null) }
+    var currentUserData by remember { mutableStateOf<Users?>(null) }
 
-        LaunchedEffect(message.senderEmail) {
-            viewModel.getUserByEmail(message.senderEmail)
+    LaunchedEffect(message.senderEmail) {
+        viewModel.getUserByEmail(message.senderEmail)
+    }
+
+    LaunchedEffect(currentUserEmail) {
+        viewModel.getUserByEmail(currentUserEmail.toString())
+    }
+
+    val senderProfileState by viewModel.userByEmail.collectAsState()
+    val currentUserProfileState by viewModel.userByEmail.collectAsState()
+
+    when(senderProfileState){
+        is ResultState.Error -> {
+            val error = (senderProfileState as ResultState.Error).message
+            ErrorBox(error)
         }
-
-        LaunchedEffect(currentUserEmail) {
-            viewModel.getUserByEmail(currentUserEmail.toString())
+        ResultState.Loading -> {
+           // LoadingBox()
         }
-
-        val senderProfileState by viewModel.userByEmail.collectAsState()
-        val currentUserProfileState by viewModel.userByEmail.collectAsState()
-
-        when (senderProfileState) {
-            is ResultState.Error -> {
-                val error = (senderProfileState as ResultState.Error).message
-                ErrorBox(error)
-            }
-
-            ResultState.Loading -> {
-                // Do nothing
-            }
-
-            is ResultState.Success -> {
-                val response = (senderProfileState as ResultState.Success).data
-                if (response.email == message.senderEmail) {
-                    senderData = response
-                }
-            }
+        is ResultState.Success -> {
+            val success = (senderProfileState as ResultState.Success).data
+            senderData = success
         }
-
-        when (currentUserProfileState) {
-            is ResultState.Error -> {
-                val error = (currentUserProfileState as ResultState.Error).message
-                ErrorBox(error)
-            }
-
-            ResultState.Loading -> {
-                // Do nothing
-            }
-
-            is ResultState.Success -> {
-                val response = (currentUserProfileState as ResultState.Success).data
-                if (response.email == currentUserEmail) {
-                    currentUserData = response
-                }
-            }
+    }
+    when(currentUserProfileState){
+        is ResultState.Error -> {
+            val error = (currentUserProfileState as ResultState.Error).message
+            ErrorBox(error)
         }
+        ResultState.Loading -> {
+           // LoadingBox()
+        }
+        is ResultState.Success -> {
+            val success = (currentUserProfileState as ResultState.Success).data
+            currentUserData = success
+        }
+    }
 
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = if (isSentByCurrentUser) Arrangement.End else Arrangement.Start,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 8.dp, vertical = 4.dp)
-        ) {
-            // Display sender's profile
-            if (!isSentByCurrentUser) {
-                if (senderData?.profileImage?.contains("null") != true) {
-                    KamelImage(
-                        resource = asyncPainterResource(BASE_URL + senderData?.profileImage),
-                        contentDescription = null,
-                        modifier = Modifier
-                            .size(48.dp)
-                            .clip(CircleShape),
-                        contentScale = ContentScale.Crop
-                    )
-                } else {
-                    Box(
-                        modifier = Modifier
-                            .size(48.dp)
-                            .clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.primary)
-                    ) {
-                        Text(
-                            text = senderData?.fullName?.first().toString(),
-                            modifier = Modifier.align(Alignment.Center),
-                            color = Color.White,
-                            fontSize = 24.sp
-                        )
-                    }
-                }
-            }
-
-            Card(
-                colors = CardDefaults.cardColors(
-                    containerColor = if (isSentByCurrentUser) MaterialTheme.colorScheme.surfaceContainer else MaterialTheme.colorScheme.surface,
-                    contentColor = if (isSentByCurrentUser) Color.White else if (isDark) Color.White else Color.Black
-                ),
-                shape = RoundedCornerShape(8.dp),
-                elevation = CardDefaults.cardElevation(4.dp),
-                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-            ) {
-                Column(
-                    horizontalAlignment = alignment,
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = if (isSentByCurrentUser) Arrangement.End else Arrangement.Start,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 8.dp, vertical = 4.dp)
+    ) {
+        if (!isSentByCurrentUser) {
+            if (senderData?.profileImage?.contains("null") != true) {
+                KamelImage(
+                    resource = asyncPainterResource(BASE_URL + senderData?.profileImage),
+                    contentDescription = null,
                     modifier = Modifier
-                        .padding(8.dp)
-                        .widthIn(max = 250.dp)
+                        .size(48.dp)
+                        .clip(CircleShape),
+                    contentScale = ContentScale.Crop
+                )
+            } else {
+                Box(
+                    modifier = Modifier
+                        .size(48.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.primary)
                 ) {
-                    if (!isSentByCurrentUser) {
-                        Text(
-                            text = senderData?.fullName?.take(16).toString(),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = if (isDark) Color.White.copy(alpha = 0.7f) else Color.Gray,
-                            modifier = Modifier.padding(start = 4.dp, top = 2.dp)
-                        )
-                    }
                     Text(
-                        text = message.message,
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = if (isDark && isSentByCurrentUser) Color.White else if (isDark) Color.White else Color.Black,
-                        modifier = Modifier.padding(4.dp)
+                        text = senderData?.fullName?.first().toString(),
+                        modifier = Modifier.align(Alignment.Center),
+                        color = Color.White,
+                        fontSize = 24.sp
                     )
+                }
+            }
+        }
+
+        Card(
+            colors = CardDefaults.cardColors(
+                containerColor = if (isSentByCurrentUser) MaterialTheme.colorScheme.surfaceContainer else MaterialTheme.colorScheme.surface,
+                contentColor = if (isSentByCurrentUser) Color.White else if (isDark) Color.White else Color.Black
+            ),
+            shape = RoundedCornerShape(8.dp),
+            elevation = CardDefaults.cardElevation(4.dp),
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+        ) {
+            Column(
+                horizontalAlignment = alignment,
+                modifier = Modifier
+                    .padding(8.dp)
+                    .widthIn(max = 250.dp)
+            ) {
+                if (!isSentByCurrentUser) {
                     Text(
-                        text = formattedTime,
+                        text = senderData?.fullName?.take(16).toString(),
                         style = MaterialTheme.typography.bodySmall,
-                        color = if (isDark && isSentByCurrentUser) Color.White.copy(alpha = 0.7f) else Color.Gray,
+                        color = if (isDark) Color.White.copy(alpha = 0.7f) else Color.Gray,
                         modifier = Modifier.padding(start = 4.dp, top = 2.dp)
                     )
                 }
+                Text(
+                    text = message.message,
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = if (isDark && isSentByCurrentUser) Color.White else if (isDark) Color.White else Color.Black,
+                    modifier = Modifier.padding(4.dp)
+                )
+                Text(
+                    text = formattedTime,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = if (isDark && isSentByCurrentUser) Color.White.copy(alpha = 0.7f) else Color.Gray,
+                    modifier = Modifier.padding(start = 4.dp, top = 2.dp)
+                )
             }
+        }
 
-            if (isSentByCurrentUser) {
-                if (currentUserData?.profileImage?.contains("null") != true) {
-                    KamelImage(
-                        resource = asyncPainterResource(BASE_URL + currentUserData?.profileImage),
-                        contentDescription = null,
-                        modifier = Modifier
-                            .size(48.dp)
-                            .clip(CircleShape),
-                        contentScale = ContentScale.Crop
+        if (isSentByCurrentUser) {
+            if (currentUserData?.profileImage?.contains("null") != true) {
+                KamelImage(
+                    resource = asyncPainterResource(BASE_URL + currentUserData?.profileImage),
+                    contentDescription = null,
+                    modifier = Modifier
+                        .size(48.dp)
+                        .clip(CircleShape),
+                    contentScale = ContentScale.Crop
+                )
+            } else {
+                Box(
+                    modifier = Modifier
+                        .size(48.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.primary)
+                ) {
+                    Text(
+                        text = currentUserData?.fullName?.first().toString(),
+                        modifier = Modifier.align(Alignment.Center),
+                        color = Color.White,
+                        fontSize = 24.sp
                     )
-                } else {
-                    Box(
-                        modifier = Modifier
-                            .size(48.dp)
-                            .clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.primary)
-                    ) {
-                        Text(
-                            text = currentUserData?.fullName?.first().toString(),
-                            modifier = Modifier.align(Alignment.Center),
-                            color = Color.White,
-                            fontSize = 24.sp
-                        )
-                    }
                 }
             }
         }
