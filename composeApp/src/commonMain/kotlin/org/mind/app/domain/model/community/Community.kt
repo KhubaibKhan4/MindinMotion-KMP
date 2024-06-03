@@ -16,7 +16,6 @@ data class CommunityMessage(
     val senderEmail: String,
     val communityId: String,
     val imageUrl: String? = null,
-    val pdfUrl: String? = null
 )
 
 @Serializable

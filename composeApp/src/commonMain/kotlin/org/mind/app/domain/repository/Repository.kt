@@ -75,30 +75,19 @@ class Repository(
             throw e
         }
     }
-    suspend fun uploadPdfAndGetUrl(pdfBytes: File, userEmail: String): String {
-        return try {
-            val storageRef = storage.reference.child("pdf/$userEmail/${Clock.System.now().toEpochMilliseconds()}.pdf")
-            storageRef.putFile(pdfBytes)
-            storageRef.getDownloadUrl()
-        } catch (e: Exception) {
-            throw e
-        }
-    }
 
     override suspend fun sendMessagesBySocket(
         senderEmail: String,
         receiverEmail: String,
         message: String,
-        imageUrl: String?,
-        pdfUrl: String?
+        imageUrl: String?
     ) {
         val chatMessage = ChatMessage(
             message = message,
             timestamp = Clock.System.now().toEpochMilliseconds(),
             senderEmail = senderEmail,
             receiverEmail = receiverEmail,
-            imageUrl = imageUrl,
-            pdfUrl = pdfUrl
+            imageUrl = imageUrl
         )
 
         database.reference()
@@ -111,16 +100,14 @@ class Repository(
         communityId: String,
         senderEmail: String,
         message: String,
-        imageUrl: String? = null,
-        pdfUrl: String? = null
+        imageUrl: String? = null
     ) {
         val communityMessage = CommunityMessage(
             message = message,
             timestamp = Clock.System.now().toEpochMilliseconds(),
             senderEmail = senderEmail,
             communityId = communityId,
-            imageUrl = imageUrl,
-            pdfUrl = pdfUrl
+            imageUrl = imageUrl
         )
         database.reference()
             .child("communityMessages")
@@ -130,25 +117,15 @@ class Repository(
     }
 
     suspend fun sendImageMessage(senderEmail: String, receiverEmail: String, imageBytes: File) {
-        val userId = auth.currentUser?.uid ?: throw Exception("User not authenticated")
+        val userId = auth.currentUser?.uid.toString()
         val imageUrl = uploadImageAndGetUrl(imageBytes, userId)
         sendMessagesBySocket(senderEmail, receiverEmail, "", imageUrl)
     }
-    suspend fun sendPdfMessage(senderEmail: String, receiverEmail: String, pdfBytes: File) {
-        val userId = auth.currentUser?.uid ?: throw Exception("User not authenticated")
-        val pdfUrl = uploadPdfAndGetUrl(pdfBytes, userId)
-        sendMessagesBySocket(senderEmail, receiverEmail, "", "",pdfUrl)
-    }
 
     suspend fun sendCommunityImageMessage(communityId: String, senderEmail: String, imageBytes: File) {
-        val userId = auth.currentUser?.uid ?: throw Exception("User not authenticated")
-        val imageUrl = uploadImageAndGetUrl(imageBytes, userId)
+        val userId = auth.currentUser?.uid
+        val imageUrl = uploadImageAndGetUrl(imageBytes, userId.toString())
         sendCommunityMessage(communityId, senderEmail, "", imageUrl)
-    }
-    suspend fun sendCommunityPdfMessage(communityId: String, senderEmail: String, pdfBytes: File) {
-        val userId = auth.currentUser?.uid ?: throw Exception("User not authenticated")
-        val pdfUrl = uploadPdfAndGetUrl(pdfBytes, userId)
-        sendCommunityMessage(communityId, senderEmail, "", "",pdfUrl)
     }
 
 

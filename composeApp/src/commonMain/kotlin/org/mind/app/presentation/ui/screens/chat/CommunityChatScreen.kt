@@ -25,9 +25,7 @@ import androidx.compose.material.icons.filled.AdminPanelSettings
 import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.Attachment
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.filled.PictureAsPdf
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -67,9 +65,6 @@ import com.example.cmppreference.LocalPreferenceProvider
 import com.preat.peekaboo.image.picker.SelectionMode
 import com.preat.peekaboo.image.picker.rememberImagePickerLauncher
 import com.preat.peekaboo.image.picker.toImageBitmap
-import io.github.vinceglb.filekit.core.FileKit
-import io.github.vinceglb.filekit.core.PickerMode
-import io.github.vinceglb.filekit.core.PickerType
 import io.kamel.core.Resource
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
@@ -112,7 +107,7 @@ fun CommunityChatScreenContent(
     val isDark by LocalThemeIsDark.current
     val navigator = LocalNavigator.current
     var expanded by remember { mutableStateOf(false) }
-    var isDropdownMenuExpanded by remember { mutableStateOf(false) }
+    var isUploadingImage by remember { mutableStateOf(false) }
 
 
     val senderUsersState = remember { mutableStateMapOf<String, Users>() }
@@ -148,23 +143,20 @@ fun CommunityChatScreenContent(
         println("CommunityChatScreen User fetching result: $usersByEmailsState")
     }
     val scope = rememberCoroutineScope()
-    var isUploadingImage by remember { mutableStateOf(false) }
     val singleImagePicker = rememberImagePickerLauncher(
         selectionMode = SelectionMode.Single,
         scope = scope,
         onResult = { byteArrays ->
-            if (byteArrays.isNotEmpty()){
-                byteArrays.firstOrNull()?.let { byteArray ->
-                    isUploadingImage = true
-                    val file = createTempFileFromBitmap(byteArray.toImageBitmap())
-                    scope.launch {
-                        val imageUrl =
-                            viewModel.uploadImageAndGetUrl(imageBytes = file, currentUserEmail)
-                        viewModel.sendImageMessage(currentUserEmail, currentUserEmail, file)
-                        messageText = ""
-                        delay(12.seconds)
-                        isUploadingImage = false
-                    }
+            scope.launch {
+                isUploadingImage = true
+                byteArrays.firstOrNull()?.let {
+                    val file = createTempFileFromBitmap(it.toImageBitmap())
+                    val imageUrl = viewModel.uploadImageAndGetUrl(file,currentUserEmail)
+                    viewModel.sendCommunityImageMessage(communityId, currentUserEmail, file)
+                    messageText = ""
+                    delay(8.seconds)
+                    isUploadingImage = false
+                    println(it)
                 }
             }
         }
@@ -255,7 +247,7 @@ fun CommunityChatScreenContent(
                             Icon(
                                 Icons.Default.Attachment,
                                 contentDescription = null,
-                                modifier = Modifier.clickable { isDropdownMenuExpanded = !isDropdownMenuExpanded }
+                                modifier = Modifier.clickable { singleImagePicker.launch() }
                             )
                         },
                         modifier = Modifier
@@ -272,64 +264,6 @@ fun CommunityChatScreenContent(
                         ),
                         shape = RoundedCornerShape(16.dp)
                     )
-                    if (isDropdownMenuExpanded) {
-                        DropdownMenu(
-                            expanded = isDropdownMenuExpanded,
-                            onDismissRequest = { isDropdownMenuExpanded = false }
-                        ) {
-                            androidx.compose.material3.DropdownMenuItem(onClick = {
-                                singleImagePicker.launch()
-                                isDropdownMenuExpanded = false
-                            },
-                                text = { Text("Image") },
-                                leadingIcon = {
-                                    Icon(
-                                        imageVector = Icons.Default.Image,
-                                        contentDescription = null
-                                    )
-                                })
-                            androidx.compose.material3.DropdownMenuItem(onClick = {
-                                scope.launch {
-                                    val file = FileKit.pickFile(
-                                        type = PickerType.File(listOf("pdf")),
-                                        mode = PickerMode.Single,
-                                        title = "Pick an image",
-                                    )
-                                    if (file?.readBytes()?.isNotEmpty() == true) {
-                                        file?.let { byteArray ->
-                                            isUploadingImage = true
-                                            val file = createTempFileFromBitmap(
-                                                byteArray.readBytes().toImageBitmap()
-                                            )
-                                            scope.launch {
-                                                val pdfUrl =
-                                                    viewModel.uploadPdfAndGetUrl(
-                                                        pdfBytes = file,
-                                                        currentUserEmail
-                                                    )
-                                                viewModel.sendPdfMessage(
-                                                    currentUserEmail,
-                                                    currentUserEmail,
-                                                    file
-                                                )
-                                                messageText = ""
-                                                delay(12.seconds)
-                                                isUploadingImage = false
-                                            }
-                                        }
-                                    }
-                                }
-                                isDropdownMenuExpanded = false
-                            },
-                                text = { Text("PDF") },
-                                leadingIcon = {
-                                    Icon(
-                                        imageVector = Icons.Default.PictureAsPdf,
-                                        contentDescription = null
-                                    )
-                                })
-                        }
-                    }
 
                     IconButton(onClick = {
                         viewModel.sendCommunityMessage(communityId, currentUserEmail, messageText)
@@ -622,7 +556,7 @@ fun CommunityMessageItem(
                         color = if (isDark && isSentByCurrentUser) Color.White else if (isDark) Color.White else Color.Black,
                         modifier = Modifier.padding(4.dp)
                     )
-                }else if (message.imageUrl?.isNotEmpty()==true){
+                }else{
                     val image : Resource<Painter> = asyncPainterResource(message.imageUrl.toString())
                     KamelImage(
                         resource = image,
@@ -651,23 +585,6 @@ fun CommunityMessageItem(
                                 modifier = Modifier.padding(4.dp))
                         }
                     )
-                }else{
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.PictureAsPdf,
-                            contentDescription = null,
-                            modifier = Modifier.size(55.dp)
-                        )
-                        Text(
-                            text = "PDF File",
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = if (isDark && isSentByCurrentUser) Color.White else if (isDark) Color.White else Color.Black,
-                            modifier = Modifier.padding(4.dp)
-                        )
-                    }
                 }
 
                 Text(

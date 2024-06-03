@@ -1,7 +1,6 @@
 package org.mind.app
 
 import android.app.Application
-import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.net.Uri
@@ -28,19 +27,12 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.test.core.app.ApplicationProvider
 import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.driver.android.AndroidSqliteDriver
 import com.example.cmppreference.AppContext
 import com.rizzi.bouquet.ResourceType
 import com.rizzi.bouquet.VerticalPDFReader
 import com.rizzi.bouquet.rememberVerticalPdfReaderState
-import dev.gitlive.firebase.Firebase
-import dev.gitlive.firebase.FirebaseApp
-import dev.gitlive.firebase.FirebaseOptions
-import dev.gitlive.firebase.apps
-import dev.gitlive.firebase.initialize
-import dev.gitlive.firebase.storage.File
 import io.github.vinceglb.filekit.core.FileKit
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
@@ -67,14 +59,14 @@ class AndroidApp : Application() {
             .build()
 
         com.google.firebase.FirebaseApp.initializeApp(this, options)
-       /* Firebase.initialize(
-            applicationContext,
-            options = FirebaseOptions(
-                applicationId = "1:315093871386:android:aeb50fce5145217cec1aa3",
-                apiKey = "AIzaSyB65lrOPXWuZlKVNF0pH36fOigm81XNMWc",
-                projectId = "mind-in-motion-70e7b"
-            )
-        )*/
+        /* Firebase.initialize(
+             applicationContext,
+             options = FirebaseOptions(
+                 applicationId = "1:315093871386:android:aeb50fce5145217cec1aa3",
+                 apiKey = "AIzaSyB65lrOPXWuZlKVNF0pH36fOigm81XNMWc",
+                 projectId = "mind-in-motion-70e7b"
+             )
+         )*/
     }
 }
 

@@ -286,31 +286,16 @@ class MainViewModel(
             repository.uploadImageAndGetUrl(imageBytes, userId)
         }
     }
-    fun uploadPdfAndGetUrl(pdfBytes: File, userId: String) {
-        viewModelScope.launch {
-            repository.uploadPdfAndGetUrl(pdfBytes, userId)
-        }
-    }
 
     fun sendImageMessage(senderEmail: String, receiverEmail: String, imageBytes: File) {
         viewModelScope.launch {
             repository.sendImageMessage(senderEmail, receiverEmail, imageBytes)
         }
     }
-    fun sendPdfMessage(senderEmail: String, receiverEmail: String, pdfBytes: File) {
-        viewModelScope.launch {
-            repository.sendPdfMessage(senderEmail, receiverEmail, pdfBytes)
-        }
-    }
 
     fun sendCommunityImageMessage(communityId: String, senderEmail: String, imageBytes: File) {
         viewModelScope.launch {
             repository.sendCommunityImageMessage(communityId, senderEmail, imageBytes)
-        }
-    }
-    fun sendCommunityPdfMessage(communityId: String, senderEmail: String, pdfBytes: File) {
-        viewModelScope.launch {
-            repository.sendCommunityPdfMessage(communityId, senderEmail, pdfBytes)
         }
     }
 

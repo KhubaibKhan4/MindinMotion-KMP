@@ -418,26 +418,7 @@ fun ChatUIItem(
                                 modifier = Modifier.widthIn(max = 170.dp)
                             )
                         }
-                    }else if (latestMessage?.pdfUrl?.isNotEmpty()==true){
-                        Row(
-                            horizontalArrangement = Arrangement.Start,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Image(
-                                imageVector = Icons.Default.PictureAsPdf,
-                                contentDescription = null,
-                                modifier = Modifier.size(15.dp)
-                            )
-                            Text(
-                                text = "File",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = Color.LightGray,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                                modifier = Modifier.widthIn(max = 170.dp)
-                            )
-                        }
-                    } else{
+                    }else{
                         Text(
                             text = latestMessage?.message ?: "Chat Now...",
                             style = MaterialTheme.typography.bodyMedium,
