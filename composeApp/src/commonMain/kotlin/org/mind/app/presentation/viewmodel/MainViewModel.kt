@@ -6,7 +6,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
@@ -63,6 +62,9 @@ class MainViewModel(
 
     private val _userByEmail = MutableStateFlow<ResultState<Users>>(ResultState.Loading)
     val userByEmail = _userByEmail.asStateFlow()
+
+    private val _usersByEmails = MutableStateFlow<ResultState<List<Users>>>(ResultState.Loading)
+    val usersByEmails = _usersByEmails.asStateFlow()
 
     private val _messages = MutableStateFlow<List<Message>>(emptyList())
     val messages: StateFlow<List<Message>> = _messages
@@ -123,6 +125,7 @@ class MainViewModel(
 
     private val _nonCommunityUsers = MutableStateFlow<List<Users>>(emptyList())
     val nonCommunityUsers: StateFlow<List<Users>> = _nonCommunityUsers
+
     init {
         viewModelScope.launch {
             repository.getCommunities().collect { communityList ->
@@ -135,6 +138,7 @@ class MainViewModel(
             }
         }
     }
+
     fun getUserProfile(email: String): UserProfile? {
         return _userProfiles.value[email]
     }
@@ -462,6 +466,19 @@ class MainViewModel(
         )
     }
 
+    fun getUsersByEmails(
+        email: List<String>,
+    ) {
+        viewModelScope.launch {
+            _usersByEmails.value = ResultState.Loading
+            try {
+                val response = repository.getUsersByEmails(email)
+                _usersByEmails.value = ResultState.Success(response)
+            } catch (e: Exception) {
+                _usersByEmails.value = ResultState.Error(e.toString())
+            }
+        }
+    }
     fun getUserByEmail(
         email: String,
     ) {

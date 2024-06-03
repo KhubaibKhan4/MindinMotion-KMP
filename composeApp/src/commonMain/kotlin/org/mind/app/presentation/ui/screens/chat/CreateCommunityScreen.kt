@@ -184,6 +184,9 @@ fun CommunityScreenContent(
                 ) {
                     Text("Create Community")
                 }
+                if (isNotifyEnabled){
+                    notify("Community created successfully")
+                }
             }
 
 
@@ -199,9 +202,7 @@ fun CommunityScreenContent(
                 Text(text = community.name, style = MaterialTheme.typography.bodyMedium)
             }
         }
-        if (isNotifyEnabled){
-            notify("Community created successfully")
-        }
+
     }
 }
 

@@ -45,6 +45,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -59,6 +60,7 @@ import io.kamel.image.asyncPainterResource
 import org.koin.compose.koinInject
 import org.mind.app.domain.model.chat.ChatMessage
 import org.mind.app.domain.model.community.Community
+import org.mind.app.domain.model.community.CommunityMessage
 import org.mind.app.domain.model.users.Users
 import org.mind.app.presentation.ui.tabs.home.HomeTab
 import org.mind.app.presentation.viewmodel.MainViewModel
@@ -278,7 +280,7 @@ fun ChatScreenContent(
                             CommunityItem(
                                 community = community,
                                 onClick = {
-                                   localNavigator?.push(CommunityChatScreen(communityId = community.id))
+                                    localNavigator?.push(CommunityChatScreen(communityId = community.id))
                                 }
                             )
                         }

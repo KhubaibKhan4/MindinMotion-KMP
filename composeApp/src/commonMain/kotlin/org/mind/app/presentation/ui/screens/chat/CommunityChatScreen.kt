@@ -39,11 +39,13 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -94,18 +96,46 @@ fun CommunityChatScreenContent(
     val messages = allMessages[communityId] ?: emptyList()
     val currentUserEmail = LocalPreference.current.getString("email") ?: ""
     var messageText by remember { mutableStateOf("") }
-    val scope = rememberCoroutineScope()
     val isDark by LocalThemeIsDark.current
     val navigator = LocalNavigator.current
     var expanded by remember { mutableStateOf(false) }
 
-    LaunchedEffect(Unit) {
+    val senderUsersState = remember { mutableStateMapOf<String, Users>() }
+
+    LaunchedEffect(communityId) {
         viewModel.observeCommunityMessages(communityId)
+    }
+
+    LaunchedEffect(messages) {
+        val senderEmails = messages.map { it.senderEmail }.distinct()
+        viewModel.getUsersByEmails(senderEmails)
+    }
+
+    val usersByEmailsState by viewModel.usersByEmails.collectAsState()
+
+    LaunchedEffect(usersByEmailsState) {
+        if (usersByEmailsState is ResultState.Success) {
+            senderUsersState.clear()
+            (usersByEmailsState as ResultState.Success<List<Users>>).data.forEach { user ->
+                senderUsersState[user.email] = user
+            }
+        }
+    }
+
+    LaunchedEffect(messages) {
+        println("CommunityChatScreen Messages: ${messages.size}")
+        messages.forEach { message ->
+            println("CommunityChatScreen Message: ${message.message}, Sender: ${message.senderEmail}")
+        }
+    }
+
+    LaunchedEffect(usersByEmailsState) {
+        println("CommunityChatScreen User fetching result: $usersByEmailsState")
     }
 
     Scaffold(
         topBar = {
-            androidx.compose.material3.TopAppBar(
+            TopAppBar(
                 title = {
                     Text(
                         community?.name ?: "Community Chat",
@@ -172,7 +202,7 @@ fun CommunityChatScreenContent(
                     reverseLayout = true
                 ) {
                     items(messages.reversed()) { message ->
-                        CommunityMessageItem(message)
+                        CommunityMessageItem(message, senderUsersState[message.senderEmail])
                     }
                 }
 
@@ -418,6 +448,7 @@ private fun NonMemberItem(
 @Composable
 fun CommunityMessageItem(
     message: CommunityMessage,
+    senderData: Users?,
     viewModel: MainViewModel = koinInject(),
 ) {
     val isDark by LocalThemeIsDark.current
@@ -425,46 +456,6 @@ fun CommunityMessageItem(
     val isSentByCurrentUser = message.senderEmail == currentUserEmail
     val alignment = if (isSentByCurrentUser) Alignment.End else Alignment.Start
     val formattedTime = formatTimestampToHumanReadable(message.timestamp)
-    var senderData by remember { mutableStateOf<Users?>(null) }
-    var currentUserData by remember { mutableStateOf<Users?>(null) }
-
-    LaunchedEffect(message.senderEmail) {
-        viewModel.getUserByEmail(message.senderEmail)
-    }
-
-    LaunchedEffect(currentUserEmail) {
-        viewModel.getUserByEmail(currentUserEmail.toString())
-    }
-
-    val senderProfileState by viewModel.userByEmail.collectAsState()
-    val currentUserProfileState by viewModel.userByEmail.collectAsState()
-
-    when(senderProfileState){
-        is ResultState.Error -> {
-            val error = (senderProfileState as ResultState.Error).message
-            ErrorBox(error)
-        }
-        ResultState.Loading -> {
-           // LoadingBox()
-        }
-        is ResultState.Success -> {
-            val success = (senderProfileState as ResultState.Success).data
-            senderData = success
-        }
-    }
-    when(currentUserProfileState){
-        is ResultState.Error -> {
-            val error = (currentUserProfileState as ResultState.Error).message
-            ErrorBox(error)
-        }
-        ResultState.Loading -> {
-           // LoadingBox()
-        }
-        is ResultState.Success -> {
-            val success = (currentUserProfileState as ResultState.Success).data
-            currentUserData = success
-        }
-    }
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -539,9 +530,9 @@ fun CommunityMessageItem(
         }
 
         if (isSentByCurrentUser) {
-            if (currentUserData?.profileImage?.contains("null") != true) {
+            if (senderData?.profileImage?.contains("null") != true) {
                 KamelImage(
-                    resource = asyncPainterResource(BASE_URL + currentUserData?.profileImage),
+                    resource = asyncPainterResource(BASE_URL + senderData?.profileImage),
                     contentDescription = null,
                     modifier = Modifier
                         .size(48.dp)
@@ -556,7 +547,7 @@ fun CommunityMessageItem(
                         .background(MaterialTheme.colorScheme.primary)
                 ) {
                     Text(
-                        text = currentUserData?.fullName?.first().toString(),
+                        text = senderData?.fullName?.first().toString(),
                         modifier = Modifier.align(Alignment.Center),
                         color = Color.White,
                         fontSize = 24.sp

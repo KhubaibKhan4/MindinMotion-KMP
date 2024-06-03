@@ -90,6 +90,10 @@ class Repository(
             .setValue(chatMessage)
     }
 
+    override suspend fun getUsersByEmails(emails: List<String>): List<Users> {
+        return MotionApiClient.getUsersByEmails(emails)
+    }
+
     fun getMessages(): Flow<List<ChatMessage>> = flow {
         val messagesRef = database.reference("messages")
         messagesRef.valueEvents.collect { dataSnapshot ->
