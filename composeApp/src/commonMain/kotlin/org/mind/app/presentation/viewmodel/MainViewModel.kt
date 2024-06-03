@@ -111,8 +111,7 @@ class MainViewModel(
     private val _newMessages = MutableStateFlow<Set<String>>(emptySet())
     val newMessages: StateFlow<Set<String>> = _newMessages
 
-    private val _communityMessages =
-        MutableStateFlow<Map<String, List<CommunityMessage>>>(emptyMap())
+    private val _communityMessages = MutableStateFlow<Map<String, List<CommunityMessage>>>(emptyMap())
     val communityMessages: StateFlow<Map<String, List<CommunityMessage>>> = _communityMessages
 
     private val _communities = MutableStateFlow<List<Community>>(emptyList())
@@ -128,6 +127,10 @@ class MainViewModel(
     val nonCommunityUsers: StateFlow<List<Users>> = _nonCommunityUsers
 
     init {
+        fetchInitialData()
+    }
+
+    private fun fetchInitialData() {
         viewModelScope.launch {
             repository.getCommunities().collect { communityList ->
                 _communities.value = communityList
@@ -136,6 +139,11 @@ class MainViewModel(
         viewModelScope.launch {
             repository.getUserProfiles().collect { profiles ->
                 _userProfiles.value = profiles.associateBy { it.email }
+            }
+        }
+        viewModelScope.launch {
+            repository.getMessages().collect { messageList ->
+                _chatMessages.value = messageList
             }
         }
     }
@@ -165,28 +173,9 @@ class MainViewModel(
         }
     }
 
-    init {
-        viewModelScope.launch {
-            databaseHelper.getAllMessages().collect { localMessages ->
-                val convertedMessages = localMessages.map { convertDbMessageToUiMessage(it) }
-                _messages.value = convertedMessages
-            }
-        }
-        viewModelScope.launch {
-            repository.getMessages().collect { messageList ->
-                _chatMessages.value = messageList
-            }
-        }
-        viewModelScope.launch {
-            repository.getCommunities().collect { communityList ->
-                _communities.value = communityList
-            }
-        }
-    }
-
     fun sendMessageChat(senderEmail: String, receiverEmail: String, message: String) {
         viewModelScope.launch {
-            repository.sendMessagesBySocket(senderEmail, receiverEmail, message)
+            repository.sendMessagesBySocket(senderEmail, receiverEmail, message, null)
         }
     }
 
@@ -234,8 +223,8 @@ class MainViewModel(
 
     private suspend fun getUserByEmailSync(email: String): ResultState<Users> {
         return try {
-            val response = repository.getUserByEmail(email)
-            ResultState.Success(response)
+            val response = repository.getUsersByEmails(listOf(email))
+            ResultState.Success(response.firstOrNull() ?: return ResultState.Error("User not found"))
         } catch (e: Exception) {
             ResultState.Error(e.toString())
         }
@@ -244,12 +233,11 @@ class MainViewModel(
     fun fetchNonCommunityUsers(communityId: String) {
         viewModelScope.launch {
             val communityUsers = _communityUsers.value.map { it.email }
-            val allUsers = repository.getAllUsers()
+            val allUsers = repository.getUsersByEmails(emptyList()) // Assuming this fetches all users
             val nonCommunityUsers = allUsers.filter { it.email !in communityUsers }
             _nonCommunityUsers.value = nonCommunityUsers
         }
     }
-
 
     fun addUserToCommunity(communityId: String, userEmail: String) {
         viewModelScope.launch {
@@ -287,15 +275,27 @@ class MainViewModel(
     fun fetchNonCommunityUsers(communityId: String, communityUsers: List<Users>) {
         viewModelScope.launch {
             val communityUserEmails = communityUsers.map { it.email }
-            val allUsers = repository.getAllUsers()
+            val allUsers = repository.getUsersByEmails(emptyList()) // Assuming this fetches all users
             val nonCommunityUsers = allUsers.filter { it.email !in communityUserEmails }
             _nonCommunityUsers.value = nonCommunityUsers
         }
     }
 
-    fun uploadImageAndGetUrl(file: File, userId: String) {
+    fun uploadImageAndGetUrl(imageBytes: File, userId: String) {
         viewModelScope.launch {
-            repository.uploadImageAndGetUrl(file, userId)
+            repository.uploadImageAndGetUrl(imageBytes, userId)
+        }
+    }
+
+    fun sendImageMessage(senderEmail: String, receiverEmail: String, imageBytes: File) {
+        viewModelScope.launch {
+            repository.sendImageMessage(senderEmail, receiverEmail, imageBytes)
+        }
+    }
+
+    fun sendCommunityImageMessage(communityId: String, senderEmail: String, imageBytes: File) {
+        viewModelScope.launch {
+            repository.sendCommunityImageMessage(communityId, senderEmail, imageBytes)
         }
     }
 

@@ -22,10 +22,11 @@ interface AuthService {
     suspend fun authenticate(email: String, password: String)
     suspend fun createUser(email: String, password: String)
     suspend fun resetPassword(email: String)
-    suspend fun sendMessagesBySocket(
+    suspend  fun sendMessagesBySocket(
         senderEmail: String,
         receiverEmail: String,
         message: String,
+        imageUrl: String? = null
     )
     suspend fun signOut()
     suspend fun signUpUser(

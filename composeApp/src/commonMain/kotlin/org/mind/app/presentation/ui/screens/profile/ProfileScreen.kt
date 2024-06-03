@@ -51,8 +51,11 @@ import com.preat.peekaboo.image.picker.SelectionMode
 import com.preat.peekaboo.image.picker.rememberImagePickerLauncher
 import com.preat.peekaboo.image.picker.toImageBitmap
 import com.seiko.imageloader.rememberImagePainter
+import dev.gitlive.firebase.Firebase
+import dev.gitlive.firebase.storage.storage
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
+import org.mind.app.createTempFileFromBitmap
 import org.mind.app.domain.model.users.Users
 import org.mind.app.domain.usecases.ResultState
 import org.mind.app.presentation.ui.components.ErrorBox
@@ -114,7 +117,10 @@ fun ProfileScreenContent(
             onResult = { byteArrays ->
                 byteArrays.firstOrNull()?.let { byteArray ->
                     images = byteArray.toImageBitmap()
-                    scope.launch {}
+                    scope.launch {
+                        val file = createTempFileFromBitmap(byteArray.toImageBitmap())
+                        viewModel.uploadImageAndGetUrl(file, email)
+                    }
                 }
             },
         )
@@ -133,15 +139,14 @@ fun ProfileScreenContent(
         }) {
             LazyColumn(
                 modifier = Modifier.fillMaxWidth()
-                   ,
+                    .padding(top = it.calculateTopPadding()),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
                 item {
                     if (usersDetails != null) {
                         Column(
-                            modifier = Modifier.fillMaxSize()
-                                .padding(top = it.calculateTopPadding()),
+                            modifier = Modifier.fillMaxSize(),
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.Top
                         ) {

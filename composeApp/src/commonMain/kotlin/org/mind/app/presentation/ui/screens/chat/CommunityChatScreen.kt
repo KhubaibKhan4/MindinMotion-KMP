@@ -54,6 +54,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -61,11 +62,16 @@ import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import com.example.cmppreference.LocalPreference
 import com.example.cmppreference.LocalPreferenceProvider
+import com.preat.peekaboo.image.picker.SelectionMode
+import com.preat.peekaboo.image.picker.rememberImagePickerLauncher
+import com.preat.peekaboo.image.picker.toImageBitmap
+import io.kamel.core.Resource
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
+import org.mind.app.createTempFileFromBitmap
 import org.mind.app.domain.model.community.CommunityMessage
 import org.mind.app.domain.model.users.Users
 import org.mind.app.domain.usecases.ResultState
@@ -132,6 +138,20 @@ fun CommunityChatScreenContent(
     LaunchedEffect(usersByEmailsState) {
         println("CommunityChatScreen User fetching result: $usersByEmailsState")
     }
+    val scope = rememberCoroutineScope()
+    val singleImagePicker = rememberImagePickerLauncher(
+        selectionMode = SelectionMode.Single,
+        scope = scope,
+        onResult = { byteArrays ->
+            byteArrays.firstOrNull()?.let {
+                val file = createTempFileFromBitmap(it.toImageBitmap())
+                val imageUrl = viewModel.uploadImageAndGetUrl(file,currentUserEmail)
+                viewModel.sendCommunityImageMessage(communityId, currentUserEmail, file)
+                messageText = ""
+                println(it)
+            }
+        }
+    )
 
     Scaffold(
         topBar = {
@@ -218,7 +238,7 @@ fun CommunityChatScreenContent(
                             Icon(
                                 Icons.Default.Attachment,
                                 contentDescription = null,
-                                modifier = Modifier.clickable { /* Handle attachment */ }
+                                modifier = Modifier.clickable { singleImagePicker.launch() }
                             )
                         },
                         modifier = Modifier
@@ -514,12 +534,44 @@ fun CommunityMessageItem(
                         modifier = Modifier.padding(start = 4.dp, top = 2.dp)
                     )
                 }
-                Text(
-                    text = message.message,
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = if (isDark && isSentByCurrentUser) Color.White else if (isDark) Color.White else Color.Black,
-                    modifier = Modifier.padding(4.dp)
-                )
+                if (message.message.isNotEmpty()) {
+                    Text(
+                        text = message.message,
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = if (isDark && isSentByCurrentUser) Color.White else if (isDark) Color.White else Color.Black,
+                        modifier = Modifier.padding(4.dp)
+                    )
+                }else{
+                    val image : Resource<Painter> = asyncPainterResource(message.imageUrl.toString())
+                    KamelImage(
+                        resource = image,
+                        contentDescription = null,
+                        modifier = Modifier
+                            .size(150.dp)
+                            .clip(RoundedCornerShape(8.dp)),
+                        contentScale = ContentScale.Crop,
+                        onLoading = {
+                            Box(
+                                modifier = Modifier.fillMaxSize(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                CircularProgressIndicator(
+                                    progress = {
+                                        it
+                                    },
+                                )
+                            }
+                        },
+                        onFailure = {
+                            Text(
+                                text = "Failed to load image",
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = if (isDark) Color.White else Color.Black,
+                                modifier = Modifier.padding(4.dp))
+                        }
+                    )
+                }
+
                 Text(
                     text = formattedTime,
                     style = MaterialTheme.typography.bodySmall,

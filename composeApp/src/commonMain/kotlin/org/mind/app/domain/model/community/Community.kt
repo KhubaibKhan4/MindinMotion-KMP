@@ -14,8 +14,10 @@ data class CommunityMessage(
     val message: String,
     val timestamp: Long,
     val senderEmail: String,
-    val communityId: String
+    val communityId: String,
+    val imageUrl: String? = null
 )
+
 @Serializable
 data class UserProfile(
     val email: String = "",

@@ -9,6 +9,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.ImageBitmap
 import app.cash.sqldelight.db.SqlDriver
 import cafe.adriel.voyager.navigator.Navigator
 import com.example.cmppreference.LocalPreference
@@ -50,3 +51,4 @@ expect fun createDriver(): SqlDriver
 
 @Composable
 expect fun providePDF(url: String)
+expect fun createTempFileFromBitmap(imageBitmap: ImageBitmap): File

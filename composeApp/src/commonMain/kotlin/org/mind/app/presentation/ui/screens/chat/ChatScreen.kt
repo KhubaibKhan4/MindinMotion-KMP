@@ -1,6 +1,7 @@
 package org.mind.app.presentation.ui.screens.chat
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -24,6 +25,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.Circle
+import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -396,14 +398,35 @@ fun ChatUIItem(
             Column {
                 Text(text = user.fullName.take(16), style = MaterialTheme.typography.titleMedium)
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        text = latestMessage?.message ?: "Chat Now...",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = Color.LightGray,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.widthIn(max = 170.dp)
-                    )
+                    if (latestMessage?.imageUrl?.isNotEmpty()==true){
+                        Row(
+                            horizontalArrangement = Arrangement.Start,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Image(
+                                imageVector = Icons.Default.Image,
+                                contentDescription = null,
+                                modifier = Modifier.size(15.dp)
+                            )
+                            Text(
+                                text = "Photo",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = Color.LightGray,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                modifier = Modifier.widthIn(max = 170.dp)
+                            )
+                        }
+                    }else{
+                        Text(
+                            text = latestMessage?.message ?: "Chat Now...",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = Color.LightGray,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.widthIn(max = 170.dp)
+                        )
+                    }
                     if (isNewMessage) {
                         Icon(
                             imageVector = Icons.Default.Circle,

@@ -1,6 +1,7 @@
 {
   "project_info": {
     "project_number": "315093871386",
+    "firebase_url": "https://mind-in-motion-70e7b-default-rtdb.firebaseio.com",
     "project_id": "mind-in-motion-70e7b",
     "storage_bucket": "mind-in-motion-70e7b.appspot.com"
   },
@@ -12,7 +13,20 @@
           "package_name": "org.mind.app"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "315093871386-9nvpaknf86bd01q74a6pi6jmbp472166.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "org.mind.app",
+            "certificate_hash": "5cc23629e5e47eb3645efed538d9f8e92db58595"
+          }
+        },
+        {
+          "client_id": "315093871386-cmkrl02cictqj5ea4bbdpe3a48j3ulba.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyB65lrOPXWuZlKVNF0pH36fOigm81XNMWc"
@@ -20,7 +34,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "315093871386-cmkrl02cictqj5ea4bbdpe3a48j3ulba.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "315093871386-8lt71bl8qekm7mq470919hf7cqs7c1if.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "org.mind.app.Mind-in-Motion"
+              }
+            }
+          ]
         }
       }
     }

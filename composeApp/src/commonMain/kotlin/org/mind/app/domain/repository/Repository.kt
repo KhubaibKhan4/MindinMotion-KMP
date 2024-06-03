@@ -1,27 +1,19 @@
 package org.mind.app.domain.repository
 
-import com.eygraber.uri.Uri
-import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.auth.FirebaseAuth
 import dev.gitlive.firebase.database.FirebaseDatabase
 import dev.gitlive.firebase.storage.File
 import dev.gitlive.firebase.storage.FirebaseStorage
-import dev.gitlive.firebase.storage.storage
-import io.ktor.client.statement.HttpResponse
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
 import org.mind.app.data.remote.MotionApiClient
 import org.mind.app.data.repository.AuthService
 import org.mind.app.domain.model.boards.Boards
 import org.mind.app.domain.model.category.QuizCategoryItem
 import org.mind.app.domain.model.chat.ChatMessage
-import org.mind.app.domain.model.chat.MessageType
 import org.mind.app.domain.model.community.Community
 import org.mind.app.domain.model.community.CommunityMessage
 import org.mind.app.domain.model.community.UserProfile
@@ -74,27 +66,28 @@ class Repository(
             emit(profiles)
         }
     }
-    suspend fun uploadImageAndGetUrl(file: File, userId: String): String {
-
-        val storage = Firebase.storage
-        val storageRef = storage.reference("media").child(userId)
-
-        // Upload the file
-        storageRef.putFile(file)
-
-        // Get the download URL
-        return storageRef.getDownloadUrl()
+    suspend fun uploadImageAndGetUrl(imageBytes: File, userEmail: String): String {
+        return try {
+            val storageRef = storage.reference.child("media/$userEmail/${Clock.System.now().toEpochMilliseconds()}.jpg")
+            storageRef.putFile(imageBytes)
+            storageRef.getDownloadUrl()
+        } catch (e: Exception) {
+            throw e
+        }
     }
+
     override suspend fun sendMessagesBySocket(
         senderEmail: String,
         receiverEmail: String,
         message: String,
+        imageUrl: String?
     ) {
         val chatMessage = ChatMessage(
             message = message,
             timestamp = Clock.System.now().toEpochMilliseconds(),
             senderEmail = senderEmail,
-            receiverEmail = receiverEmail
+            receiverEmail = receiverEmail,
+            imageUrl = imageUrl
         )
 
         database.reference()
@@ -102,6 +95,39 @@ class Repository(
             .push()
             .setValue(chatMessage)
     }
+
+     suspend fun sendCommunityMessage(
+        communityId: String,
+        senderEmail: String,
+        message: String,
+        imageUrl: String? = null
+    ) {
+        val communityMessage = CommunityMessage(
+            message = message,
+            timestamp = Clock.System.now().toEpochMilliseconds(),
+            senderEmail = senderEmail,
+            communityId = communityId,
+            imageUrl = imageUrl
+        )
+        database.reference()
+            .child("communityMessages")
+            .child(communityId)
+            .push()
+            .setValue(communityMessage)
+    }
+
+    suspend fun sendImageMessage(senderEmail: String, receiverEmail: String, imageBytes: File) {
+        val userId = auth.currentUser?.uid ?: throw Exception("User not authenticated")
+        val imageUrl = uploadImageAndGetUrl(imageBytes, userId)
+        sendMessagesBySocket(senderEmail, receiverEmail, "", imageUrl)
+    }
+
+    suspend fun sendCommunityImageMessage(communityId: String, senderEmail: String, imageBytes: File) {
+        val userId = auth.currentUser?.uid ?: throw Exception("User not authenticated")
+        val imageUrl = uploadImageAndGetUrl(imageBytes, userId)
+        sendCommunityMessage(communityId, senderEmail, "", imageUrl)
+    }
+
 
     override suspend fun getUsersByEmails(emails: List<String>): List<Users> {
         return MotionApiClient.getUsersByEmails(emails)

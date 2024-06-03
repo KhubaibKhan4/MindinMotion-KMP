@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material.SnackbarDefaults.backgroundColor
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.viewinterop.AndroidView
 import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.driver.native.NativeSqliteDriver
@@ -70,4 +71,8 @@ actual fun providePDF(url: String) {
             view.backgroundColor = UIColor.blackColor
         }
     }
+}
+
+actual fun createTempFileFromBitmap(imageBitmap: ImageBitmap): File {
+    TODO("Not yet implemented")
 }
