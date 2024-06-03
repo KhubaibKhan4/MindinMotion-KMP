@@ -62,7 +62,7 @@ object MotionApiClient {
 
     suspend fun getUsersByEmails(emails: List<String>): List<Users> {
         val queryParams = emails.joinToString(",")
-        return client.get("$BASE_URL/v1/users/emails?emails=$queryParams").body()
+        return client.get(BASE_URL+"v1/users/emails?emails=$queryParams").body()
     }
 
 

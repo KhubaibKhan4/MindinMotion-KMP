@@ -275,7 +275,7 @@ class MainViewModel(
     fun fetchNonCommunityUsers(communityId: String, communityUsers: List<Users>) {
         viewModelScope.launch {
             val communityUserEmails = communityUsers.map { it.email }
-            val allUsers = repository.getUsersByEmails(emptyList()) // Assuming this fetches all users
+            val allUsers = repository.getAllUsers()
             val nonCommunityUsers = allUsers.filter { it.email !in communityUserEmails }
             _nonCommunityUsers.value = nonCommunityUsers
         }
