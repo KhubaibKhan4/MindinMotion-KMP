@@ -123,6 +123,10 @@ fun ChatScreenContent(
         }
         val communities = viewModel.communities.collectAsState(initial = emptyList()).value
 
+        val userCommunityIds = currentUser?.email
+        val userCommunities = communities.filter { community ->
+            community.members.contains(userCommunityIds)
+        }
 
         LaunchedEffect(Unit) {
             viewModel.observeChatMessages()
@@ -261,14 +265,14 @@ fun ChatScreenContent(
                     modifier = Modifier.padding(vertical = 8.dp)
                 )
 
-                if (communities.isEmpty()) {
+                if (userCommunities.isEmpty()) {
                     Text(
                         text = "No communities available",
                         color = if (isDark) Color.White else Color.Black
                     )
                 } else {
                     LazyColumn {
-                        items(communities.filter { community ->
+                        items(userCommunities.filter { community ->
                             community.name.contains(searchText.text, ignoreCase = true)
                         }) { community ->
                             CommunityItem(
