@@ -62,7 +62,9 @@ import org.mind.app.domain.model.chat.ChatMessage
 import org.mind.app.domain.model.community.Community
 import org.mind.app.domain.model.community.CommunityMessage
 import org.mind.app.domain.model.users.Users
+import org.mind.app.presentation.ui.screens.profile.ProfileScreen
 import org.mind.app.presentation.ui.tabs.home.HomeTab
+import org.mind.app.presentation.ui.tabs.profile.ProfileTab
 import org.mind.app.presentation.viewmodel.MainViewModel
 import org.mind.app.theme.LocalThemeIsDark
 import org.mind.app.utils.Constant.BASE_URL
@@ -168,6 +170,7 @@ fun ChatScreenContent(
                                         color = if (isDark) Color.White else Color.Black,
                                         shape = CircleShape
                                     )
+                                    .clickable { localNavigator?.push(UserProfile()) }
                             ) {
                                 Text(
                                     text = currentUser?.fullName?.first().toString(),

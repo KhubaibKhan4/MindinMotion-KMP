@@ -1,4 +1,4 @@
-package org.mind.app.presentation.ui.screens.profile
+package org.mind.app.presentation.ui.screens.chat
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -13,11 +13,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -39,9 +37,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.tab.LocalTabNavigator
@@ -58,20 +54,22 @@ import org.mind.app.domain.usecases.ResultState
 import org.mind.app.presentation.ui.components.ErrorBox
 import org.mind.app.presentation.ui.components.LoadingBox
 import org.mind.app.presentation.ui.components.LocalImage
+import org.mind.app.presentation.ui.screens.profile.ProfileDetails
 import org.mind.app.presentation.ui.screens.setting.SettingScreen
 import org.mind.app.presentation.viewmodel.MainViewModel
 import org.mind.app.theme.LocalThemeIsDark
 
-class ProfileScreen : Screen {
+class UserProfile : Screen {
+
     @Composable
     override fun Content() {
-        ProfileScreenContent()
+        UserProfileScreenContent()
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ProfileScreenContent(
+fun UserProfileScreenContent(
     viewModel: MainViewModel = koinInject(),
 ) {
     LocalPreferenceProvider {
@@ -121,19 +119,29 @@ fun ProfileScreenContent(
 
 
         Scaffold(topBar = {
-            TopAppBar(title = { Text("Profile") }, actions = {
+            TopAppBar(title = { Text("Profile") },
+                actions = {
                 Icon(imageVector = Icons.Default.Settings,
                     contentDescription = null,
                     modifier = Modifier.clickable {
                         usersDetails?.let {
                             navigator?.push(SettingScreen(it))
                         }
-                    })
-            })
+                    }
+                )
+            },
+                navigationIcon = {
+                    Icon(imageVector = Icons.Default.ArrowBackIosNew,
+                        contentDescription = null,
+                        modifier = Modifier.clickable {
+                           navigator?.pop()
+                        }
+                    )
+                }
+            )
         }) {
             LazyColumn(
-                modifier = Modifier.fillMaxWidth()
-                   ,
+                modifier = Modifier.fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
@@ -195,69 +203,6 @@ fun ProfileScreenContent(
                     }
                 }
             }
-        }
-    }
-}
-
-@Composable
-fun ProfileDetails(user: Users) {
-    Column(
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
-        horizontalAlignment = Alignment.Start,
-        verticalArrangement = Arrangement.Top
-    ) {
-        DetailCard(
-            title = "Username", name = user.username
-        )
-        DetailCard(
-            title = "Address", name = user.address
-        )
-        DetailCard(
-            title = "City", name = user.city
-        )
-        DetailCard(
-            title = "Country", name = user.country
-        )
-        DetailCard(
-            title = "Postal Code", name = user.postalCode.toString()
-        )
-        DetailCard(
-            title = "Phone Number", name = user.phoneNumber
-        )
-        DetailCard(
-            title = "Role", name = user.userRole
-        )
-    }
-}
-
-@Composable
-fun DetailCard(
-    title: String,
-    name: String,
-) {
-    Card(
-        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
-        shape = RoundedCornerShape(8.dp),
-        elevation = CardDefaults.cardElevation(4.dp)
-    ) {
-        Column(
-            modifier = Modifier.padding(8.dp),
-            horizontalAlignment = Alignment.Start,
-            verticalArrangement = Arrangement.Center
-        ) {
-            Text(
-                text = title,
-                fontSize = MaterialTheme.typography.bodySmall.fontSize,
-                fontWeight = FontWeight.SemiBold
-            )
-            Text(
-                text = name,
-                fontSize = MaterialTheme.typography.bodyLarge.fontSize,
-                fontWeight = FontWeight.Bold,
-                lineHeight = 20.sp,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
         }
     }
 }
