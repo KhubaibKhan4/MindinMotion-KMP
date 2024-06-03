@@ -1,6 +1,7 @@
 package org.mind.app
 
 import android.app.Application
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -24,6 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.test.core.app.ApplicationProvider
 import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.driver.android.AndroidSqliteDriver
 import com.example.cmppreference.AppContext
@@ -33,11 +35,13 @@ import com.rizzi.bouquet.rememberVerticalPdfReaderState
 import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.FirebaseOptions
 import dev.gitlive.firebase.initialize
+import dev.gitlive.firebase.storage.File
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
 import org.koin.core.context.startKoin
 import org.mind.app.db.MyDatabase
 import org.mind.app.di.appModule
+import java.io.FileOutputStream
 
 class AndroidApp : Application() {
     companion object {

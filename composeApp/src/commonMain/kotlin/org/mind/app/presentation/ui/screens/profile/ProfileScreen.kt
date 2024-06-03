@@ -51,6 +51,7 @@ import com.preat.peekaboo.image.picker.SelectionMode
 import com.preat.peekaboo.image.picker.rememberImagePickerLauncher
 import com.preat.peekaboo.image.picker.toImageBitmap
 import com.seiko.imageloader.rememberImagePainter
+import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 import org.mind.app.domain.model.users.Users
 import org.mind.app.domain.usecases.ResultState
@@ -112,8 +113,10 @@ fun ProfileScreenContent(
                 selectionMode = SelectionMode.Single,
                 scope = scope,
                 onResult = { byteArrays ->
-                    byteArrays.firstOrNull()?.let {
-                        images = it.toImageBitmap()
+                    byteArrays.firstOrNull()?.let { byteArray ->
+                        images = byteArray.toImageBitmap()
+                        scope.launch {
+                        }
                     }
                 },
             )
@@ -155,7 +158,7 @@ fun ProfileScreenContent(
                                         .clip(CircleShape)
                                 )
                             } else {
-                                if (images!=null){
+                                if (images != null) {
                                     Image(
                                         bitmap = images!!,
                                         contentDescription = "frame",
@@ -163,7 +166,7 @@ fun ProfileScreenContent(
                                         modifier = Modifier.size(150.dp).clip(CircleShape)
                                             .clickable { singleImagePicker.launch() },
                                     )
-                                }else {
+                                } else {
                                     LocalImage(
                                         modifier = Modifier.size(150.dp).clip(CircleShape)
                                             .clickable { singleImagePicker.launch() }

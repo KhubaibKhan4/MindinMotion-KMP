@@ -2,6 +2,7 @@ package org.mind.app.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dev.gitlive.firebase.storage.File
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -292,6 +293,12 @@ class MainViewModel(
         }
     }
 
+    fun uploadImageAndGetUrl(file: File, userId: String) {
+        viewModelScope.launch {
+            repository.uploadImageAndGetUrl(file, userId)
+        }
+    }
+
 
     fun getAllUsers() {
         viewModelScope.launch {
@@ -479,6 +486,7 @@ class MainViewModel(
             }
         }
     }
+
     fun getUserByEmail(
         email: String,
     ) {

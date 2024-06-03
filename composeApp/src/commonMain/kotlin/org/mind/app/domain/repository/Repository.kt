@@ -1,10 +1,12 @@
 package org.mind.app.domain.repository
 
 import com.eygraber.uri.Uri
+import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.auth.FirebaseAuth
 import dev.gitlive.firebase.database.FirebaseDatabase
 import dev.gitlive.firebase.storage.File
 import dev.gitlive.firebase.storage.FirebaseStorage
+import dev.gitlive.firebase.storage.storage
 import io.ktor.client.statement.HttpResponse
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -71,6 +73,17 @@ class Repository(
             val profiles = dataSnapshot.children.mapNotNull { it.value<UserProfile>() }
             emit(profiles)
         }
+    }
+    suspend fun uploadImageAndGetUrl(file: File, userId: String): String {
+
+        val storage = Firebase.storage
+        val storageRef = storage.reference("media").child(userId)
+
+        // Upload the file
+        storageRef.putFile(file)
+
+        // Get the download URL
+        return storageRef.getDownloadUrl()
     }
     override suspend fun sendMessagesBySocket(
         senderEmail: String,

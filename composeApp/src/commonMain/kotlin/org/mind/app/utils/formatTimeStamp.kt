@@ -38,9 +38,11 @@ fun LocalTime.formatToAmPm(): String {
     val amPm = if (this.hour < 12) "AM" else "PM"
     return "$hour:$minute $amPm"
 }
+
 fun formatDateToGroup(timestamp: Long): String {
     val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
-    val messageDate = Instant.fromEpochMilliseconds(timestamp).toLocalDateTime(TimeZone.currentSystemDefault()).date
+    val messageDate = Instant.fromEpochMilliseconds(timestamp)
+        .toLocalDateTime(TimeZone.currentSystemDefault()).date
 
     return when {
         messageDate == now -> "Today"
@@ -48,6 +50,7 @@ fun formatDateToGroup(timestamp: Long): String {
         else -> messageDate.toString()
     }
 }
+
 fun encodeEmail(email: String): String {
     return email.replace(".", ",")
 }

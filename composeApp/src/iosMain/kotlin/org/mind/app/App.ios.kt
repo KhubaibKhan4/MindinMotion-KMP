@@ -1,24 +1,18 @@
 package org.mind.app
 
-import androidx.compose.runtime.Composable
+import androidx.compose.foundation.layout.*
+import androidx.compose.material.SnackbarDefaults.backgroundColor
+import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.viewinterop.AndroidView
 import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.driver.native.NativeSqliteDriver
+import dev.gitlive.firebase.storage.File
 import org.mind.app.db.MyDatabase
 import platform.Foundation.NSURL
 import platform.UIKit.UIApplication
-import androidx.compose.foundation.layout.*
-import androidx.compose.runtime.*
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.viewinterop.AndroidView
-import android.webkit.WebView
-import android.webkit.WebViewClient
-import androidx.compose.material.SnackbarDefaults.backgroundColor
-import dev.gitlive.firebase.storage.File
-import org.jetbrains.skia.Bitmap
-import platform.WebKit.*
 import platform.UIKit.UIColor
+import platform.WebKit.*
 
 internal actual fun openUrl(url: String?) {
     val nsUrl = url?.let { NSURL.URLWithString(it) } ?: return
@@ -41,7 +35,10 @@ internal actual fun notify(message: String) {
     window.addSubview(toastLabel)
 
     toastLabel.centerXAnchor.constraintEqualToAnchor(window.centerXAnchor).isActive = true
-    toastLabel.bottomAnchor.constraintEqualToAnchor(window.bottomAnchor, constant = -100.0).isActive = true
+    toastLabel.bottomAnchor.constraintEqualToAnchor(
+        window.bottomAnchor,
+        constant = -100.0
+    ).isActive = true
 
     UIView.animateWithDuration(
         duration = 4.0,
