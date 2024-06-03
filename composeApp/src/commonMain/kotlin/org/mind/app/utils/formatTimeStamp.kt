@@ -48,3 +48,10 @@ fun formatDateToGroup(timestamp: Long): String {
         else -> messageDate.toString()
     }
 }
+fun encodeEmail(email: String): String {
+    return email.replace(".", ",")
+}
+
+fun decodeEmail(encodedEmail: String): String {
+    return encodedEmail.replace(",", ".")
+}

@@ -146,7 +146,6 @@ fun CommunityChatScreenContent(
                         DropdownMenuItem(onClick = {
                             expanded = false
                             navigator?.push(CommunityDetailScreen(communityId = communityId))
-
                         }) {
                             Text("Community Details")
                         }
@@ -217,13 +216,12 @@ fun CommunityChatScreenContent(
     )
 }
 class CommunityDetailScreen(
-  private val communityId: String,
-) : Screen{
+    private val communityId: String,
+) : Screen {
     @Composable
     override fun Content() {
         CommunityDetailContent(communityId)
     }
-
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -233,12 +231,16 @@ fun CommunityDetailContent(
     viewModel: MainViewModel = koinInject(),
 ) {
     val community by viewModel.getCommunity(communityId).collectAsState(initial = null)
-    val communityUsers by viewModel.getCommunityUsers(communityId)
-        .collectAsState(initial = emptyList())
+    val communityUsers by viewModel.communityUsers.collectAsState()
+    val nonCommunityUsers by viewModel.nonCommunityUsers.collectAsState()
     val currentUserEmail = LocalPreference.current.getString("email") ?: ""
     val isAdmin = community?.admin == currentUserEmail
     val navigator = LocalNavigator.current
     val scope = rememberCoroutineScope()
+
+    LaunchedEffect(communityId) {
+        viewModel.fetchCommunityUsers(communityId)
+    }
 
     Scaffold(
         topBar = {
@@ -267,6 +269,12 @@ fun CommunityDetailContent(
                     modifier = Modifier.padding(16.dp)
                 )
 
+                Text(
+                    text = "Members",
+                    style = MaterialTheme.typography.titleLarge,
+                    modifier = Modifier.padding(16.dp)
+                )
+
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -280,7 +288,7 @@ fun CommunityDetailContent(
                                 .padding(8.dp)
                         ) {
                             Text(
-                                text = user.name,
+                                text = user.fullName,
                                 style = MaterialTheme.typography.bodyLarge,
                                 modifier = Modifier.weight(1f)
                             )
@@ -298,25 +306,37 @@ fun CommunityDetailContent(
                 }
 
                 if (isAdmin) {
-                    Row(
+                    Text(
+                        text = "Non-Members",
+                        style = MaterialTheme.typography.titleLarge,
+                        modifier = Modifier.padding(16.dp)
+                    )
+
+                    LazyColumn(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(16.dp)
+                            .weight(1f)
                     ) {
-                        var emailToAdd by remember { mutableStateOf("") }
-                        TextField(
-                            value = emailToAdd,
-                            onValueChange = { emailToAdd = it },
-                            placeholder = { Text("User email") },
-                            modifier = Modifier.weight(1f)
-                        )
-                        IconButton(onClick = {
-                            scope.launch {
-                                viewModel.addUserToCommunity(communityId, emailToAdd)
+                        items(nonCommunityUsers) { user ->
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(8.dp)
+                            ) {
+                                Text(
+                                    text = user.fullName,
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    modifier = Modifier.weight(1f)
+                                )
+                                IconButton(onClick = {
+                                    scope.launch {
+                                        viewModel.addUserToCommunity(communityId, user.email)
+                                    }
+                                }) {
+                                    Icon(Icons.Default.Add, contentDescription = "Add User")
+                                }
                             }
-                            emailToAdd = ""
-                        }) {
-                            Icon(Icons.Default.Add, contentDescription = "Add User")
                         }
                     }
                 }

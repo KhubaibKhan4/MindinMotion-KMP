@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
@@ -117,7 +118,11 @@ class MainViewModel(
     private val _userProfiles = MutableStateFlow<Map<String, UserProfile>>(emptyMap())
     val userProfiles: StateFlow<Map<String, UserProfile>> = _userProfiles
 
+    private val _communityUsers = MutableStateFlow<List<Users>>(emptyList())
+    val communityUsers: StateFlow<List<Users>> = _communityUsers
 
+    private val _nonCommunityUsers = MutableStateFlow<List<Users>>(emptyList())
+    val nonCommunityUsers: StateFlow<List<Users>> = _nonCommunityUsers
     init {
         viewModelScope.launch {
             repository.getCommunities().collect { communityList ->
@@ -213,8 +218,69 @@ class MainViewModel(
     suspend fun addUserToCommunity(communityId: String, userEmail: String) {
         repository.addUserToCommunity(communityId, userEmail)
     }
-    fun getCommunityUsers(communityId: String): Flow<List<UserProfile>> {
-        return repository.getCommunityUsers(communityId)
+    fun getCommunityUsers(communityId: String): Flow<List<Users>> = flow {
+        val communityUsersRef = repository.getCommunityUsers(communityId)
+        communityUsersRef.collect { emails ->
+            val users = emails.mapNotNull { email ->
+                val userResult = getUserByEmailSync(email)
+                if (userResult is ResultState.Success) {
+                    userResult.data
+                } else {
+                    null
+                }
+            }
+            emit(users)
+        }
+    }
+    fun fetchCommunityUsers(communityId: String) {
+        viewModelScope.launch {
+            val community = _communities.value.find { it.id == communityId }
+            if (community != null) {
+                val users = community.members.mapNotNull { email ->
+                    val userResult = getUserByEmailSync(email)
+                    if (userResult is ResultState.Success) {
+                        userResult.data
+                    } else {
+                        null
+                    }
+                }
+                _communityUsers.value = users
+                fetchNonCommunityUsers(communityId, users)
+            }
+        }
+    }
+
+    private fun fetchNonCommunityUsers(communityId: String, communityUsers: List<Users>) {
+        viewModelScope.launch {
+            val communityUserEmails = communityUsers.map { it.email }
+            val allUsers = repository.getAllUsers()
+            val nonCommunityUsers = allUsers.filter { it.email !in communityUserEmails }
+            _nonCommunityUsers.value = nonCommunityUsers
+        }
+    }
+
+    private suspend fun getUserByEmailSync(email: String): ResultState<Users> {
+        return try {
+            val response = repository.getUserByEmail(email)
+            ResultState.Success(response)
+        } catch (e: Exception) {
+            ResultState.Error(e.toString())
+        }
+    }
+
+    fun fetchNonCommunityUsers(communityId: String) {
+        viewModelScope.launch {
+            val communityUsers = _communityUsers.value.map { it.email }
+            val allUsers = repository.getAllUsers()
+            val nonCommunityUsers = allUsers.filter { it.email !in communityUsers }
+            _nonCommunityUsers.value = nonCommunityUsers
+        }
+    }
+
+
+    fun getNonCommunityUsers(communityId: String): Flow<List<Users>> = flow {
+        fetchNonCommunityUsers(communityId)
+        emit(_nonCommunityUsers.value)
     }
 
 

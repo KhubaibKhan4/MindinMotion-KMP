@@ -9,6 +9,7 @@ import io.ktor.client.statement.HttpResponse
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.datetime.Clock
@@ -131,28 +132,36 @@ class Repository(
             emit(messages)
         }
     }
-    suspend fun removeUserFromCommunity(communityId: String, userEmail: String) {
-        database.reference("communities")
-            .child(communityId)
-            .child("members")
-            .child(userEmail)
-            .removeValue()
+    suspend fun addUserToCommunity(communityId: String, userEmail: String) {
+        val membersRef = database.reference("communities").child(communityId).child("members")
+        val currentMembersSnapshot = membersRef.valueEvents.first()
+        val currentMembers = currentMembersSnapshot.value<List<String>>()?.toMutableList() ?: mutableListOf()
+
+        if (!currentMembers.contains(userEmail)) {
+            currentMembers.add(userEmail)
+            membersRef.setValue(currentMembers)
+        }
     }
 
-    suspend fun addUserToCommunity(communityId: String, userEmail: String) {
-        database.reference("communities")
-            .child(communityId)
-            .child("members")
-            .child(userEmail)
-            .setValue(true)
+
+
+    suspend fun removeUserFromCommunity(communityId: String, userEmail: String) {
+        val membersRef = database.reference("communities").child(communityId).child("members")
+        val currentMembersSnapshot = membersRef.valueEvents.first()
+        val currentMembers = currentMembersSnapshot.value<List<String>>()?.toMutableList() ?: mutableListOf()
+
+        if (currentMembers.contains(userEmail)) {
+            currentMembers.remove(userEmail)
+            membersRef.setValue(currentMembers)
+        }
     }
-    fun getCommunityUsers(communityId: String): Flow<List<UserProfile>> {
-        return flow {
-            val communityUsersRef = database.reference("communityUsers").child(communityId)
-            communityUsersRef.valueEvents.collect { dataSnapshot ->
-                val communityUsers = dataSnapshot.children.mapNotNull { it.value<UserProfile>() }
-                emit(communityUsers)
-            }
+
+
+    fun getCommunityUsers(communityId: String): Flow<List<String>> = flow {
+        val communityRef = database.reference("communities").child(communityId).child("members")
+        communityRef.valueEvents.collect { dataSnapshot ->
+            val users = dataSnapshot.value<List<String>>() ?: emptyList()
+            emit(users)
         }
     }
 
