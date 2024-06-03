@@ -7,10 +7,12 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -19,6 +21,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.AdminPanelSettings
 import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.Attachment
 import androidx.compose.material.icons.filled.Delete
@@ -57,6 +60,7 @@ import com.example.cmppreference.LocalPreference
 import com.example.cmppreference.LocalPreferenceProvider
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 import org.mind.app.domain.model.community.CommunityMessage
@@ -281,27 +285,7 @@ fun CommunityDetailContent(
                         .weight(1f)
                 ) {
                     items(communityUsers) { user ->
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(8.dp)
-                        ) {
-                            Text(
-                                text = user.fullName,
-                                style = MaterialTheme.typography.bodyLarge,
-                                modifier = Modifier.weight(1f)
-                            )
-                            if (isAdmin && user.email != currentUserEmail) {
-                                IconButton(onClick = {
-                                    scope.launch {
-                                        viewModel.removeUserFromCommunity(communityId, user.email)
-                                    }
-                                }) {
-                                    Icon(Icons.Default.Delete, contentDescription = "Remove User")
-                                }
-                            }
-                        }
+                        MemberItem(user, isAdmin, currentUserEmail, scope, viewModel,communityId)
                     }
                 }
 
@@ -318,25 +302,7 @@ fun CommunityDetailContent(
                             .weight(1f)
                     ) {
                         items(nonCommunityUsers) { user ->
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(8.dp)
-                            ) {
-                                Text(
-                                    text = user.fullName,
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    modifier = Modifier.weight(1f)
-                                )
-                                IconButton(onClick = {
-                                    scope.launch {
-                                        viewModel.addUserToCommunity(communityId, user.email)
-                                    }
-                                }) {
-                                    Icon(Icons.Default.Add, contentDescription = "Add User")
-                                }
-                            }
+                            NonMemberItem(user, scope, viewModel, communityId)
                         }
                     }
                 }
@@ -344,6 +310,108 @@ fun CommunityDetailContent(
         }
     )
 }
+
+@Composable
+private fun MemberItem(
+    user: Users,
+    isAdmin: Boolean,
+    currentUserEmail: String,
+    scope: CoroutineScope,
+    viewModel: MainViewModel,
+    communityId: String
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp)
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(8.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .background(MaterialTheme.colorScheme.primary, shape = CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = user.fullName.first().toString(),
+                    color = Color.White,
+                    style = MaterialTheme.typography.bodyLarge
+                )
+            }
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = user.fullName,
+                style = MaterialTheme.typography.bodyLarge,
+                modifier = Modifier.weight(1f)
+            )
+            if (user.email == currentUserEmail && isAdmin) {
+                Icon(
+                    imageVector = Icons.Default.AdminPanelSettings,
+                    contentDescription = "Admin",
+                    tint = MaterialTheme.colorScheme.secondary
+                )
+            }
+            if (isAdmin && user.email != currentUserEmail) {
+                IconButton(onClick = {
+                    scope.launch {
+                        viewModel.removeUserFromCommunity(communityId, user.email)
+                    }
+                }) {
+                    Icon(Icons.Default.Delete, contentDescription = "Remove User")
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun NonMemberItem(
+    user: Users,
+    scope: CoroutineScope,
+    viewModel: MainViewModel,
+    communityId: String
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp)
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(8.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .background(MaterialTheme.colorScheme.primary, shape = CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = user.fullName.first().toString(),
+                    color = Color.White,
+                    style = MaterialTheme.typography.bodyLarge
+                )
+            }
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = user.fullName,
+                style = MaterialTheme.typography.bodyLarge,
+                modifier = Modifier.weight(1f)
+            )
+            IconButton(onClick = {
+                scope.launch {
+                    viewModel.addUserToCommunity(communityId, user.email)
+                }
+            }) {
+                Icon(Icons.Default.Add, contentDescription = "Add User")
+            }
+        }
+    }
+}
+
 
 @Composable
 fun CommunityMessageItem(message: CommunityMessage, viewModel: MainViewModel = koinInject()) {

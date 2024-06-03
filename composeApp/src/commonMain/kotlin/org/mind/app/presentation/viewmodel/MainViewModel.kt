@@ -211,13 +211,7 @@ class MainViewModel(
             repository.createCommunity(name, members, admin)
         }
     }
-    suspend fun removeUserFromCommunity(communityId: String, userEmail: String) {
-        repository.removeUserFromCommunity(communityId, userEmail)
-    }
 
-    suspend fun addUserToCommunity(communityId: String, userEmail: String) {
-        repository.addUserToCommunity(communityId, userEmail)
-    }
     fun getCommunityUsers(communityId: String): Flow<List<Users>> = flow {
         val communityUsersRef = repository.getCommunityUsers(communityId)
         communityUsersRef.collect { emails ->
@@ -230,32 +224,6 @@ class MainViewModel(
                 }
             }
             emit(users)
-        }
-    }
-    fun fetchCommunityUsers(communityId: String) {
-        viewModelScope.launch {
-            val community = _communities.value.find { it.id == communityId }
-            if (community != null) {
-                val users = community.members.mapNotNull { email ->
-                    val userResult = getUserByEmailSync(email)
-                    if (userResult is ResultState.Success) {
-                        userResult.data
-                    } else {
-                        null
-                    }
-                }
-                _communityUsers.value = users
-                fetchNonCommunityUsers(communityId, users)
-            }
-        }
-    }
-
-    private fun fetchNonCommunityUsers(communityId: String, communityUsers: List<Users>) {
-        viewModelScope.launch {
-            val communityUserEmails = communityUsers.map { it.email }
-            val allUsers = repository.getAllUsers()
-            val nonCommunityUsers = allUsers.filter { it.email !in communityUserEmails }
-            _nonCommunityUsers.value = nonCommunityUsers
         }
     }
 
@@ -278,9 +246,46 @@ class MainViewModel(
     }
 
 
-    fun getNonCommunityUsers(communityId: String): Flow<List<Users>> = flow {
+    fun addUserToCommunity(communityId: String, userEmail: String) {
+        viewModelScope.launch {
+            repository.addUserToCommunity(communityId, userEmail)
+            // Fetch updated community users after adding the user
+            fetchCommunityUsers(communityId)
+            // Fetch updated non-community users after adding the user
+            fetchNonCommunityUsers(communityId)
+        }
+    }
+
+    suspend fun removeUserFromCommunity(communityId: String, userEmail: String) {
+        repository.removeUserFromCommunity(communityId, userEmail)
+        fetchCommunityUsers(communityId)
         fetchNonCommunityUsers(communityId)
-        emit(_nonCommunityUsers.value)
+    }
+
+    fun fetchCommunityUsers(communityId: String) {
+        viewModelScope.launch {
+            repository.getCommunityUsers(communityId).collect { emails ->
+                val users = emails.mapNotNull { email ->
+                    val userResult = getUserByEmailSync(email)
+                    if (userResult is ResultState.Success) {
+                        userResult.data
+                    } else {
+                        null
+                    }
+                }
+                _communityUsers.value = users
+                fetchNonCommunityUsers(communityId, users)
+            }
+        }
+    }
+
+    fun fetchNonCommunityUsers(communityId: String, communityUsers: List<Users>) {
+        viewModelScope.launch {
+            val communityUserEmails = communityUsers.map { it.email }
+            val allUsers = repository.getAllUsers()
+            val nonCommunityUsers = allUsers.filter { it.email !in communityUserEmails }
+            _nonCommunityUsers.value = nonCommunityUsers
+        }
     }
 
 
