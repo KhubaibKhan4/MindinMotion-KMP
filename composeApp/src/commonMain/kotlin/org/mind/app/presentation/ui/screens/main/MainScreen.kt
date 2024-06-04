@@ -32,7 +32,7 @@ import org.mind.app.presentation.ui.tabs.chat.ChatTab
 import org.mind.app.presentation.ui.tabs.home.HomeTab
 import org.mind.app.presentation.ui.tabs.profile.ProfileTab
 import org.mind.app.presentation.ui.tabs.quiz.QuizTab
-import org.mind.app.presentation.ui.tabs.shop.ResumeTab
+import org.mind.app.presentation.ui.tabs.resume.ResumeTab
 import kotlin.random.Random
 
 object MainScreen : Tab {

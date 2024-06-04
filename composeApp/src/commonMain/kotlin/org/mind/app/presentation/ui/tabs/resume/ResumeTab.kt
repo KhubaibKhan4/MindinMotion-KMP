@@ -1,4 +1,4 @@
-package org.mind.app.presentation.ui.tabs.shop
+package org.mind.app.presentation.ui.tabs.resume
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.PictureAsPdf
@@ -10,7 +10,7 @@ import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.tab.Tab
 import cafe.adriel.voyager.navigator.tab.TabOptions
-import org.mind.app.presentation.ui.screens.shop.ResumeScreen
+import org.mind.app.presentation.ui.screens.resume.ResumeScreen
 
 object ResumeTab : Tab {
     @Composable

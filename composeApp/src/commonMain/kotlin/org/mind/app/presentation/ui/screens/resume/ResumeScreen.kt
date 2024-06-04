@@ -1,4 +1,4 @@
-package org.mind.app.presentation.ui.screens.shop
+package org.mind.app.presentation.ui.screens.resume
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -19,10 +18,8 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.automirrored.filled.ViewList
 import androidx.compose.material.icons.filled.GridView
-import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.Button
@@ -50,6 +47,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.Screen
+import cafe.adriel.voyager.navigator.LocalNavigator
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
 import org.koin.compose.koinInject
@@ -80,6 +78,7 @@ fun ResumeContent() {
     val resumeState by viewModel.resumes.collectAsState()
     val coroutineScope = rememberCoroutineScope()
     var isGirdView by remember { mutableStateOf(true) }
+    val navigator = LocalNavigator.current
 
     LaunchedEffect(Unit) {
         viewModel.getAllResumes()
@@ -224,7 +223,11 @@ fun ResumeContent() {
                                             color = MaterialTheme.colorScheme.primary,
                                             shape = RoundedCornerShape(8.dp)
                                         )
-                                        .padding(8.dp),
+                                        .padding(8.dp)
+                                        .clickable {
+                                            navigator?.push(ResumeDetailScreen(imageUrl = resume.imageUrl))
+
+                                        },
                                     contentScale = ContentScale.FillBounds
                                 )
                             }
@@ -247,7 +250,10 @@ fun ResumeContent() {
                                             color = MaterialTheme.colorScheme.primary,
                                             shape = RoundedCornerShape(8.dp)
                                         )
-                                        .padding(8.dp),
+                                        .padding(8.dp)
+                                        .clickable {
+                                                   navigator?.push(ResumeDetailScreen(imageUrl = resume.imageUrl))
+                                        },
 
                                 )
                             }
