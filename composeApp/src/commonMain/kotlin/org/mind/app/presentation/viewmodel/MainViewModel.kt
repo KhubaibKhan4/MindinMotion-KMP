@@ -23,6 +23,7 @@ import org.mind.app.domain.model.notes.Notes
 import org.mind.app.domain.model.papers.Papers
 import org.mind.app.domain.model.promotion.Promotions
 import org.mind.app.domain.model.quiz.QuizQuestionsItem
+import org.mind.app.domain.model.resume.ResumeItem
 import org.mind.app.domain.model.subcategories.SubCategoriesItem
 import org.mind.app.domain.model.subquestions.SubQuestionsItem
 import org.mind.app.domain.model.user.User
@@ -129,6 +130,9 @@ class MainViewModel(
     private val _uploadImage = MutableStateFlow<ResultState<String>>(ResultState.Loading)
     val uploadImage = _uploadImage
 
+    private val _resumes = MutableStateFlow<ResultState<List<ResumeItem>>>(ResultState.Loading)
+    val resumes= _resumes
+
     init {
         fetchInitialData()
     }
@@ -151,6 +155,17 @@ class MainViewModel(
         }
     }
 
+    fun getAllResumes(){
+        viewModelScope.launch {
+            _resumes.value = ResultState.Loading
+            try {
+                val response = repository.getAllResumes()
+                _resumes.value = ResultState.Success(response)
+            } catch (e: Exception) {
+                _resumes.value = ResultState.Error(e.message.toString())
+            }
+        }
+    }
     fun getUserProfile(email: String): UserProfile? {
         return _userProfiles.value[email]
     }

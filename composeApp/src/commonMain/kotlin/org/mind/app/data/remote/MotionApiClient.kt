@@ -33,6 +33,7 @@ import org.mind.app.domain.model.notes.Notes
 import org.mind.app.domain.model.papers.Papers
 import org.mind.app.domain.model.promotion.Promotions
 import org.mind.app.domain.model.quiz.QuizQuestionsItem
+import org.mind.app.domain.model.resume.ResumeItem
 import org.mind.app.domain.model.subcategories.SubCategoriesItem
 import org.mind.app.domain.model.subquestions.SubQuestionsItem
 import org.mind.app.domain.model.users.Users
@@ -82,6 +83,9 @@ object MotionApiClient {
         return "image_${currentTime}_$randomValue.jpg"
     }
 
+    suspend fun getAllResumes(): List<ResumeItem>{
+        return client.get(BASE_URL+"v1/resumes").body()
+    }
     suspend fun getUsersByEmails(emails: List<String>): List<Users> {
         val queryParams = emails.joinToString(",")
         return client.get(BASE_URL+"v1/users/emails?emails=$queryParams").body()

@@ -22,6 +22,7 @@ import org.mind.app.domain.model.notes.Notes
 import org.mind.app.domain.model.papers.Papers
 import org.mind.app.domain.model.promotion.Promotions
 import org.mind.app.domain.model.quiz.QuizQuestionsItem
+import org.mind.app.domain.model.resume.ResumeItem
 import org.mind.app.domain.model.subcategories.SubCategoriesItem
 import org.mind.app.domain.model.subquestions.SubQuestionsItem
 import org.mind.app.domain.model.user.User
@@ -61,6 +62,9 @@ class Repository(
 
     override suspend fun uploadProfileImage(userId: Long, imageFile: ByteArray): String {
         return MotionApiClient.uploadProfileImage(userId, imageFile)
+    }
+    override suspend fun getAllResumes(): List<ResumeItem> {
+        return MotionApiClient.getAllResumes()
     }
 
     fun getUserProfiles(): Flow<List<UserProfile>> = flow {
