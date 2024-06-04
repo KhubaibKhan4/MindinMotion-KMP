@@ -152,8 +152,7 @@ fun ChatDetailScreenContent(
                                 contentDescription = null,
                                 modifier = Modifier
                                     .size(30.dp)
-                                    .clip(CircleShape)
-                                    .border(1.dp, if (isDark) Color.White else Color.Black),
+                                    .clip(CircleShape),
                                 contentScale = ContentScale.Crop
                             )
                         } else {
@@ -304,8 +303,7 @@ fun ChatMessageItem(message: ChatMessage, users: Users) {
                     contentDescription = null,
                     modifier = Modifier
                         .size(30.dp)
-                        .clip(CircleShape)
-                        .border(1.dp, if (isDark) Color.White else Color.Black),
+                        .clip(CircleShape),
                     contentScale = ContentScale.Crop
                 )
             } else {

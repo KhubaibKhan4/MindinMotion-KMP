@@ -126,6 +126,9 @@ class MainViewModel(
     private val _nonCommunityUsers = MutableStateFlow<List<Users>>(emptyList())
     val nonCommunityUsers: StateFlow<List<Users>> = _nonCommunityUsers
 
+    private val _uploadImage = MutableStateFlow<ResultState<String>>(ResultState.Loading)
+    val uploadImage = _uploadImage
+
     init {
         fetchInitialData()
     }
@@ -150,6 +153,17 @@ class MainViewModel(
 
     fun getUserProfile(email: String): UserProfile? {
         return _userProfiles.value[email]
+    }
+    fun uploadProfileImage(userId: Long, imageFile: ByteArray) {
+        viewModelScope.launch {
+            _uploadImage.value = ResultState.Loading
+            try {
+                val result = repository.uploadProfileImage(userId, imageFile)
+                _uploadImage.value = ResultState.Success(result)
+            } catch (e: Exception) {
+              _uploadImage.value = ResultState.Error(e.message.toString())
+            }
+        }
     }
 
     fun observeCommunityMessages(communityId: String) {

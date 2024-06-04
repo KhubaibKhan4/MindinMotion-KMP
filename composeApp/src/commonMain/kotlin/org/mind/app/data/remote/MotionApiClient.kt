@@ -1,5 +1,6 @@
 package org.mind.app.data.remote
 
+import dev.gitlive.firebase.storage.File
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.plugins.HttpTimeout
@@ -9,16 +10,20 @@ import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
 import io.ktor.client.request.forms.FormDataContent
+import io.ktor.client.request.forms.MultiPartFormDataContent
+import io.ktor.client.request.forms.formData
 import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.request.post
 import io.ktor.client.request.put
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
+import io.ktor.http.Headers
 import io.ktor.http.HttpHeaders
 import io.ktor.http.Parameters
 import io.ktor.serialization.kotlinx.json.json
 import io.ktor.util.InternalAPI
+import kotlinx.datetime.Clock
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.mind.app.domain.model.boards.Boards
@@ -32,6 +37,7 @@ import org.mind.app.domain.model.subcategories.SubCategoriesItem
 import org.mind.app.domain.model.subquestions.SubQuestionsItem
 import org.mind.app.domain.model.users.Users
 import org.mind.app.utils.Constant.BASE_URL
+import kotlin.random.Random
 
 object MotionApiClient {
     private val client = HttpClient {
@@ -58,6 +64,22 @@ object MotionApiClient {
                 }
             }
         }
+    }
+    @OptIn(InternalAPI::class)
+    suspend fun uploadProfileImage(userId: Long, imageFile: ByteArray): String {
+         val uniqueFileName = generateUniqueFileName()
+        return client.put(BASE_URL + "v1/users/profileImage/$userId") {
+            body = MultiPartFormDataContent(formData {
+                append("file", imageFile, Headers.build {
+                    append(HttpHeaders.ContentDisposition, "filename=$uniqueFileName")
+                })
+            })
+        }.bodyAsText()
+    }
+    fun generateUniqueFileName(): String {
+        val currentTime = Clock.System.now().toEpochMilliseconds()
+        val randomValue = Random.nextInt(10000, 99999)
+        return "image_${currentTime}_$randomValue.jpg"
     }
 
     suspend fun getUsersByEmails(emails: List<String>): List<Users> {

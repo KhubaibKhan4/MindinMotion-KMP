@@ -72,4 +72,5 @@ interface AuthService {
     suspend fun getAllPromotions(): List<Promotions>
     suspend fun getAllUsers(): List<Users>
     suspend fun getUsersByEmails(emails: List<String>): List<Users>
+    suspend fun uploadProfileImage(userId: Long, imageFile: ByteArray): String
 }

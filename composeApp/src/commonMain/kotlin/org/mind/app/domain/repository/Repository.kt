@@ -59,6 +59,10 @@ class Repository(
         }
     }
 
+    override suspend fun uploadProfileImage(userId: Long, imageFile: ByteArray): String {
+        return MotionApiClient.uploadProfileImage(userId, imageFile)
+    }
+
     fun getUserProfiles(): Flow<List<UserProfile>> = flow {
         val profilesRef = database.reference("userProfiles")
         profilesRef.valueEvents.collect { dataSnapshot ->

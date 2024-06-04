@@ -1,6 +1,8 @@
 package org.mind.app.presentation.ui.screens.profile
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -9,6 +11,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -16,6 +19,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Camera
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -38,6 +43,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -51,7 +57,9 @@ import com.example.cmppreference.LocalPreferenceProvider
 import com.preat.peekaboo.image.picker.SelectionMode
 import com.preat.peekaboo.image.picker.rememberImagePickerLauncher
 import com.preat.peekaboo.image.picker.toImageBitmap
-import com.seiko.imageloader.rememberImagePainter
+import io.kamel.core.Resource
+import io.kamel.image.KamelImage
+import io.kamel.image.asyncPainterResource
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 import org.mind.app.createTempFileFromBitmap
@@ -63,6 +71,7 @@ import org.mind.app.presentation.ui.components.LocalImage
 import org.mind.app.presentation.ui.screens.setting.SettingScreen
 import org.mind.app.presentation.viewmodel.MainViewModel
 import org.mind.app.theme.LocalThemeIsDark
+import org.mind.app.utils.Constant.BASE_URL
 
 class ProfileScreen : Screen {
     @Composable
@@ -83,6 +92,7 @@ fun ProfileScreenContent(
         val navigator = LocalNavigator.current
         var isLogin by remember { mutableStateOf(false) }
         var usersDetails by remember { mutableStateOf<Users?>(null) }
+        var uploadResult by remember { mutableStateOf<String?>(null) }
         var email by remember { mutableStateOf("") }
         LaunchedEffect(isLogin) {
             isLogin = preference.getBoolean("is_login", false)
@@ -93,6 +103,7 @@ fun ProfileScreenContent(
         }
 
         val userByEmailState by viewModel.userByEmail.collectAsState()
+        val uploadState by viewModel.uploadImage.collectAsState()
         when (userByEmailState) {
             is ResultState.Error -> {
                 val error = (userByEmailState as ResultState.Error).message
@@ -108,6 +119,21 @@ fun ProfileScreenContent(
                 usersDetails = response
             }
         }
+        when (uploadState) {
+            is ResultState.Error -> {
+                val error = (uploadState as ResultState.Error).message
+                ErrorBox(error)
+            }
+
+            ResultState.Loading -> {
+                //LoadingBox()
+            }
+
+            is ResultState.Success -> {
+                val response = (uploadState as ResultState.Success).data
+                uploadResult = response
+            }
+        }
         val scope = rememberCoroutineScope()
         var images by remember { mutableStateOf<ImageBitmap?>(null) }
         val singleImagePicker = rememberImagePickerLauncher(
@@ -115,6 +141,11 @@ fun ProfileScreenContent(
             scope = scope,
             onResult = { byteArrays ->
                 byteArrays.firstOrNull()?.let { byteArray ->
+                    if (byteArray.isNotEmpty()) {
+                        usersDetails?.let {
+                            viewModel.uploadProfileImage(it.id, imageFile = byteArray)
+                        }
+                    }
                     images = byteArray.toImageBitmap()
                     scope.launch {
                         val file = createTempFileFromBitmap(byteArray.toImageBitmap())
@@ -147,13 +178,7 @@ fun ProfileScreenContent(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.Top
                     ) {
-                        if (usersDetails?.profileImage != "null") {
-                            Image(
-                                painter = rememberImagePainter(usersDetails?.profileImage.toString()),
-                                contentDescription = null,
-                                modifier = Modifier.size(150.dp).clip(CircleShape)
-                            )
-                        } else {
+                        Box {
                             if (images != null) {
                                 Image(
                                     bitmap = images!!,
@@ -162,10 +187,52 @@ fun ProfileScreenContent(
                                     modifier = Modifier.size(150.dp).clip(CircleShape)
                                         .clickable { singleImagePicker.launch() },
                                 )
-                            } else {
-                                LocalImage(modifier = Modifier.size(150.dp).clip(CircleShape)
-                                    .clickable { singleImagePicker.launch() })
                             }
+                            else {
+                                if (usersDetails?.profileImage != "null") {
+                                    val image: Resource<Painter> =
+                                        asyncPainterResource(BASE_URL + usersDetails?.profileImage.toString())
+                                    KamelImage(
+                                        resource = image,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(150.dp)
+                                            .clip(CircleShape)
+                                            .border(
+                                                width = 1.dp,
+                                                color = Color.Gray,
+                                                shape = CircleShape
+                                            ),
+                                        contentScale = ContentScale.Crop,
+                                    )
+                                } else {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(150.dp)
+                                            .clip(CircleShape)
+                                            .background(MaterialTheme.colorScheme.surfaceContainer)
+                                            .border(width = 1.dp, color = Color.Gray, shape = CircleShape)
+                                    ) {
+                                        Text(
+                                            text = usersDetails?.fullName?.first().toString(),
+                                            modifier = Modifier.align(Alignment.Center),
+                                            color = if (isDark) Color.White else Color.Black,
+                                            fontSize = 24.sp
+                                        )
+                                    }
+                                }
+                            }
+                            Icon(
+                                imageVector = Icons.Default.Camera,
+                                contentDescription = null,
+                                modifier = Modifier
+                                    .padding(4.dp)
+                                    .size(30.dp)
+                                    .align(Alignment.BottomEnd)
+                                    .offset(x = (-15).dp, y = 2.dp)
+                                    .background(Color.White, shape = CircleShape)
+                                    .border(1.dp, Color.Gray, CircleShape)
+                                    .clickable { singleImagePicker.launch() }
+                            )
                         }
                         Spacer(modifier = Modifier.height(6.dp))
                         Column(

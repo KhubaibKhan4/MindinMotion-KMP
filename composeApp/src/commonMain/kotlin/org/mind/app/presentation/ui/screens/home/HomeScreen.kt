@@ -659,13 +659,24 @@ fun UserItem(users: Users) {
                 )
             }
         } else {
-            val image: Resource<Painter> = asyncPainterResource(BASE_URL + users.profileImage)
-            KamelImage(
-                resource = image,
-                contentDescription = null,
-                modifier = Modifier.size(55.dp)
+            Box(
+                modifier = Modifier
+                    .size(48.dp)
                     .clip(CircleShape)
-            )
+                    .background(MaterialTheme.colorScheme.surfaceContainer)
+                    .border(width = 1.dp, color = Color.Gray, shape = CircleShape)
+            ) {
+                val image: Resource<Painter> = asyncPainterResource(BASE_URL + users.profileImage)
+                KamelImage(
+                    resource = image,
+                    contentDescription = null,
+                    modifier = Modifier.fillMaxSize()
+                        .clip(CircleShape)
+                        .border(width = 1.dp, color = Color.Gray, shape = CircleShape),
+                    contentScale = ContentScale.Crop
+                )
+            }
+
         }
         Spacer(modifier = Modifier.height(3.dp))
         Text(
