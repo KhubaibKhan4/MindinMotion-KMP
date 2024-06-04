@@ -155,11 +155,7 @@ fun ChatScreenContent(
                                 contentDescription = null,
                                 modifier = Modifier
                                     .size(30.dp)
-                                    .clip(CircleShape)
-                                    .border(
-                                        width = 1.dp,
-                                        color = if (isDark) Color.White else Color.Black
-                                    ),
+                                    .clip(CircleShape),
                                 contentScale = ContentScale.Crop
                             )
                         } else {
