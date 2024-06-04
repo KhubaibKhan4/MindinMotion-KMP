@@ -11,9 +11,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Card
@@ -51,8 +52,6 @@ import com.preat.peekaboo.image.picker.SelectionMode
 import com.preat.peekaboo.image.picker.rememberImagePickerLauncher
 import com.preat.peekaboo.image.picker.toImageBitmap
 import com.seiko.imageloader.rememberImagePainter
-import dev.gitlive.firebase.Firebase
-import dev.gitlive.firebase.storage.storage
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 import org.mind.app.createTempFileFromBitmap
@@ -124,8 +123,6 @@ fun ProfileScreenContent(
                 }
             },
         )
-
-
         Scaffold(topBar = {
             TopAppBar(title = { Text("Profile") }, actions = {
                 Icon(imageVector = Icons.Default.Settings,
@@ -137,66 +134,65 @@ fun ProfileScreenContent(
                     })
             })
         }) {
-            LazyColumn(
+            Column(
                 modifier = Modifier.fillMaxWidth()
-                    .padding(top = it.calculateTopPadding()),
+                    .padding(top = it.calculateTopPadding())
+                    .verticalScroll(rememberScrollState()),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
+                verticalArrangement = Arrangement.Top
             ) {
-                item {
-                    if (usersDetails != null) {
+                if (usersDetails != null) {
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Top
+                    ) {
+                        if (usersDetails?.profileImage != "null") {
+                            Image(
+                                painter = rememberImagePainter(usersDetails?.profileImage.toString()),
+                                contentDescription = null,
+                                modifier = Modifier.size(150.dp).clip(CircleShape)
+                            )
+                        } else {
+                            if (images != null) {
+                                Image(
+                                    bitmap = images!!,
+                                    contentDescription = "frame",
+                                    contentScale = ContentScale.Crop,
+                                    modifier = Modifier.size(150.dp).clip(CircleShape)
+                                        .clickable { singleImagePicker.launch() },
+                                )
+                            } else {
+                                LocalImage(modifier = Modifier.size(150.dp).clip(CircleShape)
+                                    .clickable { singleImagePicker.launch() })
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(6.dp))
                         Column(
-                            modifier = Modifier.fillMaxSize(),
+                            modifier = Modifier.fillMaxWidth(),
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.Top
                         ) {
-                            if (usersDetails?.profileImage != "null") {
-                                Image(
-                                    painter = rememberImagePainter(usersDetails?.profileImage.toString()),
-                                    contentDescription = null,
-                                    modifier = Modifier.size(150.dp).clip(CircleShape)
-                                )
-                            } else {
-                                if (images != null) {
-                                    Image(
-                                        bitmap = images!!,
-                                        contentDescription = "frame",
-                                        contentScale = ContentScale.Crop,
-                                        modifier = Modifier.size(150.dp).clip(CircleShape)
-                                            .clickable { singleImagePicker.launch() },
-                                    )
-                                } else {
-                                    LocalImage(modifier = Modifier.size(150.dp).clip(CircleShape)
-                                        .clickable { singleImagePicker.launch() })
-                                }
-                            }
-                            Spacer(modifier = Modifier.height(6.dp))
-                            Column(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                verticalArrangement = Arrangement.Top
-                            ) {
-                                Text(
-                                    text = usersDetails?.fullName.toString(),
-                                    fontSize = MaterialTheme.typography.titleLarge.fontSize,
-                                    color = if (isDark) Color.White else Color.Black,
-                                    fontWeight = FontWeight.Bold
-                                )
-                                Text(
-                                    text = usersDetails?.email.toString(),
-                                    fontSize = MaterialTheme.typography.labelMedium.fontSize,
-                                    color = Color.Gray
-                                )
-                            }
-                            Spacer(modifier = Modifier.height(12.dp))
-                            usersDetails?.let { it1 -> ProfileDetails(it1) }
+                            Text(
+                                text = usersDetails?.fullName.toString(),
+                                fontSize = MaterialTheme.typography.titleLarge.fontSize,
+                                color = if (isDark) Color.White else Color.Black,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Text(
+                                text = usersDetails?.email.toString(),
+                                fontSize = MaterialTheme.typography.labelMedium.fontSize,
+                                color = Color.Gray
+                            )
                         }
-                    } else {
-                        Box(
-                            modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center
-                        ) {
-                            Text("No User Data is Found!")
-                        }
+                        Spacer(modifier = Modifier.height(12.dp))
+                        usersDetails?.let { it1 -> ProfileDetails(it1) }
+                    }
+                } else {
+                    Box(
+                        modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center
+                    ) {
+                        Text("No User Data is Found!")
                     }
                 }
             }

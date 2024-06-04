@@ -124,7 +124,7 @@ fun SettingScreenContent(
                             imageVector = Icons.Default.ArrowBackIosNew,
                             contentDescription = null,
                             modifier = Modifier.clickable {
-                                navigator?.push(ProfileTab)
+                                navigator?.pop()
                             }
                         )
                     }
