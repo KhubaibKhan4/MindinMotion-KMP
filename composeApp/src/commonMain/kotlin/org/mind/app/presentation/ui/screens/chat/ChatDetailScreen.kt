@@ -21,15 +21,12 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.Attachment
-import androidx.compose.material.icons.filled.Image
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.filled.PictureAsPdf
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -54,15 +51,13 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import com.example.cmppreference.LocalPreference
 import com.preat.peekaboo.image.picker.SelectionMode
 import com.preat.peekaboo.image.picker.rememberImagePickerLauncher
 import com.preat.peekaboo.image.picker.toImageBitmap
-import io.github.vinceglb.filekit.core.FileKit
-import io.github.vinceglb.filekit.core.PickerMode
-import io.github.vinceglb.filekit.core.PickerType
 import io.kamel.core.Resource
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
@@ -111,7 +106,7 @@ fun ChatDetailScreenContent(
         selectionMode = SelectionMode.Single,
         scope = scope,
         onResult = { byteArrays ->
-            if (byteArrays.isNotEmpty()){
+            if (byteArrays.isNotEmpty()) {
                 byteArrays.firstOrNull()?.let { byteArray ->
                     isUploadingImage = true
                     val file = createTempFileFromBitmap(byteArray.toImageBitmap())
@@ -293,6 +288,7 @@ fun ChatMessageItem(message: ChatMessage, users: Users) {
     val isSentByCurrentUser = message.senderEmail == currentUserEmail
     val alignment = if (isSentByCurrentUser) Alignment.End else Alignment.Start
     val formattedTime = formatTimestampToHumanReadable(message.timestamp)
+    val navigator = LocalNavigator.current
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -353,14 +349,17 @@ fun ChatMessageItem(message: ChatMessage, users: Users) {
                         color = if (isDark && isSentByCurrentUser) Color.White else if (isDark) Color.White else Color.Black,
                         modifier = Modifier.padding(4.dp)
                     )
-                }else {
+                } else {
                     val image: Resource<Painter> = asyncPainterResource(message.imageUrl.toString())
                     KamelImage(
                         resource = image,
                         contentDescription = null,
                         modifier = Modifier
                             .size(150.dp)
-                            .clip(RoundedCornerShape(8.dp)),
+                            .clip(RoundedCornerShape(8.dp))
+                            .clickable {
+                                 navigator?.push(ImageDetailScreen(message.imageUrl.toString()))
+                            },
                         contentScale = ContentScale.Crop,
                         onLoading = {
                             Box(

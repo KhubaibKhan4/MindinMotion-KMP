@@ -491,6 +491,7 @@ fun CommunityMessageItem(
     val isSentByCurrentUser = message.senderEmail == currentUserEmail
     val alignment = if (isSentByCurrentUser) Alignment.End else Alignment.Start
     val formattedTime = formatTimestampToHumanReadable(message.timestamp)
+    val navigator = LocalNavigator.current
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -563,7 +564,10 @@ fun CommunityMessageItem(
                         contentDescription = null,
                         modifier = Modifier
                             .size(150.dp)
-                            .clip(RoundedCornerShape(8.dp)),
+                            .clip(RoundedCornerShape(8.dp))
+                            .clickable {
+                              navigator?.push(ImageDetailScreen(message.imageUrl.toString()))
+                            },
                         contentScale = ContentScale.Crop,
                         onLoading = {
                             Box(
