@@ -1,6 +1,5 @@
 package org.mind.app.data.remote
 
-import dev.gitlive.firebase.storage.File
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.plugins.HttpTimeout
@@ -16,16 +15,20 @@ import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.request.post
 import io.ktor.client.request.put
+import io.ktor.client.request.setBody
+import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
 import io.ktor.http.Headers
 import io.ktor.http.HttpHeaders
 import io.ktor.http.Parameters
+import io.ktor.http.contentType
 import io.ktor.serialization.kotlinx.json.json
 import io.ktor.util.InternalAPI
 import kotlinx.datetime.Clock
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import org.mind.app.createTempFile
 import org.mind.app.domain.model.boards.Boards
 import org.mind.app.domain.model.category.QuizCategoryItem
 import org.mind.app.domain.model.gemini.Gemini
@@ -37,6 +40,7 @@ import org.mind.app.domain.model.resume.ResumeItem
 import org.mind.app.domain.model.subcategories.SubCategoriesItem
 import org.mind.app.domain.model.subquestions.SubQuestionsItem
 import org.mind.app.domain.model.users.Users
+import org.mind.app.saveResponseToFile
 import org.mind.app.utils.Constant.BASE_URL
 import kotlin.random.Random
 
@@ -66,9 +70,10 @@ object MotionApiClient {
             }
         }
     }
+
     @OptIn(InternalAPI::class)
     suspend fun uploadProfileImage(userId: Long, imageFile: ByteArray): String {
-         val uniqueFileName = generateUniqueFileName()
+        val uniqueFileName = generateUniqueFileName()
         return client.put(BASE_URL + "v1/users/profileImage/$userId") {
             body = MultiPartFormDataContent(formData {
                 append("file", imageFile, Headers.build {
@@ -77,18 +82,32 @@ object MotionApiClient {
             })
         }.bodyAsText()
     }
+
+    suspend fun downloadPdf(htmlContent: String): String {
+        val response: HttpResponse = client.post(BASE_URL+"generate-pdf") {
+            contentType(ContentType.Text.Plain)
+            setBody(htmlContent)
+        }
+
+        val pdfFilePath = createTempFile("resume", ".pdf")
+        saveResponseToFile(response, pdfFilePath)
+
+        return pdfFilePath
+    }
     fun generateUniqueFileName(): String {
         val currentTime = Clock.System.now().toEpochMilliseconds()
         val randomValue = Random.nextInt(10000, 99999)
         return "image_${currentTime}_$randomValue.jpg"
     }
 
-    suspend fun getAllResumes(): List<ResumeItem>{
-        return client.get(BASE_URL+"v1/resumes").body()
+    suspend fun getAllResumes(): List<ResumeItem> {
+        return client.get(BASE_URL + "v1/resumes").body()
     }
+
     suspend fun getUsersByEmails(emails: List<String>): List<Users> {
         val queryParams = emails.joinToString(",")
-        return client.get(BASE_URL+"v1/users/emails?emails=$queryParams").body()
+        val newQuery = if(queryParams.isNotEmpty()) queryParams else "abc@gmail.com"
+        return client.get(BASE_URL + "v1/users/emails?emails=$newQuery").body()
     }
 
 

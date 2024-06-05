@@ -269,7 +269,7 @@ class HomeScreen : Screen {
                                         tabNavigator.current = ChatDetailTab
                                     }
                                 )
-                                Spacer(modifier = Modifier.width(2.dp))
+                                Spacer(modifier = Modifier.width(8.dp))
                                 Icon(
                                     imageVector = Icons.Outlined.Search,
                                     contentDescription = null,
@@ -277,6 +277,7 @@ class HomeScreen : Screen {
                                         isSearchEnable = !isSearchEnable
                                     }
                                 )
+                                Spacer(modifier = Modifier.width(4.dp))
                             }
                         }
                     )

@@ -1,15 +1,19 @@
 package org.mind.app
 
+import android.app.Activity
 import android.app.Application
 import android.content.Intent
+import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
 import android.view.WindowManager
 import android.widget.Toast
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -26,14 +30,24 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.LifecycleOwner
 import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.driver.android.AndroidSqliteDriver
 import com.example.cmppreference.AppContext
 import com.rizzi.bouquet.ResourceType
 import com.rizzi.bouquet.VerticalPDFReader
 import com.rizzi.bouquet.rememberVerticalPdfReaderState
+import dev.gitlive.firebase.storage.File
 import io.github.vinceglb.filekit.core.FileKit
+import io.ktor.client.statement.HttpResponse
+import io.ktor.util.InternalAPI
+import io.ktor.utils.io.jvm.javaio.copyTo
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
 import org.koin.core.context.startKoin
@@ -51,6 +65,7 @@ class AndroidApp : Application() {
         super.onCreate()
         INSTANCE = this
         AppContext.apply { set(this@AndroidApp) }
+        var currentActivity: AppActivity? = null
         val options = com.google.firebase.FirebaseOptions.Builder()
             .setProjectId("mind-in-motion-70e7b")
             .setApplicationId("1:315093871386:android:aeb50fce5145217cec1aa3")
@@ -170,8 +185,28 @@ fun ImageBitmap.asByteArray(): ByteArray {
     return stream.toByteArray()
 }
 
-private fun android.graphics.Bitmap.toByteArray(): ByteArray {
-    val stream = ByteArrayOutputStream()
-    compress(Bitmap.CompressFormat.PNG, 100, stream)
-    return stream.toByteArray()
+actual fun createTempFile(name: String, extension: String): String {
+    return java.io.File.createTempFile(name, extension).absolutePath
+}
+
+@OptIn(InternalAPI::class)
+actual suspend fun saveResponseToFile(response: HttpResponse, filePath: String) {
+    withContext(Dispatchers.IO) {
+        val file = java.io.File(filePath)
+        FileOutputStream(file).use { outputStream ->
+            response.content.copyTo(outputStream)
+        }
+    }
+}
+
+actual fun sharePdf(pdfFilePath: String) {
+    val uri = Uri.fromFile(java.io.File(pdfFilePath))
+    val intent = Intent(Intent.ACTION_SEND).apply {
+        type = "application/pdf"
+        putExtra(Intent.EXTRA_STREAM, uri)
+        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+    }
+
+    AndroidApp.INSTANCE.applicationContext.startActivity(Intent.createChooser(intent, "Share Resume"))
 }

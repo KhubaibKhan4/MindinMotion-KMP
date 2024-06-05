@@ -1,6 +1,8 @@
 package org.mind.app.presentation.ui.screens.chat
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -35,9 +37,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.tab.LocalTabNavigator
@@ -47,6 +51,9 @@ import com.preat.peekaboo.image.picker.SelectionMode
 import com.preat.peekaboo.image.picker.rememberImagePickerLauncher
 import com.preat.peekaboo.image.picker.toImageBitmap
 import com.seiko.imageloader.rememberImagePainter
+import io.kamel.core.Resource
+import io.kamel.image.KamelImage
+import io.kamel.image.asyncPainterResource
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 import org.mind.app.domain.model.users.Users
@@ -57,6 +64,7 @@ import org.mind.app.presentation.ui.components.LocalImage
 import org.mind.app.presentation.ui.screens.profile.ProfileDetails
 import org.mind.app.presentation.viewmodel.MainViewModel
 import org.mind.app.theme.LocalThemeIsDark
+import org.mind.app.utils.Constant.BASE_URL
 
 class UserProfile : Screen {
 
@@ -144,8 +152,9 @@ fun UserProfileScreenContent(
                         verticalArrangement = Arrangement.Top
                     ) {
                         if (usersDetails?.profileImage != "null") {
-                            Image(
-                                painter = rememberImagePainter(usersDetails?.profileImage.toString()),
+                            val image: Resource<Painter> = asyncPainterResource(BASE_URL+ usersDetails?.profileImage.toString())
+                            KamelImage(
+                                resource = image,
                                 contentDescription = null,
                                 modifier = Modifier.size(150.dp).clip(CircleShape)
                             )
@@ -156,11 +165,22 @@ fun UserProfileScreenContent(
                                     contentDescription = "frame",
                                     contentScale = ContentScale.Crop,
                                     modifier = Modifier.size(150.dp).clip(CircleShape)
-                                        .clickable { singleImagePicker.launch() },
                                 )
                             } else {
-                                LocalImage(modifier = Modifier.size(150.dp).clip(CircleShape)
-                                    .clickable { singleImagePicker.launch() })
+                                Box(
+                                    modifier = Modifier
+                                        .size(150.dp)
+                                        .clip(CircleShape)
+                                        .background(MaterialTheme.colorScheme.surfaceContainer)
+                                        .border(width = 1.dp, color = Color.Gray, shape = CircleShape)
+                                ) {
+                                    Text(
+                                        text = usersDetails?.fullName?.first().toString(),
+                                        modifier = Modifier.align(Alignment.Center),
+                                        color = if (isDark) Color.White else Color.Black,
+                                        fontSize = 24.sp
+                                    )
+                                }
                             }
                         }
                         Spacer(modifier = Modifier.height(6.dp))

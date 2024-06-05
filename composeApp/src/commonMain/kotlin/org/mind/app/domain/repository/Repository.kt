@@ -66,7 +66,6 @@ class Repository(
     override suspend fun getAllResumes(): List<ResumeItem> {
         return MotionApiClient.getAllResumes()
     }
-
     fun getUserProfiles(): Flow<List<UserProfile>> = flow {
         val profilesRef = database.reference("userProfiles")
         profilesRef.valueEvents.collect { dataSnapshot ->
@@ -104,7 +103,7 @@ class Repository(
             .setValue(chatMessage)
     }
 
-     suspend fun sendCommunityMessage(
+    suspend fun sendCommunityMessage(
         communityId: String,
         senderEmail: String,
         message: String,
@@ -215,7 +214,6 @@ class Repository(
             emit(users)
         }
     }
-
     override suspend fun signUpUser(
         email: String,
         password: String,

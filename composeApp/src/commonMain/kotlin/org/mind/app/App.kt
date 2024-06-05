@@ -18,6 +18,7 @@ import com.eygraber.uri.Uri
 import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.storage.File
 import dev.gitlive.firebase.storage.storage
+import io.ktor.client.statement.HttpResponse
 import kotlinx.coroutines.launch
 import org.mind.app.presentation.ui.screens.auth.login.LoginScreen
 import org.mind.app.presentation.ui.screens.main.MainScreen
@@ -52,3 +53,6 @@ expect fun createDriver(): SqlDriver
 @Composable
 expect fun providePDF(url: String)
 expect fun createTempFileFromBitmap(imageBitmap: ImageBitmap): File
+expect fun createTempFile(name: String, extension: String): String
+expect suspend fun saveResponseToFile(response: HttpResponse, filePath: String)
+expect fun sharePdf(pdfFilePath: String)

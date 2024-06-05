@@ -61,7 +61,6 @@ import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import com.example.cmppreference.LocalPreference
-import com.example.cmppreference.LocalPreferenceProvider
 import com.preat.peekaboo.image.picker.SelectionMode
 import com.preat.peekaboo.image.picker.rememberImagePickerLauncher
 import com.preat.peekaboo.image.picker.toImageBitmap
@@ -76,8 +75,6 @@ import org.mind.app.createTempFileFromBitmap
 import org.mind.app.domain.model.community.CommunityMessage
 import org.mind.app.domain.model.users.Users
 import org.mind.app.domain.usecases.ResultState
-import org.mind.app.presentation.ui.components.ErrorBox
-import org.mind.app.presentation.ui.components.LoadingBox
 import org.mind.app.presentation.viewmodel.MainViewModel
 import org.mind.app.theme.LocalThemeIsDark
 import org.mind.app.utils.Constant.BASE_URL
@@ -118,7 +115,7 @@ fun CommunityChatScreenContent(
 
     LaunchedEffect(messages) {
         val senderEmails = messages.map { it.senderEmail }.distinct()
-        viewModel.getUsersByEmails(senderEmails)
+            viewModel.getUsersByEmails(senderEmails)
     }
 
     val usersByEmailsState by viewModel.usersByEmails.collectAsState()
@@ -151,7 +148,7 @@ fun CommunityChatScreenContent(
                 isUploadingImage = true
                 byteArrays.firstOrNull()?.let {
                     val file = createTempFileFromBitmap(it.toImageBitmap())
-                    val imageUrl = viewModel.uploadImageAndGetUrl(file,currentUserEmail)
+                    val imageUrl = viewModel.uploadImageAndGetUrl(file, currentUserEmail)
                     viewModel.sendCommunityImageMessage(communityId, currentUserEmail, file)
                     messageText = ""
                     delay(8.seconds)
@@ -286,6 +283,7 @@ fun CommunityChatScreenContent(
         }
     )
 }
+
 class CommunityDetailScreen(
     private val communityId: String,
 ) : Screen {
@@ -557,8 +555,8 @@ fun CommunityMessageItem(
                         color = if (isDark && isSentByCurrentUser) Color.White else if (isDark) Color.White else Color.Black,
                         modifier = Modifier.padding(4.dp)
                     )
-                }else{
-                    val image : Resource<Painter> = asyncPainterResource(message.imageUrl.toString())
+                } else {
+                    val image: Resource<Painter> = asyncPainterResource(message.imageUrl.toString())
                     KamelImage(
                         resource = image,
                         contentDescription = null,
@@ -566,7 +564,7 @@ fun CommunityMessageItem(
                             .size(150.dp)
                             .clip(RoundedCornerShape(8.dp))
                             .clickable {
-                              navigator?.push(ImageDetailScreen(message.imageUrl.toString()))
+                                navigator?.push(ImageDetailScreen(message.imageUrl.toString()))
                             },
                         contentScale = ContentScale.Crop,
                         onLoading = {
@@ -586,7 +584,8 @@ fun CommunityMessageItem(
                                 text = "Failed to load image",
                                 style = MaterialTheme.typography.bodyLarge,
                                 color = if (isDark) Color.White else Color.Black,
-                                modifier = Modifier.padding(4.dp))
+                                modifier = Modifier.padding(4.dp)
+                            )
                         }
                     )
                 }

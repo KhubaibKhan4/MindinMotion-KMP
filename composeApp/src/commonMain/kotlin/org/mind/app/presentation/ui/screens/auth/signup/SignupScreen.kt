@@ -5,14 +5,11 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -36,7 +33,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -70,6 +66,7 @@ import org.mind.app.utils.isValidFullName
 import org.mind.app.utils.isValidPassword
 import org.mind.app.utils.isValidPhoneNumber
 import org.mind.app.utils.isValidPostalCode
+import kotlin.time.Duration.Companion.seconds
 
 class SignupScreen : Screen {
     @Composable
@@ -117,6 +114,7 @@ fun SignupContent(viewModel: MainViewModel = koinInject()) {
         is ResultState.Success -> {
             val response = (state as ResultState.Success).data
             userMessage = response
+            notify(response)
             if (response.contains("Success") && !isUserCreated) {
                 isUserCreated = true
                 viewModel.signUpUserServer(
@@ -131,20 +129,22 @@ fun SignupContent(viewModel: MainViewModel = koinInject()) {
                     phoneNumber,
                     userRole
                 )
+                scope.launch {
+                    delay(2000)
+                    isLoading = false
+                    email = ""
+                    password = ""
+                    confirmPassword = ""
+                    fullName = ""
+                    address = ""
+                    city = ""
+                    country = ""
+                    postalCode = ""
+                    phoneNumber = ""
+                    navigator?.pop()
+                }
             }
-            isLoading = false
-            scope.launch {
-                delay(2000)
-                email = ""
-                password = ""
-                confirmPassword = ""
-                fullName = ""
-                address = ""
-                city = ""
-                country = ""
-                postalCode = ""
-                phoneNumber = ""
-            }
+
         }
     }
 
@@ -155,6 +155,7 @@ fun SignupContent(viewModel: MainViewModel = koinInject()) {
             val error = (serverState as ResultState.Error).message
             userMessage = error
             ErrorBox(error)
+            notify(error)
             isLoading = false
         }
 
@@ -165,7 +166,7 @@ fun SignupContent(viewModel: MainViewModel = koinInject()) {
         is ResultState.Success -> {
             val response = (serverState as ResultState.Success).data
             //userMessage = response
-            notify(response)
+            //notify(response)
             isLoading = false
         }
     }
@@ -188,7 +189,7 @@ fun SignupContent(viewModel: MainViewModel = koinInject()) {
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .windowInsetsPadding(WindowInsets.safeDrawing)
+                .padding(top = it.calculateTopPadding())
                 .padding(16.dp),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
@@ -471,6 +472,15 @@ fun SignupContent(viewModel: MainViewModel = koinInject()) {
                     }
                 ) {
                     Text("Already have an account? Login")
+                }
+            }
+            item {
+                if (userMessage.isNotEmpty()) {
+                    Text(text = userMessage, color = Color.Red)
+                    scope.launch {
+                        delay(2.seconds)
+                        userMessage = ""
+                    }
                 }
             }
         }

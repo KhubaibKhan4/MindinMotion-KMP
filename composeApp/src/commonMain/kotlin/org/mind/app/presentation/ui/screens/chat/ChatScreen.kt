@@ -155,7 +155,8 @@ fun ChatScreenContent(
                                 contentDescription = null,
                                 modifier = Modifier
                                     .size(30.dp)
-                                    .clip(CircleShape),
+                                    .clip(CircleShape)
+                                    .clickable { localNavigator?.push(UserProfile()) },
                                 contentScale = ContentScale.Crop
                             )
                         } else {
