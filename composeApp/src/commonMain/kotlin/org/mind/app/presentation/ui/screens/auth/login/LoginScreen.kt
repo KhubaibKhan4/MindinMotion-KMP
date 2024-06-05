@@ -62,6 +62,7 @@ import org.mind.app.presentation.viewmodel.MainViewModel
 import org.mind.app.theme.LocalThemeIsDark
 import org.mind.app.utils.isValidEmail
 import org.mind.app.utils.isValidPassword
+import kotlin.time.Duration.Companion.seconds
 
 object LoginScreen : Tab {
     @Composable
@@ -108,6 +109,10 @@ fun LoginContent(
                 val error = (state as ResultState.Error).message
                 userMessage = error
                 notify(userMessage)
+                scope.launch {
+                    delay(2.seconds)
+                    userMessage = ""
+                }
                 isLoading = false
             }
 
@@ -121,11 +126,14 @@ fun LoginContent(
                 notify(userMessage)
                 isLoading = false
                 if (userMessage.contains("Success")) {
-                    email = ""
-                    pass = ""
-                    navigator?.apply {
-                        preference.put("is_login", true)
-                        push(MainScreen)
+                   scope.launch {
+                       email = ""
+                       pass = ""
+                       navigator?.apply {
+                           preference.put("is_login", true)
+                           push(MainScreen)
+                       }
+                       delay(2.seconds)
                    }
                 }
             }
