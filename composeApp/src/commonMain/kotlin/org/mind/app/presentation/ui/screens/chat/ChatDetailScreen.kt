@@ -21,7 +21,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.Attachment
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.Card
@@ -51,7 +50,6 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Dialog
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import com.example.cmppreference.LocalPreference
@@ -126,10 +124,17 @@ fun ChatDetailScreenContent(
         topBar = {
             androidx.compose.material3.TopAppBar(
                 title = {
-                    Text(
-                        users.fullName.take(16),
-                        color = if (isDark) Color.White else Color.Black
-                    )
+                    Column {
+                        Text(
+                            users.fullName.take(16),
+                            color = if (isDark) Color.White else Color.Black
+                        )
+                        Text(
+                            users.userRole,
+                            color = if (isDark) Color.White else Color.Gray,
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.surface,
@@ -356,7 +361,7 @@ fun ChatMessageItem(message: ChatMessage, users: Users) {
                             .size(150.dp)
                             .clip(RoundedCornerShape(8.dp))
                             .clickable {
-                                 navigator?.push(ImageDetailScreen(message.imageUrl.toString()))
+                                navigator?.push(ImageDetailScreen(message.imageUrl.toString()))
                             },
                         contentScale = ContentScale.Crop,
                         onLoading = {
