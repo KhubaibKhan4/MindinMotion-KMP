@@ -156,6 +156,7 @@ fun ChatScreenContent(
                                 modifier = Modifier
                                     .size(30.dp)
                                     .clip(CircleShape)
+                                    .border(width = 1.dp, color = Color.Gray, shape = CircleShape)
                                     .clickable { localNavigator?.push(UserProfile()) },
                                 contentScale = ContentScale.Crop
                             )
