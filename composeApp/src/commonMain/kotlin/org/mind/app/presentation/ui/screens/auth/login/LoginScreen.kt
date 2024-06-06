@@ -96,13 +96,6 @@ fun LoginContent(
         val scope = rememberCoroutineScope()
         val navigator = LocalNavigator.current
 
-        val currentUser by viewModel.currentUser.collectAsState()
-        LaunchedEffect(currentUser) {
-            if (currentUser != null) {
-                navigator?.push(HomeScreen())
-            }
-        }
-
         val state by viewModel.loginUser.collectAsState()
         when (state) {
             is ResultState.Error -> {

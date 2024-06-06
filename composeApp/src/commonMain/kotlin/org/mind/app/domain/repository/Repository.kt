@@ -55,9 +55,7 @@ class Repository(
     }
 
     override suspend fun signOut() {
-        if (auth.currentUser?.isAnonymous == true) {
-            auth.currentUser?.delete()
-        }
+        auth.signOut()
     }
 
     override suspend fun uploadProfileImage(userId: Long, imageFile: ByteArray): String {

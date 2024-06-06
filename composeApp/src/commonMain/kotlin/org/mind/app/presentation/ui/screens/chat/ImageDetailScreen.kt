@@ -1,7 +1,11 @@
 package org.mind.app.presentation.ui.screens.chat
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.icons.Icons
@@ -15,6 +19,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import cafe.adriel.voyager.core.screen.Screen
@@ -47,26 +52,33 @@ class ImageDetailScreen(
                 )
             }
         ) {
-            val image: Resource<Painter> = asyncPainterResource(imageUrl)
-            KamelImage(
-                resource = image,
-                contentDescription = null,
-                modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.Crop,
-                onFailure = {
-                    Box(
-                        modifier = Modifier.fillMaxWidth(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "Failed to Load Image ${it.message}"
-                        )
+            Column(
+                modifier = Modifier.fillMaxWidth()
+                    .background(Color.Black),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                val image: Resource<Painter> = asyncPainterResource(imageUrl)
+                KamelImage(
+                    resource = image,
+                    contentDescription = null,
+                    modifier = Modifier.fillMaxSize().aspectRatio(16/9f),
+                    contentScale = ContentScale.Fit,
+                    onFailure = {
+                        Box(
+                            modifier = Modifier.fillMaxWidth(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "Failed to Load Image ${it.message}"
+                            )
+                        }
+                    },
+                    onLoading = {
+                        CircularProgressIndicator()
                     }
-                },
-                onLoading = {
-                    CircularProgressIndicator()
-                }
-            )
+                )
+            }
         }
     }
 }

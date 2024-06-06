@@ -58,7 +58,6 @@ import org.mind.app.presentation.ui.screens.auth.login.LoginScreen
 import org.mind.app.presentation.ui.screens.setting.about.AboutScreen
 import org.mind.app.presentation.ui.screens.setting.edit.EditProfileScreen
 import org.mind.app.presentation.ui.screens.setting.privacy.PrivacyScreen
-import org.mind.app.presentation.ui.tabs.profile.ProfileTab
 import org.mind.app.presentation.viewmodel.MainViewModel
 import org.mind.app.theme.LocalThemeIsDark
 
@@ -102,9 +101,11 @@ fun SettingScreenContent(
                 val response = (signOutState as ResultState.Success).data
                 notify(response)
                 LaunchedEffect(Unit) {
-                    preference.put("is_login", false)
-                    tabNavigator.current = LoginScreen
-                    isLoading = false
+                    if (response.contains("Signed out successfully.")) {
+                        preference.put("is_login", false)
+                        tabNavigator.current = LoginScreen
+                        isLoading = false
+                    }
                 }
             }
 
@@ -188,10 +189,11 @@ fun SettingScreenContent(
         }
     }
 }
+
 @Composable
 fun AnimatedSwitch(
     isDark: Boolean,
-    onCheckedChange: (Boolean) -> Unit
+    onCheckedChange: (Boolean) -> Unit,
 ) {
     val thumbColor by animateColorAsState(
         targetValue = if (isDark) Color.DarkGray else Color.White
