@@ -51,12 +51,10 @@ import com.example.cmppreference.LocalPreferenceProvider
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
-import org.mind.app.domain.model.users.Users
 import org.mind.app.domain.usecases.ResultState
 import org.mind.app.notify
 import org.mind.app.presentation.ui.screens.auth.reset.ResetPasswordScreen
 import org.mind.app.presentation.ui.screens.auth.signup.SignupScreen
-import org.mind.app.presentation.ui.screens.home.HomeScreen
 import org.mind.app.presentation.ui.screens.main.MainScreen
 import org.mind.app.presentation.viewmodel.MainViewModel
 import org.mind.app.theme.LocalThemeIsDark
@@ -79,7 +77,6 @@ object LoginScreen : Tab {
             return TabOptions(index, title, icon)
         }
 }
-
 @Composable
 fun LoginContent(
     viewModel: MainViewModel = koinInject(),

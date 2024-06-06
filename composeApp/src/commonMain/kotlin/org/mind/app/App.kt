@@ -1,25 +1,19 @@
 package org.mind.app
 
-import androidx.compose.material3.Button
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.ImageBitmap
 import app.cash.sqldelight.db.SqlDriver
 import cafe.adriel.voyager.navigator.Navigator
+import cafe.adriel.voyager.navigator.tab.LocalTabNavigator
 import com.example.cmppreference.LocalPreference
 import com.example.cmppreference.LocalPreferenceProvider
-import com.eygraber.uri.Uri
-import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.storage.File
-import dev.gitlive.firebase.storage.storage
 import io.ktor.client.statement.HttpResponse
-import kotlinx.coroutines.launch
 import org.mind.app.presentation.ui.screens.auth.login.LoginScreen
 import org.mind.app.presentation.ui.screens.main.MainScreen
 import org.mind.app.theme.AppTheme
