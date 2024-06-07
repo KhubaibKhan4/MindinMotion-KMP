@@ -90,6 +90,7 @@ kotlin {
             implementation(libs.peekaboo.image.picker)
             implementation("io.github.vinceglb:filekit-core:0.4.1")
             implementation("io.github.vinceglb:filekit-compose:0.4.1")
+            implementation("com.benasher44:uuid:0.8.4")
         }
 
         commonTest.dependencies {

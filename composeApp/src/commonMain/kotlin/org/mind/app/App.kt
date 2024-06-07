@@ -8,8 +8,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.ImageBitmap
 import app.cash.sqldelight.db.SqlDriver
-import cafe.adriel.voyager.navigator.Navigator
-import cafe.adriel.voyager.navigator.tab.LocalTabNavigator
+import cafe.adriel.voyager.core.screen.uniqueScreenKey
+import cafe.adriel.voyager.navigator.tab.TabNavigator
+import com.benasher44.uuid.UUID
+import com.benasher44.uuid.Uuid
+import com.benasher44.uuid.uuid
 import com.example.cmppreference.LocalPreference
 import com.example.cmppreference.LocalPreferenceProvider
 import dev.gitlive.firebase.storage.File
@@ -23,17 +26,16 @@ import org.mind.app.theme.LocalThemeIsDark
 internal fun App() = AppTheme {
     LocalPreferenceProvider {
         val preference = LocalPreference.current
-        val isDarkMode by remember { mutableStateOf(preference.getBoolean("is_dark", false)) }
         var isDark by LocalThemeIsDark.current
+        val isDarkMode by remember { mutableStateOf(preference.getBoolean("is_dark", false)) }
         LaunchedEffect(isDarkMode) {
             isDark = isDarkMode
         }
         val isLoggedIn by remember { mutableStateOf(preference.getBoolean("is_login", false)) }
-        if (isLoggedIn) {
-            Navigator(MainScreen)
-        } else {
-            Navigator(LoginScreen)
-        }
+        TabNavigator(
+            tab = if (isLoggedIn) MainScreen(Uuid(534L,4L).mostSignificantBits.toString()) else LoginScreen,
+            key = if (isLoggedIn) "MainScreenKey" else "LoginScreenKey"
+        )
     }
 }
 

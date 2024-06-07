@@ -48,9 +48,10 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import cafe.adriel.voyager.navigator.LocalNavigator
+import cafe.adriel.voyager.navigator.tab.LocalTabNavigator
 import cafe.adriel.voyager.navigator.tab.Tab
 import cafe.adriel.voyager.navigator.tab.TabOptions
+import com.benasher44.uuid.Uuid
 import com.example.cmppreference.LocalPreference
 import com.example.cmppreference.LocalPreferenceProvider
 import kotlinx.coroutines.delay
@@ -85,6 +86,7 @@ object LoginScreen : Tab {
             return TabOptions(index, title, icon)
         }
 }
+
 @Composable
 fun LoginContent(
     viewModel: MainViewModel = koinInject(),
@@ -99,7 +101,8 @@ fun LoginContent(
         var userMessage by remember { mutableStateOf("") }
         var isLoading by remember { mutableStateOf(false) }
         val scope = rememberCoroutineScope()
-        val navigator = LocalNavigator.current
+        val navigator = LocalTabNavigator.current
+
 
         val state by viewModel.loginUser.collectAsState()
         when (state) {
@@ -127,10 +130,8 @@ fun LoginContent(
                     scope.launch {
                         email = ""
                         pass = ""
-                        navigator?.apply {
-                            preference.put("is_login", true)
-                            push(MainScreen)
-                        }
+                        preference.put("is_login", true)
+                        navigator.current = MainScreen(Uuid(212L,8L).mostSignificantBits.toString())
                         delay(2.seconds)
                     }
                 }
@@ -151,7 +152,11 @@ fun LoginContent(
                 contentDescription = null,
                 modifier = Modifier.size(120.dp)
                     .clip(RoundedCornerShape(12.dp))
-                    .border(width = 1.dp, color = if (isDark) Color.White else Color.Black, shape = RoundedCornerShape(12.dp))
+                    .border(
+                        width = 1.dp,
+                        color = if (isDark) Color.White else Color.Black,
+                        shape = RoundedCornerShape(12.dp)
+                    )
             )
             Spacer(modifier = Modifier.height(20.dp))
             Text(
@@ -191,7 +196,7 @@ fun LoginContent(
             )
             TextButton(
                 onClick = {
-                    navigator?.push(ResetPasswordScreen())
+                    navigator.current = ResetPasswordScreen
                 },
                 modifier = Modifier.align(Alignment.End)
             ) {
@@ -247,7 +252,7 @@ fun LoginContent(
             ) {
                 TextButton(
                     onClick = {
-                        navigator?.push(SignupScreen())
+                        navigator.current = SignupScreen
                     }
                 ) {
                     Text("Don't have an account? Sign up")

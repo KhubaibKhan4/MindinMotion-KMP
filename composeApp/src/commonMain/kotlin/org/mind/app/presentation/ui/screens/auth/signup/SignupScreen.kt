@@ -15,6 +15,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.LockReset
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
@@ -42,6 +43,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -50,6 +52,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
+import cafe.adriel.voyager.navigator.tab.LocalTabNavigator
+import cafe.adriel.voyager.navigator.tab.Tab
+import cafe.adriel.voyager.navigator.tab.TabOptions
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
@@ -66,19 +71,35 @@ import org.mind.app.utils.isValidFullName
 import org.mind.app.utils.isValidPassword
 import org.mind.app.utils.isValidPhoneNumber
 import org.mind.app.utils.isValidPostalCode
+import kotlin.random.Random
 import kotlin.time.Duration.Companion.seconds
 
-class SignupScreen : Screen {
+object SignupScreen : Tab {
     @Composable
     override fun Content() {
         SignupContent()
     }
+
+    override val options: TabOptions
+        @Composable
+        get() {
+            val icon = rememberVectorPainter(Icons.Default.LockReset)
+            val title = "Reset"
+            val index: UShort = Random.nextInt(10).toUShort()
+            return remember {
+                TabOptions(
+                    index = index,
+                    title = title,
+                    icon = icon
+                )
+            }
+        }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SignupContent(viewModel: MainViewModel = koinInject()) {
-    val navigator = LocalNavigator.current
+    val navigator = LocalTabNavigator.current
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
@@ -141,7 +162,7 @@ fun SignupContent(viewModel: MainViewModel = koinInject()) {
                     country = ""
                     postalCode = ""
                     phoneNumber = ""
-                    navigator?.pop()
+                    navigator.current = LoginScreen
                 }
             }
 
@@ -176,7 +197,7 @@ fun SignupContent(viewModel: MainViewModel = koinInject()) {
             TopAppBar(
                 title = { Text("") },
                 navigationIcon = {
-                    IconButton(onClick = { navigator?.pop() }) {
+                    IconButton(onClick = { navigator.current = LoginScreen }) {
                         Icon(
                             imageVector = Icons.Filled.ArrowBackIosNew,
                             contentDescription = "Back"
@@ -468,7 +489,7 @@ fun SignupContent(viewModel: MainViewModel = koinInject()) {
             item {
                 TextButton(
                     onClick = {
-                        navigator?.push(LoginScreen)
+                        navigator.current = LoginScreen
                     }
                 ) {
                     Text("Already have an account? Login")

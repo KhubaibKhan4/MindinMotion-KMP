@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIosNew
+import androidx.compose.material.icons.filled.Fireplace
+import androidx.compose.material.icons.filled.LockReset
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -28,24 +30,30 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
+import cafe.adriel.voyager.navigator.tab.LocalTabNavigator
+import cafe.adriel.voyager.navigator.tab.Tab
+import cafe.adriel.voyager.navigator.tab.TabOptions
 import org.koin.compose.koinInject
 import org.mind.app.domain.usecases.ResultState
+import org.mind.app.presentation.ui.screens.auth.login.LoginScreen
 import org.mind.app.presentation.viewmodel.MainViewModel
 import org.mind.app.utils.isValidEmail
+import kotlin.random.Random
 
-class ResetPasswordScreen : Screen {
+object ResetPasswordScreen : Tab{
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     override fun Content() {
         var email by remember { mutableStateOf("") }
         var userMessage by remember { mutableStateOf("") }
         val viewModel: MainViewModel = koinInject()
-        val navigator = LocalNavigator.current
+        val navigator = LocalTabNavigator.current
         val resetPasswordState by viewModel.resetPasswordState.collectAsState()
         LaunchedEffect(resetPasswordState) {
             when (resetPasswordState) {
@@ -73,7 +81,7 @@ class ResetPasswordScreen : Screen {
                 TopAppBar(
                     title = { Text("") },
                     navigationIcon = {
-                        IconButton(onClick = { navigator?.pop() }) {
+                        IconButton(onClick = { navigator.current = LoginScreen }) {
                             Icon(
                                 imageVector = Icons.Filled.ArrowBackIosNew,
                                 contentDescription = "Back"
@@ -132,4 +140,19 @@ class ResetPasswordScreen : Screen {
             }
         }
     }
+
+    override val options: TabOptions
+        @Composable
+        get() {
+            val icon = rememberVectorPainter(Icons.Default.LockReset)
+            val title = "Reset"
+            val index: UShort = Random.nextInt(10).toUShort()
+            return remember {
+                TabOptions(
+                    index = index,
+                    title = title,
+                    icon = icon
+                )
+            }
+        }
 }
