@@ -127,9 +127,9 @@ fun UserInfoCard(icon: ImageVector, label: String, info: String) {
     val labelColor = if (isDarkTheme) Color.Gray else Color.DarkGray
 
     Card(
-        modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
         shape = RoundedCornerShape(12.dp),
-        elevation = CardDefaults.cardElevation(8.dp)
+        elevation = CardDefaults.cardElevation(4.dp)
     ) {
         Row(
             modifier = Modifier.fillMaxWidth().padding(16.dp),

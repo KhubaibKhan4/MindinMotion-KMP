@@ -20,7 +20,14 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Camera
-import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.Flag
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.LocationCity
+import androidx.compose.material.icons.filled.MarkunreadMailbox
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Phone
+import androidx.compose.material.icons.filled.Security
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -67,7 +74,6 @@ import org.mind.app.domain.model.users.Users
 import org.mind.app.domain.usecases.ResultState
 import org.mind.app.presentation.ui.components.ErrorBox
 import org.mind.app.presentation.ui.components.LoadingBox
-import org.mind.app.presentation.ui.components.LocalImage
 import org.mind.app.presentation.ui.screens.setting.SettingScreen
 import org.mind.app.presentation.viewmodel.MainViewModel
 import org.mind.app.theme.LocalThemeIsDark
@@ -187,8 +193,7 @@ fun ProfileScreenContent(
                                     modifier = Modifier.size(150.dp).clip(CircleShape)
                                         .clickable { singleImagePicker.launch() },
                                 )
-                            }
-                            else {
+                            } else {
                                 if (usersDetails?.profileImage != "null") {
                                     val image: Resource<Painter> =
                                         asyncPainterResource(BASE_URL + usersDetails?.profileImage.toString())
@@ -210,7 +215,11 @@ fun ProfileScreenContent(
                                             .size(150.dp)
                                             .clip(CircleShape)
                                             .background(MaterialTheme.colorScheme.surfaceContainer)
-                                            .border(width = 1.dp, color = Color.Gray, shape = CircleShape)
+                                            .border(
+                                                width = 1.dp,
+                                                color = Color.Gray,
+                                                shape = CircleShape
+                                            )
                                     ) {
                                         Text(
                                             text = usersDetails?.fullName?.first().toString(),
@@ -253,7 +262,53 @@ fun ProfileScreenContent(
                             )
                         }
                         Spacer(modifier = Modifier.height(12.dp))
-                        usersDetails?.let { it1 -> ProfileDetails(it1) }
+                        Column(
+                            modifier = Modifier.fillMaxWidth()
+                                .padding(start = 12.dp, end = 12.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            UserInfoCard(
+                                icon = Icons.Filled.Person,
+                                label = "Username",
+                                info = usersDetails?.username.toString()
+                            )
+                            UserInfoCard(
+                                icon = Icons.Filled.Email,
+                                label = "Email",
+                                info = usersDetails?.email.toString()
+                            )
+                            UserInfoCard(
+                                icon = Icons.Filled.Home,
+                                label = "Address",
+                                info = usersDetails?.address.toString()
+                            )
+                            UserInfoCard(
+                                icon = Icons.Filled.LocationCity,
+                                label = "City",
+                                info = usersDetails?.city.toString()
+                            )
+                            UserInfoCard(
+                                icon = Icons.Filled.Flag,
+                                label = "Country",
+                                info = usersDetails?.country.toString()
+                            )
+                            UserInfoCard(
+                                icon = Icons.Filled.MarkunreadMailbox,
+                                label = "Postal Code",
+                                info = usersDetails?.postalCode.toString()
+                            )
+                            UserInfoCard(
+                                icon = Icons.Filled.Phone,
+                                label = "Phone",
+                                info = usersDetails?.phoneNumber.toString()
+                            )
+                            UserInfoCard(
+                                icon = Icons.Filled.Security,
+                                label = "Role",
+                                info = usersDetails?.userRole.toString()
+                            )
+                        }
                     }
                 } else {
                     Box(
