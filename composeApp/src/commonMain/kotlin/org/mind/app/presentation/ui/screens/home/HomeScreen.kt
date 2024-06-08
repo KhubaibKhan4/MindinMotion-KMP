@@ -29,8 +29,12 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.TextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Chat
+import androidx.compose.material.icons.outlined.Bookmarks
 import androidx.compose.material.icons.outlined.ChatBubble
 import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material.icons.outlined.Computer
+import androidx.compose.material.icons.outlined.Email
+import androidx.compose.material.icons.outlined.Memory
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -289,7 +293,7 @@ class HomeScreen : Screen {
                         }
                     ) {
                         Icon(
-                            imageVector = Icons.Outlined.ChatBubble,
+                            imageVector = Icons.Outlined.Memory,
                             contentDescription = null
                         )
                     }
