@@ -187,8 +187,8 @@ fun MessageBubble(message: Message) {
                 painter = painterResource(Res.drawable.ic_logo),
                 contentDescription = "Bot Profile",
                 modifier = Modifier
-                    .size(40.dp)
                     .padding(end = 8.dp)
+                    .size(30.dp)
                     .border(1.dp, if (isDark) Color.White else Color.Black, CircleShape)
             )
         }
