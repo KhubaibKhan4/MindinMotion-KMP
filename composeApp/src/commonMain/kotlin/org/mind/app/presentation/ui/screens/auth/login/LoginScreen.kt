@@ -100,7 +100,7 @@ fun LoginContent(
         var email by remember { mutableStateOf("") }
         var pass by remember { mutableStateOf("") }
         var passwordVisible by remember { mutableStateOf(false) }
-        var isDark by LocalThemeIsDark.current
+        val isDark by LocalThemeIsDark.current
         var userMessage by remember { mutableStateOf("") }
         var isLoading by remember { mutableStateOf(false) }
         val scope = rememberCoroutineScope()
