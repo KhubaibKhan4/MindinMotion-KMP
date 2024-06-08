@@ -1,5 +1,6 @@
 package org.mind.app.presentation.ui.components
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -17,6 +18,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import mind_in_motion.composeapp.generated.resources.Res
 import mind_in_motion.composeapp.generated.resources.ic_cyclone
+import mind_in_motion.composeapp.generated.resources.ic_logo
 import org.jetbrains.compose.resources.painterResource
 import org.mind.app.theme.LocalThemeIsDark
 
@@ -30,11 +32,10 @@ fun EmptyChatPlaceholder() {
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Icon(
-            painter = painterResource(Res.drawable.ic_cyclone),
+        Image(
+            painter = painterResource(Res.drawable.ic_logo),
             contentDescription = "Empty Chat",
             modifier = Modifier.size(120.dp),
-            tint = if (isDark) Color.White else Color.Black
         )
         Text(
             text = "No messages yet. Start the conversation!",

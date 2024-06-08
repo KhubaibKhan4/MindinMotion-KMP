@@ -2,6 +2,7 @@ package org.mind.app.presentation.ui.screens.chatbot
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -49,6 +50,7 @@ import cafe.adriel.voyager.navigator.tab.LocalTabNavigator
 import mind_in_motion.composeapp.generated.resources.Res
 import mind_in_motion.composeapp.generated.resources.avatar
 import mind_in_motion.composeapp.generated.resources.ic_cyclone
+import mind_in_motion.composeapp.generated.resources.ic_logo
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.koinInject
 import org.mind.app.domain.model.message.Message
@@ -182,12 +184,12 @@ fun MessageBubble(message: Message) {
     ) {
         if (!message.isUserMessage) {
             Image(
-                painter = painterResource(Res.drawable.ic_cyclone),
+                painter = painterResource(Res.drawable.ic_logo),
                 contentDescription = "Bot Profile",
                 modifier = Modifier
                     .size(40.dp)
-                    .padding(end = 8.dp),
-                colorFilter = if (isDark) ColorFilter.tint(Color.White) else null
+                    .padding(end = 8.dp)
+                    .border(1.dp, if (isDark) Color.White else Color.Black, CircleShape)
             )
         }
         Box(

@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import org.mind.app.data.local.DatabaseHelper
@@ -138,6 +139,12 @@ class MainViewModel(
     }
 
     private fun fetchInitialData() {
+        viewModelScope.launch {
+            databaseHelper.getAllMessages().collect { localMessages ->
+                val convertedMessages = localMessages.map { convertDbMessageToUiMessage(it) }
+                _messages.value = convertedMessages
+            }
+        }
         viewModelScope.launch {
             repository.getCommunities().collect { communityList ->
                 _communities.value = communityList
