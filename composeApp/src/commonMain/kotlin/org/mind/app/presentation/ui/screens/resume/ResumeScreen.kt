@@ -100,7 +100,7 @@ fun ResumeContent() {
                 },
                 actions = {
                     Icon(
-                        imageVector =if(isGirdView) Icons.Default.GridView else Icons.AutoMirrored.Filled.ViewList,
+                        imageVector = if (isGirdView) Icons.Default.GridView else Icons.AutoMirrored.Filled.ViewList,
                         contentDescription = null,
                         modifier = Modifier.clickable { isGirdView = !isGirdView }
                     )
@@ -204,14 +204,14 @@ fun ResumeContent() {
                 } else if (filteredResumes.isEmpty()) {
                     Text("No resumes found", style = MaterialTheme.typography.bodyMedium)
                 } else {
-                    if (isGirdView){
+                    if (isGirdView) {
                         LazyVerticalGrid(
                             columns = GridCells.Fixed(2),
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
                             verticalArrangement = Arrangement.spacedBy(8.dp),
-                            modifier = Modifier.padding(8.dp)
+                            modifier = Modifier.padding(top = 8.dp, start = 8.dp, end = 8.dp)
                         ) {
-                            items(filteredResumes){resume->
+                            items(filteredResumes) { resume ->
                                 KamelImage(
                                     resource = asyncPainterResource(BASE_URL + resume.imageUrl),
                                     contentDescription = null,
@@ -232,13 +232,13 @@ fun ResumeContent() {
                                 )
                             }
                         }
-                    }else{
-                        LazyColumn (
+                    } else {
+                        LazyColumn(
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.spacedBy(8.dp),
                             modifier = Modifier.padding(8.dp)
                         ) {
-                            items(filteredResumes){resume->
+                            items(filteredResumes) { resume ->
                                 KamelImage(
                                     resource = asyncPainterResource(BASE_URL + resume.imageUrl),
                                     contentDescription = null,
@@ -252,10 +252,10 @@ fun ResumeContent() {
                                         )
                                         .padding(8.dp)
                                         .clickable {
-                                                   navigator?.push(ResumeDetailScreen(imageUrl = resume.imageUrl))
+                                            navigator?.push(ResumeDetailScreen(imageUrl = resume.imageUrl))
                                         },
 
-                                )
+                                    )
                             }
                         }
                     }
