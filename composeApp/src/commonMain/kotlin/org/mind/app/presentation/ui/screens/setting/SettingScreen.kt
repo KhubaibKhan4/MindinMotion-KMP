@@ -43,8 +43,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
+import cafe.adriel.voyager.core.annotation.InternalVoyagerApi
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
+import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.tab.LocalTabNavigator
 import com.example.cmppreference.LocalPreference
 import com.example.cmppreference.LocalPreferenceProvider
@@ -55,6 +57,7 @@ import org.mind.app.notify
 import org.mind.app.presentation.ui.components.ErrorBox
 import org.mind.app.presentation.ui.components.LoadingBox
 import org.mind.app.presentation.ui.screens.auth.login.LoginScreen
+import org.mind.app.presentation.ui.screens.main.MainScreen
 import org.mind.app.presentation.ui.screens.setting.about.AboutScreen
 import org.mind.app.presentation.ui.screens.setting.edit.EditProfileScreen
 import org.mind.app.presentation.ui.screens.setting.privacy.PrivacyScreen

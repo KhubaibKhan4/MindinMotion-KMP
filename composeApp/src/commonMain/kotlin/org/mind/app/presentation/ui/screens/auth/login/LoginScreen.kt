@@ -48,6 +48,8 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import cafe.adriel.voyager.core.screen.ScreenKey
+import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.tab.LocalTabNavigator
 import cafe.adriel.voyager.navigator.tab.Tab
 import cafe.adriel.voyager.navigator.tab.TabOptions
@@ -72,6 +74,7 @@ import org.mind.app.utils.isValidPassword
 import kotlin.time.Duration.Companion.seconds
 
 object LoginScreen : Tab {
+    override var key: ScreenKey=Uuid(111L,88L).mostSignificantBits.toString()
     @Composable
     override fun Content() {
         LoginContent()
@@ -102,6 +105,7 @@ fun LoginContent(
         var isLoading by remember { mutableStateOf(false) }
         val scope = rememberCoroutineScope()
         val navigator = LocalTabNavigator.current
+        val localNavigator = LocalNavigator.current
 
 
         val state by viewModel.loginUser.collectAsState()
@@ -132,6 +136,7 @@ fun LoginContent(
                         pass = ""
                         preference.put("is_login", true)
                         navigator.current = MainScreen(Uuid(212L,8L).mostSignificantBits.toString())
+                        localNavigator?.popAll()
                         delay(2.seconds)
                     }
                 }

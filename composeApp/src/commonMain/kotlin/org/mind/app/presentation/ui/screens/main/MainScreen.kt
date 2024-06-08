@@ -48,7 +48,7 @@ class MainScreen(
         val preference = LocalPreference.current
         TabNavigator(
             tab = HomeTab,
-            disposeNestedNavigators = true,
+            disposeNestedNavigators = false,
         ) { tabNavigator ->
             Scaffold(bottomBar = {
                 if (
