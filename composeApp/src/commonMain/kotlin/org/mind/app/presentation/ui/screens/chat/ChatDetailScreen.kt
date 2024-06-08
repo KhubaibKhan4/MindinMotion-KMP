@@ -26,6 +26,8 @@ import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -65,6 +67,7 @@ import org.koin.compose.koinInject
 import org.mind.app.createTempFileFromBitmap
 import org.mind.app.domain.model.chat.ChatMessage
 import org.mind.app.domain.model.users.Users
+import org.mind.app.presentation.ui.screens.profile.UserProfileScreen
 import org.mind.app.presentation.viewmodel.MainViewModel
 import org.mind.app.theme.LocalThemeIsDark
 import org.mind.app.utils.Constant.BASE_URL
@@ -187,8 +190,24 @@ fun ChatDetailScreenContent(
                     Icon(
                         imageVector = Icons.Default.MoreVert,
                         contentDescription = null,
-                        modifier = Modifier.clickable { }
+                        modifier = Modifier.clickable {
+                            isDropdownMenuExpanded = !isDropdownMenuExpanded
+                        }
                     )
+                    if (isDropdownMenuExpanded) {
+                        DropdownMenu(
+                            expanded = isDropdownMenuExpanded,
+                            onDismissRequest = { isDropdownMenuExpanded = false }
+                        ){
+                            DropdownMenuItem(
+                                text = { Text("View Profile") },
+                                onClick = {
+                                    isDropdownMenuExpanded = false
+                                    navigator?.push(UserProfileScreen(users))
+                                }
+                            )
+                        }
+                    }
                 }
             )
         }
