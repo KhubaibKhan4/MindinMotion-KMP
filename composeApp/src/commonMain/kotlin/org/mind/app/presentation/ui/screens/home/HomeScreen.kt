@@ -361,7 +361,7 @@ fun SubCategoryItem(
     val navigator = LocalNavigator.current
     Column(
         modifier = Modifier.fillMaxWidth()
-            .padding(16.dp),
+            .padding(top = 16.dp, bottom = 16.dp, start = 8.dp, end = 8.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Row(
