@@ -1,8 +1,5 @@
 package org.mind.app.presentation.ui.screens.profile
 
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -29,6 +26,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -46,7 +44,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
-import com.seiko.imageloader.rememberImagePainter
 import io.kamel.core.Resource
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
@@ -63,96 +60,98 @@ class UserProfileScreen(
         UserProfileScreenContent(users)
     }
 }
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UserProfileScreenContent(user: Users) {
     val navigator = LocalNavigator.current
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(text = "User Profile") },
-                navigationIcon = {
-                    IconButton(onClick = {
-                        navigator?.pop()
-                    }) {
-                        Icon(
-                            imageVector = Icons.Filled.ArrowBackIosNew,
-                            contentDescription = "Back"
-                        )
-                    }
-                }
-            )
-        }
-    ) { padding ->
+    Scaffold(topBar = {
+        TopAppBar(title = { Text(text = "User Profile") }, navigationIcon = {
+            IconButton(onClick = {
+                navigator?.pop()
+            }) {
+                Icon(
+                    imageVector = Icons.Filled.ArrowBackIosNew, contentDescription = "Back"
+                )
+            }
+        })
+    }) { padding ->
         Column(
-            modifier = Modifier
-                .padding(padding)
+            modifier = Modifier.padding(top = padding.calculateTopPadding())
                 .fillMaxSize()
-                .padding(start = 16.dp, end = 16.dp)
+                .padding(
+                    start = 16.dp,
+                    end = 16.dp
+                )
                 .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             if (user.profileImage?.contains("null") == true) {
                 LocalImage(
-                    modifier = Modifier.size(128.dp)
-                        .clip(CircleShape)
+                    modifier = Modifier.size(128.dp).clip(CircleShape)
                 )
             } else {
                 val image: Resource<Painter> = asyncPainterResource(BASE_URL + user.profileImage)
                 KamelImage(
                     resource = image,
                     contentDescription = null,
-                    modifier = Modifier.size(128.dp)
-                        .clip(CircleShape),
+                    modifier = Modifier.size(128.dp).clip(CircleShape),
                     contentScale = ContentScale.Crop
                 )
             }
 
             Text(text = user.fullName, fontSize = 24.sp, fontWeight = FontWeight.Bold)
 
-            UserInfoRow(icon = Icons.Filled.Person, label = "Username", info = user.username)
-            UserInfoRow(icon = Icons.Filled.Email, label = "Email", info = user.email)
-            UserInfoRow(icon = Icons.Filled.Home, label = "Address", info = user.address)
-            UserInfoRow(icon = Icons.Filled.LocationCity, label = "City", info = user.city)
-            UserInfoRow(icon = Icons.Filled.Flag, label = "Country", info = user.country)
-            UserInfoRow(icon = Icons.Filled.MarkunreadMailbox, label = "Postal Code", info = user.postalCode.toString())
-            UserInfoRow(icon = Icons.Filled.Phone, label = "Phone", info = user.phoneNumber)
-            UserInfoRow(icon = Icons.Filled.Security, label = "Role", info = user.userRole)
+            UserInfoCard(icon = Icons.Filled.Person, label = "Username", info = user.username)
+            UserInfoCard(icon = Icons.Filled.Email, label = "Email", info = user.email)
+            UserInfoCard(icon = Icons.Filled.Home, label = "Address", info = user.address)
+            UserInfoCard(icon = Icons.Filled.LocationCity, label = "City", info = user.city)
+            UserInfoCard(icon = Icons.Filled.Flag, label = "Country", info = user.country)
+            UserInfoCard(
+                icon = Icons.Filled.MarkunreadMailbox,
+                label = "Postal Code",
+                info = user.postalCode.toString()
+            )
+            UserInfoCard(icon = Icons.Filled.Phone, label = "Phone", info = user.phoneNumber)
+            UserInfoCard(icon = Icons.Filled.Security, label = "Role", info = user.userRole)
         }
     }
 }
 
 @Composable
-fun UserInfoRow(icon: ImageVector, label: String, info: String) {
+fun UserInfoCard(icon: ImageVector, label: String, info: String) {
     val isDarkTheme by LocalThemeIsDark.current
-    val cardColor = if (isDarkTheme) Color.DarkGray else Color.LightGray
+    val cardColor = if (isDarkTheme) MaterialTheme.colorScheme.surface else Color.White
     val textColor = if (isDarkTheme) Color.White else Color.Black
     val labelColor = if (isDarkTheme) Color.Gray else Color.DarkGray
 
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 4.dp),
-        shape = RoundedCornerShape(8.dp),
-        colors = CardDefaults.cardColors(containerColor = cardColor)
+        modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+        shape = RoundedCornerShape(12.dp),
+        elevation = CardDefaults.cardElevation(8.dp)
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
+            modifier = Modifier.fillMaxWidth().padding(16.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Icon(
                 imageVector = icon,
                 contentDescription = null,
-                tint = textColor,
-                modifier = Modifier.size(24.dp)
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(32.dp)
             )
             Column {
-                Text(text = label, fontSize = 14.sp, color = labelColor)
-                Text(text = info, fontSize = 18.sp, color = textColor)
+                Text(
+                    text = label,
+                    fontSize = 14.sp,
+                    color = labelColor,
+                    fontWeight = FontWeight.SemiBold
+                )
+                Text(
+                    text = info, fontSize = 18.sp, color = textColor, fontWeight = FontWeight.Medium
+                )
             }
         }
     }
