@@ -8,11 +8,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.ImageBitmap
 import app.cash.sqldelight.db.SqlDriver
-import cafe.adriel.voyager.core.screen.uniqueScreenKey
 import cafe.adriel.voyager.navigator.tab.TabNavigator
-import com.benasher44.uuid.UUID
 import com.benasher44.uuid.Uuid
-import com.benasher44.uuid.uuid
 import com.example.cmppreference.LocalPreference
 import com.example.cmppreference.LocalPreferenceProvider
 import dev.gitlive.firebase.storage.File
