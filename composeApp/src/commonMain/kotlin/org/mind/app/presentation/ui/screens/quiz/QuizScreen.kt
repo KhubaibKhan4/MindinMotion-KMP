@@ -18,13 +18,9 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Scaffold
-import androidx.compose.material.TextField
-import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.outlined.Close
-import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -141,47 +137,42 @@ fun QuizScreenContent(
             TopAppBar(
                 title = {
                     if (isSearchActive) {
-                        TextField(
+                        androidx.compose.material3.TextField(
                             value = searchQuery,
                             onValueChange = { searchQuery = it },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(8.dp)
+                            ,
                             placeholder = {
-                                Text(
-                                    "Search...",
-                                    color = if (isDark) Color.LightGray else Color.Gray
-                                )
+                                Text("Search Notes", color = Color.Black)
                             },
                             leadingIcon = {
                                 Icon(
-                                    imageVector = Icons.Outlined.Search,
-                                    contentDescription = null
+                                    Icons.Default.Search,
+                                    contentDescription = "Search"
                                 )
                             },
                             trailingIcon = {
                                 Icon(
-                                    imageVector = Icons.Outlined.Close,
-                                    contentDescription = null,
+                                    Icons.Default.Clear,
+                                    contentDescription = "Clear",
                                     modifier = Modifier.clickable {
                                         searchQuery = ""
                                         isSearchActive = !isSearchActive
                                     }
                                 )
                             },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .background(
-                                    Color.Transparent,
-                                    shape = RoundedCornerShape(8.dp)
-                                )
-                                .padding(4.dp),
-                            singleLine = true,
                             shape = RoundedCornerShape(16.dp),
-                            colors = TextFieldDefaults.textFieldColors(
-                                unfocusedIndicatorColor = Color.Transparent,
+                            colors = androidx.compose.material3.TextFieldDefaults.colors(
+                                focusedContainerColor = Color.LightGray,
+                                unfocusedContainerColor = Color.LightGray,
                                 focusedIndicatorColor = Color.Transparent,
-                                textColor = if (isDark) Color.White else Color.Black,
-                                backgroundColor = if (isDark) Color.DarkGray else Color.LightGray,
-                                trailingIconColor = if (isDark) Color.LightGray else Color.Gray,
-                                leadingIconColor = if (isDark) Color.LightGray else Color.Gray
+                                unfocusedIndicatorColor = Color.Transparent,
+                                disabledIndicatorColor = Color.Transparent,
+                                errorIndicatorColor = Color.Transparent,
+                                focusedTextColor = Color.Black,
+                                unfocusedTextColor = Color.Black,
                             )
                         )
                     } else {
