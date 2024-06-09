@@ -21,6 +21,7 @@ import androidx.compose.material.Scaffold
 import androidx.compose.material.TextField
 import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Search
@@ -61,7 +62,6 @@ import org.mind.app.domain.usecases.ResultState
 import org.mind.app.notify
 import org.mind.app.presentation.ui.components.ErrorBox
 import org.mind.app.presentation.ui.components.LoadingBox
-import org.mind.app.presentation.ui.tabs.quiz.QuizPlayScreen
 import org.mind.app.presentation.viewmodel.MainViewModel
 import org.mind.app.theme.LocalThemeIsDark
 import org.mind.app.utils.Constant.BASE_URL
@@ -268,7 +268,7 @@ fun QuizCategoryItemCard(
                     isEmpty = true
                 } else {
                     //navigator.current = QuizPlayScreen(category, quizItems)
-                    localNavigator?.push(QuizScreenPlay(category,quizItems))
+                    localNavigator?.push(QuizScreenPlay(category, quizItems))
                 }
             }
     ) {
