@@ -261,7 +261,7 @@ fun QuizScreenPlayContent(
                                     .clickable {
                                        /* navigator.current =
                                             QuizQuestions(quizCategoryItem, quizQuestionsItem)*/
-                                        localNavigator?.push(QuizQuestions(quizCategoryItem, quizQuestionsItem))
+                                        localNavigator?.push(QuizQuestionsScreen(quizCategoryItem, quizQuestionsItem))
                                     },
                                 contentAlignment = Alignment.Center
                             ) {
@@ -293,7 +293,7 @@ fun QuizScreenPlayContent(
                         imageVector = Icons.Default.ArrowBackIosNew,
                         contentDescription = null,
                         modifier = Modifier.clickable {
-                            navigator.current = QuizTab
+                            localNavigator?.pop()
                         },
                         tint = Color.White
                     )

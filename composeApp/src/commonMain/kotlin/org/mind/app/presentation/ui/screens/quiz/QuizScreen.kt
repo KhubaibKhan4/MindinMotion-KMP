@@ -268,7 +268,7 @@ fun QuizCategoryItemCard(
                     isEmpty = true
                 } else {
                     //navigator.current = QuizPlayScreen(category, quizItems)
-                    localNavigator?.push(QuizPlayScreen(category,quizItems))
+                    localNavigator?.push(QuizScreenPlay(category,quizItems))
                 }
             }
     ) {
