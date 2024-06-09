@@ -32,6 +32,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -47,6 +48,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.tab.LocalTabNavigator
+import com.example.cmppreference.LocalPreference
+import com.example.cmppreference.LocalPreferenceProvider
 import mind_in_motion.composeapp.generated.resources.Res
 import mind_in_motion.composeapp.generated.resources.avatar
 import mind_in_motion.composeapp.generated.resources.ic_cyclone
@@ -54,8 +57,12 @@ import mind_in_motion.composeapp.generated.resources.ic_logo
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.koinInject
 import org.mind.app.domain.model.message.Message
+import org.mind.app.domain.model.users.Users
+import org.mind.app.domain.usecases.ResultState
 import org.mind.app.presentation.ui.components.EmptyChatPlaceholder
+import org.mind.app.presentation.ui.components.ErrorBox
 import org.mind.app.presentation.ui.components.InfoDialog
+import org.mind.app.presentation.ui.components.LoadingBox
 import org.mind.app.presentation.ui.components.TypewriterEffect
 import org.mind.app.presentation.ui.components.parseMessageText
 import org.mind.app.presentation.ui.tabs.home.HomeTab
@@ -72,103 +79,130 @@ class ChatBotScreen : Screen {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ChatScreenContent(viewModel: MainViewModel = koinInject()) {
-    val messages by viewModel.messages.collectAsState()
-    var userInput by remember { mutableStateOf("") }
-    var isInfo by remember { mutableStateOf(false) }
-    val isDark by LocalThemeIsDark.current
-    val navigator = LocalTabNavigator.current
-
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Chat Bot") },
-                navigationIcon = {
-                    Icon(
-                        Icons.Default.ArrowBackIosNew, contentDescription = null,
-                        tint = if (isDark) Color.White else Color.Black,
-                        modifier = Modifier.clickable {
-                            navigator.current = HomeTab
-                        }
-                    )
-                },
-                actions = {
-                    Icon(
-                        Icons.Default.Info, contentDescription = null,
-                        tint = if (isDark) Color.White else Color.Black,
-                        modifier = Modifier.clickable {
-                            isInfo = !isInfo
-                        }
-                    )
-                }
-            )
+    LocalPreferenceProvider {
+        val preferences = LocalPreference.current
+        val email by remember { mutableStateOf(preferences.getString("email")) }
+        val messages by viewModel.messages.collectAsState()
+        var userInput by remember { mutableStateOf("") }
+        var currentUserId by remember { mutableStateOf<Users?>(null) }
+        var isInfo by remember { mutableStateOf(false) }
+        val isDark by LocalThemeIsDark.current
+        val navigator = LocalTabNavigator.current
+        LaunchedEffect(Unit){
+            viewModel.getUserByEmail(email.toString())
         }
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(top = it.calculateTopPadding())
-                .padding(start = 16.dp, end = 16.dp),
-            verticalArrangement = Arrangement.SpaceBetween
+        val currentUserState by viewModel.userByEmail.collectAsState()
+        when(currentUserState){
+            is ResultState.Error -> {
+                val error = (currentUserState as ResultState.Error).message
+                ErrorBox(error)
+            }
+            ResultState.Loading -> {
+                LoadingBox()
+            }
+            is ResultState.Success -> {
+                val response = (currentUserState as ResultState.Success).data
+                currentUserId = response
+            }
+        }
+        LaunchedEffect(currentUserId){
+            if (currentUserId?.id!=null){
+                viewModel.fetchBotMessages(currentUserId = currentUserId?.id.toString())
+            }
+        }
+
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    title = { Text("Chat Bot") },
+                    navigationIcon = {
+                        Icon(
+                            Icons.Default.ArrowBackIosNew, contentDescription = null,
+                            tint = if (isDark) Color.White else Color.Black,
+                            modifier = Modifier.clickable {
+                                navigator.current = HomeTab
+                            }
+                        )
+                    },
+                    actions = {
+                        Icon(
+                            Icons.Default.Info, contentDescription = null,
+                            tint = if (isDark) Color.White else Color.Black,
+                            modifier = Modifier.clickable {
+                                isInfo = !isInfo
+                            }
+                        )
+                    }
+                )
+            }
         ) {
-            Box(
-                modifier = Modifier.weight(1f)
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(top = it.calculateTopPadding())
+                    .padding(start = 16.dp, end = 16.dp),
+                verticalArrangement = Arrangement.SpaceBetween
             ) {
-                if (messages.isEmpty()) {
-                    EmptyChatPlaceholder()
-                } else {
-                    LazyColumn(
-                        modifier = Modifier.fillMaxSize(),
-                        reverseLayout = true
-                    ) {
-                        items(messages.reversed()) { message ->
-                            MessageBubble(message)
+                Box(
+                    modifier = Modifier.weight(1f)
+                ) {
+                    if (messages.isEmpty()) {
+                        EmptyChatPlaceholder()
+                    } else {
+                        LazyColumn(
+                            modifier = Modifier.fillMaxSize(),
+                            reverseLayout = true
+                        ) {
+                            items(messages.reversed()) { message ->
+                                MessageBubble(message)
+                            }
                         }
                     }
                 }
-            }
-            Row(
-                modifier = Modifier.fillMaxWidth()
-                    .padding(4.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center
-            ) {
-                OutlinedTextField(
-                    value = userInput,
-                    onValueChange = { userInput = it },
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(end = 8.dp),
-                    textStyle = LocalTextStyle.current.copy(fontSize = 16.sp),
-                    placeholder = { Text("Type a message...") },
-                    singleLine = true,
-                    trailingIcon = {
-                        IconButton(
-                            onClick = {
-                                if (userInput.isNotBlank()) {
-                                    viewModel.sendMessage(userInput)
-                                    userInput = ""
+                Row(
+                    modifier = Modifier.fillMaxWidth()
+                        .padding(4.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    OutlinedTextField(
+                        value = userInput,
+                        onValueChange = { userInput = it },
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(end = 8.dp),
+                        textStyle = LocalTextStyle.current.copy(fontSize = 16.sp),
+                        placeholder = { Text("Type a message...") },
+                        singleLine = true,
+                        trailingIcon = {
+                            IconButton(
+                                onClick = {
+                                    if (userInput.isNotBlank()) {
+                                        viewModel.sendMessage(userInput, currentUserId = currentUserId?.id.toString())
+                                        userInput = ""
+                                    }
                                 }
+                            ) {
+                                Icon(
+                                    Icons.AutoMirrored.Filled.Send,
+                                    contentDescription = "Send",
+                                    tint = if (isDark) Color.White else Color.Black
+                                )
                             }
-                        ) {
-                            Icon(
-                                Icons.AutoMirrored.Filled.Send,
-                                contentDescription = "Send",
-                                tint = if (isDark) Color.White else Color.Black
-                            )
-                        }
-                    },
-                    colors = TextFieldDefaults.outlinedTextFieldColors(
-                        cursorColor = Color.Blue,
-                        focusedBorderColor = Color.DarkGray,
-                        unfocusedBorderColor = Color.Gray
+                        },
+                        colors = TextFieldDefaults.outlinedTextFieldColors(
+                            cursorColor = Color.Blue,
+                            focusedBorderColor = Color.DarkGray,
+                            unfocusedBorderColor = Color.Gray
+                        )
                     )
+                }
+            }
+            if (isInfo) {
+                InfoDialog(
+                    onCloseClicked = { isInfo = false }
                 )
             }
-        }
-        if (isInfo) {
-            InfoDialog(
-                onCloseClicked = { isInfo = false }
-            )
         }
     }
 }

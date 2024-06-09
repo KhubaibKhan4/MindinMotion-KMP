@@ -2,11 +2,12 @@ CREATE TABLE Message (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     text TEXT NOT NULL,
     isUserMessage INTEGER NOT NULL,
+     userId TEXT NOT NULL,
     timestamp INTEGER NOT NULL
 );
 
 selectAllMessages:
-SELECT * FROM Message ORDER BY timestamp ASC ;
+SELECT * FROM Message WHERE userId = ? ORDER BY timestamp ASC;
 
 insertMessage:
-INSERT INTO Message (text, isUserMessage, timestamp) VALUES (?, ?, ?);
+INSERT INTO Message (text, isUserMessage,userId, timestamp) VALUES (?, ?, ?,?);

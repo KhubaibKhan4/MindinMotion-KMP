@@ -11,14 +11,14 @@ class DatabaseHelper(driver: SqlDriver) {
     private val database = MyDatabase(driver)
     private val queries = database.messageQueries
 
-    fun getAllMessages(): Flow<List<Message>> {
+    fun getAllMessages(userId: String): Flow<List<Message>> {
         return flow {
-            emit(queries.selectAllMessages().executeAsList())
+            emit(queries.selectAllMessages(userId).executeAsList())
         }
     }
 
 
-    suspend fun insertMessage(text: String, isUserMessage: Boolean, timestamp: Long) {
-        queries.insertMessage(text, if (isUserMessage) 1 else 0, timestamp)
+    suspend fun insertMessage(text: String, isUserMessage: Boolean,userId: String, timestamp: Long) {
+        queries.insertMessage(text, if (isUserMessage) 1 else 0, userId,timestamp)
     }
 }

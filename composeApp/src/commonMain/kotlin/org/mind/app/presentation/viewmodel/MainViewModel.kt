@@ -140,12 +140,6 @@ class MainViewModel(
 
     private fun fetchInitialData() {
         viewModelScope.launch {
-            databaseHelper.getAllMessages().collect { localMessages ->
-                val convertedMessages = localMessages.map { convertDbMessageToUiMessage(it) }
-                _messages.value = convertedMessages
-            }
-        }
-        viewModelScope.launch {
             repository.getCommunities().collect { communityList ->
                 _communities.value = communityList
             }
@@ -158,6 +152,14 @@ class MainViewModel(
         viewModelScope.launch {
             repository.getMessages().collect { messageList ->
                 _chatMessages.value = messageList
+            }
+        }
+    }
+    fun fetchBotMessages(currentUserId: String){
+        viewModelScope.launch {
+            databaseHelper.getAllMessages(currentUserId).collect { localMessages ->
+                val convertedMessages = localMessages.map { convertDbMessageToUiMessage(it) }
+                _messages.value = convertedMessages
             }
         }
     }
@@ -444,25 +446,25 @@ class MainViewModel(
         }
     }
 
-    fun sendMessage(content: String) {
-        val userMessage = Message(content, isUserMessage = true)
+    fun sendMessage(content: String, currentUserId: String) {
+        val userMessage = Message(content, isUserMessage = true, userId = currentUserId)
         viewModelScope.launch {
             databaseHelper.insertMessage(
                 text = userMessage.text,
                 isUserMessage = true,
+                userId = currentUserId,
                 timestamp = Clock.System.now().toEpochMilliseconds()
             )
             val currentMessages = _messages.value.toMutableList()
             currentMessages.add(userMessage)
-            currentMessages.add(Message("Loading...", isUserMessage = false, isLoading = true))
+            currentMessages.add(Message("Loading...", isUserMessage = false, userId = currentUserId, isLoading = true))
             _messages.value = currentMessages
 
-            generateResponse(content)
+            generateResponse(content, currentUserId)
         }
     }
 
-
-    private fun generateResponse(content: String) {
+    private fun generateResponse(content: String, currentUserId: String) {
         viewModelScope.launch {
             _generateContent.value = ResultState.Loading
             try {
@@ -476,12 +478,13 @@ class MainViewModel(
                 databaseHelper.insertMessage(
                     text = responseMessage,
                     isUserMessage = false,
+                    userId = currentUserId,
                     timestamp = Clock.System.now().toEpochMilliseconds()
                 )
 
                 val currentMessages = _messages.value.toMutableList()
                 currentMessages.removeLast()
-                currentMessages.add(Message(responseMessage, isUserMessage = false))
+                currentMessages.add(Message(responseMessage, isUserMessage = false, userId = currentUserId))
                 _messages.value = currentMessages
             } catch (e: Exception) {
                 _generateContent.value = ResultState.Error(e.toString())
@@ -489,21 +492,24 @@ class MainViewModel(
                 databaseHelper.insertMessage(
                     text = errorMessage,
                     isUserMessage = false,
+                    userId = currentUserId,
                     timestamp = Clock.System.now().toEpochMilliseconds()
                 )
                 val currentMessages = _messages.value.toMutableList()
                 currentMessages.removeLast()
-                currentMessages.add(Message(errorMessage, isUserMessage = false))
+                currentMessages.add(Message(errorMessage, isUserMessage = false, userId = currentUserId))
                 _messages.value = currentMessages
             }
         }
     }
 
 
+
     private fun convertDbMessageToUiMessage(dbMessage: org.mind.app.db.Message): Message {
         return Message(
             text = dbMessage.text,
             isUserMessage = dbMessage.isUserMessage == 1L,
+            userId = dbMessage.userId,
             isLoading = false,
             showTypewriterEffect = false
         )
