@@ -1,5 +1,6 @@
 package org.mind.app.presentation.ui.screens.notes
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -20,6 +21,9 @@ import androidx.compose.material.Scaffold
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Article
 import androidx.compose.material.icons.automirrored.filled.EventNote
+import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.ClearAll
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -179,6 +183,18 @@ fun NotesScreenContent(
                             placeholder = {
                                 Text("Search Notes", color = Color.Black)
                             },
+                            leadingIcon = {Icon(Icons.Default.Search, contentDescription = "Search")},
+                            trailingIcon = {
+                               AnimatedVisibility (searchText.text.isNotEmpty()){
+                                   Icon(
+                                       Icons.Default.Clear,
+                                       contentDescription = "Clear",
+                                       modifier = Modifier.clickable {
+                                           searchText = TextFieldValue("")
+                                       }
+                                   )
+                               }
+                            },
                             shape = RoundedCornerShape(16.dp),
                             colors = TextFieldDefaults.colors(
                                 focusedContainerColor = Color.LightGray,
@@ -239,6 +255,18 @@ fun NotesScreenContent(
                                 .fillMaxWidth(),
                             placeholder = {
                                 Text("Search Boards", color = Color.Black)
+                            },
+                            leadingIcon = {Icon(Icons.Default.Search, contentDescription = "Search")},
+                            trailingIcon = {
+                                AnimatedVisibility (boardText.text.isNotEmpty()){
+                                    Icon(
+                                        Icons.Default.Clear,
+                                        contentDescription = "Clear",
+                                        modifier = Modifier.clickable {
+                                            boardText = TextFieldValue("")
+                                        }
+                                    )
+                                }
                             },
                             shape = RoundedCornerShape(16.dp),
                             colors = TextFieldDefaults.colors(
