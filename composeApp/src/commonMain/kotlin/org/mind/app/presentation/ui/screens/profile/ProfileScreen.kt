@@ -222,10 +222,10 @@ fun ProfileScreenContent(
                                             )
                                     ) {
                                         Text(
-                                            text = usersDetails?.fullName?.first().toString(),
+                                            text = usersDetails?.fullName?.take(2).toString(),
                                             modifier = Modifier.align(Alignment.Center),
                                             color = if (isDark) Color.White else Color.Black,
-                                            fontSize = 24.sp
+                                            fontSize = 34.sp
                                         )
                                     }
                                 }
