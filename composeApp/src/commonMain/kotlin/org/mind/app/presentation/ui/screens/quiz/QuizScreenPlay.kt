@@ -76,7 +76,6 @@ fun QuizScreenPlayContent(
     quizQuestionsItem: List<QuizQuestionsItem>,
 ) {
     val isDark by LocalThemeIsDark.current
-    val navigator = LocalTabNavigator.current
     val localNavigator= LocalNavigator.current
     val currentDay = remember {
         val currentMoment = Clock.System.now()
@@ -259,8 +258,6 @@ fun QuizScreenPlayContent(
                                         )
                                     )
                                     .clickable {
-                                       /* navigator.current =
-                                            QuizQuestions(quizCategoryItem, quizQuestionsItem)*/
                                         localNavigator?.push(QuizQuestionsScreen(quizCategoryItem, quizQuestionsItem))
                                     },
                                 contentAlignment = Alignment.Center

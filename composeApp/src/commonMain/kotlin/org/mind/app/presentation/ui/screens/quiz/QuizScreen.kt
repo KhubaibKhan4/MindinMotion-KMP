@@ -245,7 +245,6 @@ fun QuizCategoryItemCard(
     quizItems: List<QuizQuestionsItem>,
     category: QuizCategoryItem,
 ) {
-    val navigator = LocalTabNavigator.current
     val localNavigator = LocalNavigator.current
     val isDark by LocalThemeIsDark.current
     var isEmpty by remember { mutableStateOf(false) }
@@ -258,7 +257,6 @@ fun QuizCategoryItemCard(
                 if (quizItems.isEmpty()) {
                     isEmpty = true
                 } else {
-                    //navigator.current = QuizPlayScreen(category, quizItems)
                     localNavigator?.push(QuizScreenPlay(category, quizItems))
                 }
             }
