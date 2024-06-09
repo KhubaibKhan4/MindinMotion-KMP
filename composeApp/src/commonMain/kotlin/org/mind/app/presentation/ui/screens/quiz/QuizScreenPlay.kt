@@ -45,6 +45,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.screen.Screen
+import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.tab.LocalTabNavigator
 import kotlinx.datetime.Clock
 import kotlinx.datetime.LocalDate
@@ -76,6 +77,7 @@ fun QuizScreenPlayContent(
 ) {
     val isDark by LocalThemeIsDark.current
     val navigator = LocalTabNavigator.current
+    val localNavigator= LocalNavigator.current
     val currentDay = remember {
         val currentMoment = Clock.System.now()
         val currentDate = currentMoment.toLocalDateTime(TimeZone.currentSystemDefault()).date
@@ -257,8 +259,9 @@ fun QuizScreenPlayContent(
                                         )
                                     )
                                     .clickable {
-                                        navigator.current =
-                                            QuizQuestions(quizCategoryItem, quizQuestionsItem)
+                                       /* navigator.current =
+                                            QuizQuestions(quizCategoryItem, quizQuestionsItem)*/
+                                        localNavigator?.push(QuizQuestions(quizCategoryItem, quizQuestionsItem))
                                     },
                                 contentAlignment = Alignment.Center
                             ) {

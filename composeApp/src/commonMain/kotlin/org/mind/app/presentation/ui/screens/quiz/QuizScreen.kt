@@ -49,6 +49,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.Screen
+import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.tab.LocalTabNavigator
 import io.kamel.core.Resource
 import io.kamel.image.KamelImage
@@ -254,6 +255,7 @@ fun QuizCategoryItemCard(
     category: QuizCategoryItem,
 ) {
     val navigator = LocalTabNavigator.current
+    val localNavigator = LocalNavigator.current
     val isDark by LocalThemeIsDark.current
     var isEmpty by remember { mutableStateOf(false) }
 
@@ -265,7 +267,8 @@ fun QuizCategoryItemCard(
                 if (quizItems.isEmpty()) {
                     isEmpty = true
                 } else {
-                    navigator.current = QuizPlayScreen(category, quizItems)
+                    //navigator.current = QuizPlayScreen(category, quizItems)
+                    localNavigator?.push(QuizPlayScreen(category,quizItems))
                 }
             }
     ) {
