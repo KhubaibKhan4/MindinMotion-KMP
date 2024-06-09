@@ -1,6 +1,9 @@
 package org.mind.app.presentation.ui.screens.profile
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -64,6 +67,7 @@ class UserProfileScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UserProfileScreenContent(user: Users) {
+    val isDark by LocalThemeIsDark.current
     val navigator = LocalNavigator.current
     Scaffold(topBar = {
         TopAppBar(title = { Text(text = "User Profile") }, navigationIcon = {
@@ -77,8 +81,9 @@ fun UserProfileScreenContent(user: Users) {
         })
     }) { padding ->
         Column(
-            modifier = Modifier.padding(top = padding.calculateTopPadding())
-                .fillMaxSize()
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = padding.calculateTopPadding())
                 .padding(
                     start = 16.dp,
                     end = 16.dp
@@ -88,9 +93,20 @@ fun UserProfileScreenContent(user: Users) {
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             if (user.profileImage?.contains("null") == true) {
-                LocalImage(
-                    modifier = Modifier.size(128.dp).clip(CircleShape)
-                )
+                Box(
+                    modifier = Modifier
+                        .size(128.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.surfaceContainer)
+                        .border(width = 1.dp, color = Color.Gray, shape = CircleShape)
+                ) {
+                    Text(
+                        text = user.fullName.take(2).toString(),
+                        modifier = Modifier.align(Alignment.Center),
+                        color = if (isDark) Color.White else Color.Black,
+                        fontSize = 34.sp
+                    )
+                }
             } else {
                 val image: Resource<Painter> = asyncPainterResource(BASE_URL + user.profileImage)
                 KamelImage(

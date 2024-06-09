@@ -66,9 +66,9 @@ fun AboutScreenContent() {
         content = { padding ->
             Column(
                 modifier = Modifier
-                    .fillMaxSize()
+                    .fillMaxWidth()
                     .padding(top = padding.calculateTopPadding())
-                    .padding(start = 16.dp, end = 16.dp)
+                    .padding(start = 8.dp, end = 8.dp)
                     .verticalScroll(rememberScrollState()),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Top
