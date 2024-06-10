@@ -1,4 +1,5 @@
 # MindinMotion-KMP
+Mind in Motion is a Compose Multiplatform Applications that consist of Android & iOS. Basically, This is an Educational Platform, Where user can perform quizzes and can do much more. 
 
 ## Mobile Screen Shots
 
