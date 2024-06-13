@@ -1,6 +1,7 @@
 package org.mind.app
 
 import android.app.Application
+import android.content.Context
 import android.content.Intent
 import android.graphics.pdf.PdfDocument
 import android.net.Uri
@@ -234,7 +235,7 @@ actual fun generateResumePdf(resumeHtml: String): ByteArray {
 }
 
 actual fun saveResumeToFile(data: ByteArray, fileName: String) {
-    val context = AndroidApp.INSTANCE.applicationContext
+    val context: Context = AndroidApp.INSTANCE.applicationContext
     val file = File(context.getExternalFilesDir(null), fileName)
     file.writeBytes(data)
     val uri = androidx.core.content.FileProvider.getUriForFile(
