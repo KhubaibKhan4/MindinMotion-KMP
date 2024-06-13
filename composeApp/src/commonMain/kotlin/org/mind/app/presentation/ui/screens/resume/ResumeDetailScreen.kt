@@ -15,7 +15,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -67,6 +66,8 @@ fun ResumeContent(imageUrl: String) {
     var educationList by remember { mutableStateOf(mutableListOf<Education>()) }
     var skillsList by remember { mutableStateOf(mutableListOf<String>()) }
     var newSkill by remember { mutableStateOf("") }
+    var linksList by remember { mutableStateOf(mutableListOf<String>()) }
+    var newLink by remember { mutableStateOf("") }
 
     val scope = rememberCoroutineScope()
     Scaffold(
@@ -215,17 +216,51 @@ fun ResumeContent(imageUrl: String) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            Text("Links", style = MaterialTheme.typography.headlineSmall)
+            linksList.forEachIndexed { index, link ->
+                LinkEntry(
+                    link = link,
+                    onRemove = {
+                        linksList = linksList.toMutableList().apply { removeAt(index) }
+                    })
+            }
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                OutlinedTextField(
+                    value = newLink,
+                    onValueChange = { newLink = it },
+                    label = { Text("New Link") },
+                    modifier = Modifier.weight(1f)
+                )
+                Button(
+                    onClick = {
+                        if (newLink.isNotBlank()) {
+                            linksList = linksList.toMutableList().apply { add(newLink) }
+                            newLink = ""
+                        }
+                    },
+                    modifier = Modifier.padding(start = 8.dp)
+                ) {
+                    Text("Add Link")
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
             Button(
                 onClick = {
                     val resumeHtml = createResumeHtml(
-                        name = "John Doe",
-                        email = "johndoe@example.com",
-                        phoneNumber = "123-456-7890",
-                        location = "123 Main St, Anytown, USA",
-                        summary = "A passionate software developer with experience in building Android applications.",
+                        name = name,
+                        email = email,
+                        phoneNumber = phoneNumber,
+                        location = location,
+                        summary = summary,
                         workExperienceList = workExperienceList,
                         educationList = educationList,
-                        skillsList = skillsList
+                        skillsList = skillsList,
+                        linksList = linksList
                     )
                     scope.launch {
                         val pdfData = generateResumePdf(resumeHtml)
@@ -351,12 +386,28 @@ fun SkillEntry(skill: String, onRemove: () -> Unit) {
             .padding(8.dp)
             .border(1.dp, MaterialTheme.colorScheme.primary, RoundedCornerShape(8.dp))
             .padding(8.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(skill)
-        IconButton(onClick = onRemove) {
-            Icon(Icons.Default.Close, contentDescription = null)
+        Text(skill, modifier = Modifier.weight(1f))
+        Button(onClick = onRemove) {
+            Text("Remove")
+        }
+    }
+}
+
+@Composable
+fun LinkEntry(link: String, onRemove: () -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp)
+            .border(1.dp, MaterialTheme.colorScheme.primary, RoundedCornerShape(8.dp))
+            .padding(8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(link, modifier = Modifier.weight(1f))
+        Button(onClick = onRemove) {
+            Text("Remove")
         }
     }
 }
@@ -370,150 +421,176 @@ fun createResumeHtml(
     workExperienceList: List<WorkExperience>,
     educationList: List<Education>,
     skillsList: List<String>,
+    linksList: List<String>
 ): String {
-    return """
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <title>$name - Resume</title>
-            <style>
-                body {
-                    font-family: Arial, sans-serif;
-                    line-height: 1.6;
-                    margin: 0;
-                    padding: 0;
-                }
-                .container {
-                    width: 80%;
-                    margin: 20px auto;
-                    padding: 20px;
-                    border: 1px solid #ddd;
-                    border-radius: 10px;
-                    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-                }
-                .header, .section {
-                    margin-bottom: 20px;
-                }
-                .header img {
-                    display: block;
-                    margin: 0 auto;
-                    width: 150px;
-                    height: 150px;
-                    border-radius: 50%;
-                    border: 2px solid #007BFF;
-                }
-                .header h1 {
-                    text-align: center;
-                    font-size: 24px;
-                    margin: 10px 0;
-                }
-                .header p {
-                    text-align: center;
-                    margin: 5px 0;
-                }
-                .section h2 {
-                    font-size: 20px;
-                    border-bottom: 2px solid #007BFF;
-                    padding-bottom: 5px;
-                    margin-bottom: 10px;
-                }
-                .section table {
-                    width: 100%;
-                    border-collapse: collapse;
-                }
-                .section th, .section td {
-                    text-align: left;
-                    padding: 8px;
-                    border-bottom: 1px solid #ddd;
-                }
-                .section tr:nth-child(even) {
-                    background-color: #f2f2f2;
-                }
-                .skills ul {
-                    list-style-type: none;
-                    padding: 0;
-                }
-                .skills li {
-                    background: #007BFF;
-                    color: #fff;
-                    padding: 8px;
-                    margin: 5px 0;
-                    border-radius: 5px;
-                }
-            </style>
-        </head>
-        <body>
-            <div class="container">
-                <div class="header">
-                    <h1>$name</h1>
-                    <p>$email</p>
-                    <p>$phoneNumber</p>
-                    <p>$location</p>
-                </div>
-                <div class="section">
-                    <h2>Summary</h2>
-                    <p>$summary</p>
-                </div>
-                <div class="section">
-                    <h2>Work Experience</h2>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Company Name</th>
-                                <th>Job Title</th>
-                                <th>Start Date</th>
-                                <th>End Date</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${
-        workExperienceList.joinToString("\n") { experience ->
-            "<tr>" +
-                    "<td>${experience.companyName}</td>" +
-                    "<td>${experience.jobTitle}</td>" +
-                    "<td>${experience.startDate}</td>" +
-                    "<td>${experience.endDate}</td>" +
-                    "</tr>"
+    return buildString {
+        append("""
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>$name - Resume</title>
+                <style>
+                    body {
+                        font-family: Arial, sans-serif;
+                        line-height: 1.6;
+                        margin: 0;
+                        padding: 0;
+                    }
+                    .container {
+                        width: 80%;
+                        margin: 20px auto;
+                        padding: 20px;
+                        border: 1px solid #ddd;
+                        border-radius: 10px;
+                        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+                    }
+                    .header, .section {
+                        margin-bottom: 20px;
+                    }
+                    .header img {
+                        display: block;
+                        margin: 0 auto;
+                        width: 150px;
+                        height: 150px;
+                        border-radius: 50%;
+                        border: 2px solid #007BFF;
+                    }
+                    .header h1 {
+                        text-align: center;
+                        font-size: 24px;
+                        margin: 10px 0;
+                    }
+                    .header p {
+                        text-align: center;
+                        margin: 5px 0;
+                    }
+                    .section h2 {
+                        font-size: 20px;
+                        border-bottom: 2px solid #007BFF;
+                        padding-bottom: 5px;
+                        margin-bottom: 10px;
+                    }
+                    .section table {
+                        width: 100%;
+                        border-collapse: collapse;
+                    }
+                    .section th, .section td {
+                        text-align: left;
+                        padding: 8px;
+                        border-bottom: 1px solid #ddd;
+                    }
+                    .section tr:nth-child(even) {
+                        background-color: #f2f2f2;
+                    }
+                    .skills ul {
+                        list-style-type: none;
+                        padding: 0;
+                    }
+                    .skills li {
+                        background: #007BFF;
+                        color: #fff;
+                        padding: 8px;
+                        margin: 5px 0;
+                        border-radius: 5px;
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <div class="header">
+                        <h1>$name</h1>
+                        <p><a href="mailto:$email">$email</a></p>
+                        <p><a href="tel:$phoneNumber">$phoneNumber</a></p>
+                    </div>
+                    <div class="section">
+                        <h2>Summary</h2>
+                        <p>$summary</p>
+                    </div>
+                    <div class="section">
+                        <h2>Experience</h2>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Company Name</th>
+                                    <th>Job Title</th>
+                                    <th>Start Date</th>
+                                    <th>End Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+        """.trimIndent())
+
+        workExperienceList.forEach { experience ->
+            append("""
+                                <tr>
+                                    <td>${experience.companyName}</td>
+                                    <td>${experience.jobTitle}</td>
+                                    <td>${experience.startDate}</td>
+                                    <td>${experience.endDate}</td>
+                                </tr>
+            """.trimIndent())
         }
-    }
-                        </tbody>
-                    </table>
-                </div>
-                <div class="section">
-                    <h2>Education</h2>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Degree Name</th>
-                                <th>University Name</th>
-                                <th>Session Year</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${
-        educationList.joinToString("\n") { education ->
-            "<tr>" +
-                    "<td>${education.degreeName}</td>" +
-                    "<td>${education.universityName}</td>" +
-                    "<td>${education.sessionYear}</td>" +
-                    "</tr>"
+
+        append("""
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="section">
+                        <h2>Education</h2>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Degree Name</th>
+                                    <th>University Name</th>
+                                    <th>Session Year</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+        """.trimIndent())
+
+        educationList.forEach { education ->
+            append("""
+                                <tr>
+                                    <td>${education.degreeName}</td>
+                                    <td>${education.universityName}</td>
+                                    <td>${education.sessionYear}</td>
+                                </tr>
+            """.trimIndent())
         }
-    }
-                        </tbody>
-                    </table>
-                </div>
-                <div class="section skills">
-                    <h2>Skills</h2>
-                    <ul>
-                        ${
-        skillsList.joinToString("\n") { skill ->
-            "<li>$skill</li>"
+
+        append("""
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="section skills">
+                        <h2>Skills</h2>
+                        <ul>
+        """.trimIndent())
+
+        skillsList.forEach { skill ->
+            append("<li>$skill</li>")
         }
-    }
-                    </ul>
+
+        append("""
+                        </ul>
+                    </div>
+                    <div class="section">
+                        <h2>Links</h2>
+                        <ul>
+        """.trimIndent())
+
+        linksList.forEach { link ->
+            append("""
+                                <li><a href="$link">$link</a></li>
+            """.trimIndent())
+        }
+
+        append("""
+                        </ul>
+                    </div>
                 </div>
-            </div>
-        </body>
-        </html>
-    """.trimIndent()
+            </body>
+            </html>
+        """.trimIndent())
+    }
 }
