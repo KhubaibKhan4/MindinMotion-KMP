@@ -8,8 +8,9 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -38,10 +39,10 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import io.kamel.image.KamelImage
 import io.kamel.image.asyncPainterResource
 import kotlinx.coroutines.launch
-import org.mind.app.data.remote.MotionApiClient
 import org.mind.app.domain.model.resume.Education
 import org.mind.app.domain.model.resume.WorkExperience
-import org.mind.app.sharePdf
+import org.mind.app.generateResumePdf
+import org.mind.app.saveResumeToFile
 import org.mind.app.utils.Constant.BASE_URL
 
 class ResumeDetailScreen(
@@ -61,6 +62,7 @@ fun ResumeContent(imageUrl: String) {
     var email by remember { mutableStateOf("") }
     var phoneNumber by remember { mutableStateOf("") }
     var location by remember { mutableStateOf("") }
+    var summary by remember { mutableStateOf("") }
     var workExperienceList by remember { mutableStateOf(mutableListOf<WorkExperience>()) }
     var educationList by remember { mutableStateOf(mutableListOf<Education>()) }
     var skillsList by remember { mutableStateOf(mutableListOf<String>()) }
@@ -95,12 +97,11 @@ fun ResumeContent(imageUrl: String) {
                 resource = asyncPainterResource(BASE_URL + imageUrl),
                 contentDescription = null,
                 modifier = Modifier
-                    .wrapContentWidth()
-                    .height(300.dp)
+                    .size(150.dp)
                     .border(
-                        width = 1.dp,
+                        width = 2.dp,
                         color = MaterialTheme.colorScheme.primary,
-                        shape = RoundedCornerShape(8.dp)
+                        shape = CircleShape
                     )
                     .padding(8.dp)
             )
@@ -133,6 +134,14 @@ fun ResumeContent(imageUrl: String) {
                 onValueChange = { location = it },
                 label = { Text("Location") },
                 modifier = Modifier.fillMaxWidth()
+            )
+
+            OutlinedTextField(
+                value = summary,
+                onValueChange = { summary = it },
+                label = { Text("Summary") },
+                modifier = Modifier.fillMaxWidth(),
+                maxLines = 3
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -209,13 +218,18 @@ fun ResumeContent(imageUrl: String) {
             Button(
                 onClick = {
                     val resumeHtml = createResumeHtml(
-                        name, email, phoneNumber, location,
-                        workExperienceList, educationList, skillsList
+                        name = "John Doe",
+                        email = "johndoe@example.com",
+                        phoneNumber = "123-456-7890",
+                        location = "123 Main St, Anytown, USA",
+                        summary = "A passionate software developer with experience in building Android applications.",
+                        workExperienceList = workExperienceList,
+                        educationList = educationList,
+                        skillsList = skillsList
                     )
                     scope.launch {
-                       val file= MotionApiClient.downloadPdf(resumeHtml)
-                        println("SERVER: $file")
-                        sharePdf(file)
+                        val pdfData = generateResumePdf(resumeHtml)
+                        saveResumeToFile(pdfData, "resume.pdf")
                     }
                 },
                 modifier = Modifier.align(Alignment.CenterHorizontally)
@@ -352,6 +366,7 @@ fun createResumeHtml(
     email: String,
     phoneNumber: String,
     location: String,
+    summary: String,
     workExperienceList: List<WorkExperience>,
     educationList: List<Education>,
     skillsList: List<String>,
@@ -364,37 +379,81 @@ fun createResumeHtml(
             <style>
                 body {
                     font-family: Arial, sans-serif;
+                    line-height: 1.6;
+                    margin: 0;
+                    padding: 0;
                 }
                 .container {
                     width: 80%;
-                    margin: 0 auto;
+                    margin: 20px auto;
+                    padding: 20px;
+                    border: 1px solid #ddd;
+                    border-radius: 10px;
+                    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
                 }
-                h1, h2, h3 {
-                    text-align: center;
-                }
-                .section {
+                .header, .section {
                     margin-bottom: 20px;
                 }
-                table {
+                .header img {
+                    display: block;
+                    margin: 0 auto;
+                    width: 150px;
+                    height: 150px;
+                    border-radius: 50%;
+                    border: 2px solid #007BFF;
+                }
+                .header h1 {
+                    text-align: center;
+                    font-size: 24px;
+                    margin: 10px 0;
+                }
+                .header p {
+                    text-align: center;
+                    margin: 5px 0;
+                }
+                .section h2 {
+                    font-size: 20px;
+                    border-bottom: 2px solid #007BFF;
+                    padding-bottom: 5px;
+                    margin-bottom: 10px;
+                }
+                .section table {
                     width: 100%;
                     border-collapse: collapse;
                 }
-                th, td {
+                .section th, .section td {
                     text-align: left;
                     padding: 8px;
+                    border-bottom: 1px solid #ddd;
                 }
-                tr:nth-child(even) {
+                .section tr:nth-child(even) {
                     background-color: #f2f2f2;
+                }
+                .skills ul {
+                    list-style-type: none;
+                    padding: 0;
+                }
+                .skills li {
+                    background: #007BFF;
+                    color: #fff;
+                    padding: 8px;
+                    margin: 5px 0;
+                    border-radius: 5px;
                 }
             </style>
         </head>
         <body>
             <div class="container">
-                <h1>$name</h1>
-                <p>$email</p>
-                <p>$phoneNumber</p>
-                <p>$location</p>
-                <hr>
+                <div class="header">
+                    <h1>$name</h1>
+                    <p>$email</p>
+                    <p>$phoneNumber</p>
+                    <p>$location</p>
+                </div>
+                <div class="section">
+                    <h2>Summary</h2>
+                    <p>$summary</p>
+                </div>
                 <div class="section">
                     <h2>Work Experience</h2>
                     <table>
@@ -443,7 +502,7 @@ fun createResumeHtml(
                         </tbody>
                     </table>
                 </div>
-                <div class="section">
+                <div class="section skills">
                     <h2>Skills</h2>
                     <ul>
                         ${

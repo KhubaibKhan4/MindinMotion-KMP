@@ -1,19 +1,17 @@
 package org.mind.app
 
-import android.app.Activity
 import android.app.Application
 import android.content.Intent
-import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
-import android.graphics.Bitmap
+import android.graphics.pdf.PdfDocument
 import android.net.Uri
 import android.os.Bundle
+import android.text.Html
+import android.text.Spanned
 import android.view.WindowManager
 import android.widget.Toast
 import androidx.activity.ComponentActivity
-import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -30,18 +28,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleEventObserver
-import androidx.lifecycle.LifecycleOwner
 import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.driver.android.AndroidSqliteDriver
 import com.example.cmppreference.AppContext
 import com.rizzi.bouquet.ResourceType
 import com.rizzi.bouquet.VerticalPDFReader
 import com.rizzi.bouquet.rememberVerticalPdfReaderState
-import dev.gitlive.firebase.storage.File
 import io.github.vinceglb.filekit.core.FileKit
 import io.ktor.client.statement.HttpResponse
 import io.ktor.util.InternalAPI
@@ -54,6 +47,7 @@ import org.koin.core.context.startKoin
 import org.mind.app.db.MyDatabase
 import org.mind.app.di.appModule
 import java.io.ByteArrayOutputStream
+import java.io.File
 import java.io.FileOutputStream
 
 class AndroidApp : Application() {
@@ -209,4 +203,49 @@ actual fun sharePdf(pdfFilePath: String) {
     }
 
     AndroidApp.INSTANCE.applicationContext.startActivity(Intent.createChooser(intent, "Share Resume"))
+}
+actual fun generateResumePdf(resumeHtml: String): ByteArray {
+    val pdfDocument = PdfDocument()
+    val pageInfo = PdfDocument.PageInfo.Builder(595, 842, 1).create() // A4 size
+    val page = pdfDocument.startPage(pageInfo)
+
+    val canvas = page.canvas
+    val paint = android.graphics.Paint()
+    paint.color = android.graphics.Color.BLACK
+    paint.textSize = 12f
+
+    val spanned: Spanned = Html.fromHtml(resumeHtml, Html.FROM_HTML_MODE_LEGACY)
+    val text = spanned.toString()
+    val lines = text.split("\n")
+
+    var yPosition = 50f
+    lines.forEach { line ->
+        canvas.drawText(line, 100f, yPosition, paint)
+        yPosition += 20f
+    }
+
+    pdfDocument.finishPage(page)
+
+    val outputStream = ByteArrayOutputStream()
+    pdfDocument.writeTo(outputStream)
+    pdfDocument.close()
+
+    return outputStream.toByteArray()
+}
+
+actual fun saveResumeToFile(data: ByteArray, fileName: String) {
+    val context = AndroidApp.INSTANCE.applicationContext
+    val file = File(context.getExternalFilesDir(null), fileName)
+    file.writeBytes(data)
+    val uri = androidx.core.content.FileProvider.getUriForFile(
+        context,
+        "${context.packageName}.provider",
+        file
+    )
+    val intent = android.content.Intent(android.content.Intent.ACTION_VIEW).apply {
+        setDataAndType(uri, "application/pdf")
+        addFlags(android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+    }
+    context.startActivity(intent)
 }

@@ -209,3 +209,44 @@ actual suspend fun saveResponseToFile(
 
 actual fun sharePdf(pdfFilePath: String) {
 }
+actual fun generateResumePdf(resumeHtml: String): ByteArray {
+    // Use a library like PDFKit or your custom implementation to generate PDF from HTML.
+    // Here is a simplified example using HTML to create PDF data.
+
+    val webView = WKWebView(frame: CGRectMake(0.0, 0.0, 595.0, 842.0)) // A4 size
+    webView.loadHTMLString(resumeHtml, baseURL = null)
+
+    val pdfData = NSMutableData()
+    let printFormatter = webView.viewPrintFormatter()
+    let renderer = UIPrintPageRenderer()
+    renderer.addPrintFormatter(printFormatter, startingAtPageAt: 0)
+
+    let paperRect = CGRectMake(0.0, 0.0, 595.0, 842.0)
+    let printableRect = CGRectMake(0.0, 0.0, 595.0, 842.0)
+
+    renderer.setValue(paperRect, forKey: "paperRect")
+    renderer.setValue(printableRect, forKey: "printableRect")
+
+    let pdfContext = UIGraphicsBeginPDFContextToData(pdfData, paperRect, null)
+    for i in 0..<renderer.numberOfPages {
+        UIGraphicsBeginPDFPage()
+        let bounds = UIGraphicsGetPDFContextBounds()
+        renderer.drawPage(at: i, in: bounds)
+    }
+    UIGraphicsEndPDFContext()
+
+    return pdfData.bytes!!.toByteArray()
+}
+
+actual fun saveResumeToFile(data: ByteArray, fileName: String) {
+    val fileManager = NSFileManager.defaultManager
+    val documentsURL = fileManager.URLsForDirectory(NSDocumentDirectory, NSUserDomainMask).lastObject as NSURL
+    val fileURL = documentsURL.URLByAppendingPathComponent(fileName)
+    data.usePinned {
+        NSData.dataWithBytes(it.addressOf(0), data.size.toULong()).writeToURL(fileURL, true)
+    }
+
+    val documentInteractionController = UIDocumentInteractionController.interactionControllerWithURL(fileURL)
+    documentInteractionController.delegate = object : NSObject(), UIDocumentInteractionControllerDelegateProtocol {}
+    documentInteractionController.presentOptionsMenuFromRect(CGRectZero, UIWindow.keyWindow, true)
+}

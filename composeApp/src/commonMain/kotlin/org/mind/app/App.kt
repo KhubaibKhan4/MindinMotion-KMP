@@ -49,3 +49,6 @@ expect fun createTempFileFromBitmap(imageBitmap: ImageBitmap): File
 expect fun createTempFile(name: String, extension: String): String
 expect suspend fun saveResponseToFile(response: HttpResponse, filePath: String)
 expect fun sharePdf(pdfFilePath: String)
+expect fun generateResumePdf(resumeHtml: String): ByteArray
+
+expect fun saveResumeToFile(data: ByteArray, fileName: String)
